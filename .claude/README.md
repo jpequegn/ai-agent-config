@@ -20,7 +20,7 @@ An agentic productivity framework transforming Claude Code into an intelligent w
 │   ├── task.md        # Project coordination  
 │   ├── analyze.md     # System analysis
 │   └── build.md       # Intelligent building
-├── subagents/         # Specialized agent configs
+├── agents/            # Specialized agent configs
 │   └── productivity-agents.yaml
 ├── workflows/         # Automation patterns
 │   └── productivity-workflow.yaml
@@ -95,7 +95,7 @@ Create new `.md` files in `.claude/commands/` following the existing patterns.
 Edit `.claude/workflows/productivity-workflow.yaml` to adjust automation triggers.
 
 ### Specialized Agents
-Modify `.claude/subagents/productivity-agents.yaml` for domain-specific needs.
+Modify `.claude/agents/productivity-agents.yaml` for domain-specific needs.
 
 ## 🔗 Integration Patterns
 
