@@ -1,0 +1,89 @@
+# Productivity Workflow Configuration
+# Defines automated workflows and trigger patterns for agentic productivity
+
+workflows:
+  daily_startup:
+    trigger: session_start
+    actions:
+      - command: /todo focus
+        description: "Show actionable tasks for today"
+      - command: /task list --status active
+        description: "Display active multi-session projects"
+    auto_execute: true
+
+  multi_step_detection:
+    trigger: 
+      - keywords: ["implement", "build", "create", "fix", "analyze"]
+      - step_count: ">= 3"
+    actions:
+      - command: /todo add
+        description: "Create task tracking for multi-step operations"
+        auto_populate: true
+    confidence_threshold: 0.8
+
+  complex_analysis_workflow:
+    trigger:
+      - complexity: ">= 0.7"
+      - keywords: ["comprehensive", "thorough", "enterprise", "system-wide"]
+    actions:
+      - enable_wave_mode: true
+      - activate_personas: ["analyzer", "architect"]
+      - enable_mcp: ["sequential", "context7"]
+    performance_profile: "complex"
+
+  quality_validation:
+    trigger: 
+      - command_completion: ["build", "implement", "analyze"]
+    actions:
+      - run_validation_cycle: 8_step
+      - check_quality_gates: true
+      - generate_evidence: true
+    required: true
+
+  project_handoff:
+    trigger:
+      - keywords: ["handoff", "transition", "share"]
+      - context: "multi_session_project"
+    actions:
+      - command: /task export
+        format: "markdown"
+      - generate_summary: true
+      - preserve_context: true
+
+automation_rules:
+  task_creation:
+    multi_step_threshold: 3
+    complexity_threshold: 0.6
+    auto_delegate_threshold: 7  # directories
+    wave_activation_threshold: 0.7
+
+  persona_activation:
+    confidence_threshold: 0.75
+    multi_persona_threshold: 0.9
+    fallback_persona: "analyzer"
+
+  mcp_coordination:
+    primary_server_selection: "automatic"
+    fallback_enabled: true
+    cache_duration: 3600  # seconds
+
+  quality_enforcement:
+    validation_required: ["build", "implement", "deploy"]
+    evidence_threshold: 0.95
+    auto_fix_enabled: true
+
+performance_optimization:
+  token_management:
+    efficiency_mode_threshold: 0.75  # context usage
+    compression_auto_activate: 0.85
+    emergency_protocols: 0.95
+
+  parallel_processing:
+    max_concurrent_agents: 5
+    delegation_auto_enable: true
+    wave_orchestration: true
+
+  caching_strategy:
+    mcp_results: 3600
+    analysis_patterns: 7200
+    quality_validations: 1800

@@ -1,0 +1,118 @@
+# Productivity Sub-Agent Configuration
+# Specialized agents for different productivity domains
+
+agents:
+  task_manager:
+    persona: "analyzer"
+    specialization: "Task orchestration and workflow optimization"
+    tools: ["TodoWrite", "Read", "Write", "Sequential"]
+    activation_patterns:
+      - keywords: ["todo", "task", "workflow", "organize"]
+      - complexity: ">= 0.5"
+    capabilities:
+      - Task breakdown and prioritization
+      - Workflow pattern recognition
+      - Progress tracking and reporting
+      - Cross-session continuity
+
+  project_coordinator:
+    persona: "architect" 
+    specialization: "Multi-session project management"
+    tools: ["Write", "Read", "Sequential", "Context7"]
+    activation_patterns:
+      - keywords: ["project", "epic", "milestone", "roadmap"]
+      - session_type: "multi_session"
+    capabilities:
+      - Project lifecycle management
+      - Dependency mapping and critical path analysis
+      - Resource allocation and timeline planning
+      - Stakeholder coordination
+
+  quality_analyst:
+    persona: "qa"
+    specialization: "Quality assurance and validation"
+    tools: ["Read", "Grep", "Sequential", "Playwright"]
+    activation_patterns:
+      - keywords: ["quality", "validate", "test", "review"]
+      - quality_gates: "required"
+    capabilities:
+      - 8-step validation cycle execution
+      - Quality metrics collection and analysis
+      - Risk assessment and mitigation
+      - Evidence generation and documentation
+
+  knowledge_curator:
+    persona: "scribe"
+    specialization: "Information consolidation and documentation"
+    tools: ["Write", "Read", "Context7", "Sequential"]
+    activation_patterns:
+      - keywords: ["document", "summarize", "consolidate", "knowledge"]
+      - information_density: "high"
+    capabilities:
+      - Cross-session knowledge management
+      - Information synthesis and summarization
+      - Documentation standardization
+      - Knowledge graph construction
+
+  performance_optimizer:
+    persona: "performance"
+    specialization: "System and workflow optimization"
+    tools: ["Read", "Sequential", "Playwright", "Bash"]
+    activation_patterns:
+      - keywords: ["optimize", "performance", "efficiency", "bottleneck"]
+      - performance_issues: "detected"
+    capabilities:
+      - Performance bottleneck identification
+      - Resource utilization optimization
+      - Workflow efficiency analysis
+      - Automation opportunity detection
+
+  security_auditor:
+    persona: "security" 
+    specialization: "Security analysis and compliance"
+    tools: ["Grep", "Sequential", "Context7", "Read"]
+    activation_patterns:
+      - keywords: ["security", "audit", "compliance", "vulnerability"]
+      - security_context: "required"
+    capabilities:
+      - Security vulnerability assessment
+      - Compliance validation and reporting
+      - Threat modeling and risk analysis
+      - Security best practices enforcement
+
+coordination_patterns:
+  parallel_execution:
+    max_agents: 3
+    coordination_method: "event_driven"
+    result_aggregation: "intelligent_synthesis"
+    conflict_resolution: "persona_hierarchy"
+
+  sequential_workflow:
+    handoff_validation: true
+    context_preservation: ">= 0.9"
+    progress_checkpoints: true
+    error_recovery: "automatic"
+
+  wave_integration:
+    wave_agent_allocation: "adaptive"
+    cross_wave_communication: true
+    compound_intelligence: true
+    quality_checkpoints: "per_wave"
+
+delegation_rules:
+  automatic_triggers:
+    directory_count: "> 7"
+    file_count: "> 50" 
+    complexity_score: "> 0.8"
+    operation_types: "> 2"
+
+  manual_override:
+    explicit_flags: ["--delegate", "--no-delegate"]
+    user_preference: "respected"
+    context_override: "supported"
+
+  performance_thresholds:
+    token_efficiency: "> 30%"
+    time_savings: "> 40%" 
+    quality_maintenance: ">= 95%"
+    context_retention: ">= 90%"
