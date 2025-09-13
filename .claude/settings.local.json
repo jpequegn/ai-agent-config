@@ -33,7 +33,15 @@
       "Bash(./notes process-inbox --auto-suggest --batch 3)",
       "Bash(./notes research --help)",
       "Bash(./notes research:*)",
-      "Bash(./notes list-templates --json)"
+      "Bash(./notes list-templates --json)",
+      "Bash(./notes find --help)",
+      "Bash(./notes follow-up --help)",
+      "Bash(./notes prep --help)",
+      "Bash(./notes review --help)",
+      "Bash(./notes process-inbox --list)",
+      "Bash(./notes process-inbox --interactive:*)",
+      "Bash(./notes review-note:*)",
+      "Bash(./notes:*)"
     ],
     "deny": [],
     "ask": []

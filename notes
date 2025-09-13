@@ -281,8 +281,86 @@ class NotesCommandInterface:
                     return self.format_success_result(
                         'process-inbox',
                         f"No notes found in {directory}",
-                        {'notes_processed': 0},
+                        {'notes_processed': 0, 'notes': []},
                         [f"Add notes to {directory} directory", "Check file pattern"]
+                    )
+
+                # Handle --list option: just return note summaries
+                if getattr(args, 'list', False):
+                    note_summaries = []
+                    for note in notes:
+                        note_summaries.append({
+                            'id': str(Path(note.file_path).stem),
+                            'file_path': note.file_path,
+                            'title': note.frontmatter.get('title', Path(note.file_path).stem),
+                            'word_count': note.word_count,
+                            'action_items': len(note.action_items),
+                            'suggested_category': note.suggested_category.value,
+                            'preview': note.content[:200] + ('...' if len(note.content) > 200 else ''),
+                            'tags': note.tags,
+                            'created': note.frontmatter.get('created', 'unknown')
+                        })
+
+                    return self.format_success_result(
+                        'process-inbox',
+                        f"Found {len(note_summaries)} notes in {directory}",
+                        {
+                            'notes': note_summaries,
+                            'total_notes': len(note_summaries),
+                            'directory': directory
+                        },
+                        [
+                            f"Process interactively: /notes process-inbox --interactive",
+                            f"Review individual note: /notes review-note --file [file_path]"
+                        ]
+                    )
+
+                # Handle --interactive option: return detailed notes for conversational processing
+                if getattr(args, 'interactive', False):
+                    # Limit to batch size for interactive processing
+                    batch_size = args.batch or 3  # Default to 3 for interactive
+                    interactive_notes = notes[:batch_size]
+
+                    note_details = []
+                    for i, note in enumerate(interactive_notes):
+                        note_details.append({
+                            'index': i,
+                            'id': str(Path(note.file_path).stem),
+                            'file_path': note.file_path,
+                            'title': note.frontmatter.get('title', Path(note.file_path).stem),
+                            'content_preview': note.content[:500] + ('...' if len(note.content) > 500 else ''),
+                            'word_count': note.word_count,
+                            'action_items_count': len(note.action_items),
+                            'suggested_category': note.suggested_category.value,
+                            'confidence': 0.8,  # Mock confidence for now
+                            'tags': note.tags,
+                            'available_actions': [
+                                'categorize',
+                                'edit',
+                                'skip',
+                                'delete'
+                            ],
+                            'suggested_actions': [
+                                f"Move to {note.suggested_category.value}",
+                                "Edit content",
+                                "Skip for now"
+                            ]
+                        })
+
+                    return self.format_success_result(
+                        'process-inbox',
+                        f"Ready to review {len(note_details)} notes interactively",
+                        {
+                            'mode': 'interactive',
+                            'notes': note_details,
+                            'remaining': len(notes) - len(interactive_notes),
+                            'instructions': "Review each note and choose an action"
+                        },
+                        [
+                            f"Categorize note: /notes review-note --file [file_path] --category [category]",
+                            f"Skip to next batch: /notes process-inbox --interactive --batch {batch_size}",
+                            f"Edit specific note: code [file_path]"
+                        ]
                     )
 
                 # Calculate statistics
@@ -404,6 +482,151 @@ class NotesCommandInterface:
                 str(e),
                 ["Check directory permissions", "Verify note file format"]
             )
+
+    def cmd_review_note(self, args) -> CommandResult:
+        """Review and process individual notes"""
+        try:
+            if not args.file:
+                return self.format_error_result(
+                    'review-note',
+                    "No file specified for review",
+                    suggestions=["Use --file parameter to specify note to review"]
+                )
+
+            file_path = Path(args.file)
+            if not file_path.exists():
+                return self.format_error_result(
+                    'review-note',
+                    f"File '{args.file}' does not exist",
+                    suggestions=["Check file path", "Use /notes find to locate notes"]
+                )
+
+            if not subprocess_mode and self.processor:
+                # Parse the note
+                note = self.processor.parse_note(str(file_path), validate=False)
+
+                # Handle different actions
+                if args.category:
+                    # Move note to specified category
+                    success = self._move_note_to_category(note, args.category)
+                    if success:
+                        return self.format_success_result(
+                            'review-note',
+                            f"Moved '{file_path.name}' to {args.category}",
+                            {
+                                'action': 'categorize',
+                                'file_path': str(file_path),
+                                'category': args.category,
+                                'original_category': 'inbox'
+                            },
+                            [
+                                f"View moved note: code {self._get_category_path(args.category)}/{file_path.name}",
+                                f"Undo move: /notes review-note --file {args.file} --undo-move"
+                            ]
+                        )
+                    else:
+                        return self.format_error_result(
+                            'review-note',
+                            f"Failed to move note to {args.category}",
+                            suggestions=["Check category name", "Verify write permissions"]
+                        )
+
+                elif getattr(args, 'undo_move', False):
+                    # Undo previous move operation
+                    return self.format_success_result(
+                        'review-note',
+                        f"Undo operation not yet implemented",
+                        {'action': 'undo', 'status': 'pending'},
+                        ["Undo operations coming in future version"]
+                    )
+
+                else:
+                    # Default: analyze and provide review options
+                    review_data = {
+                        'file_path': str(file_path),
+                        'title': note.frontmatter.get('title', file_path.stem),
+                        'content_preview': note.content[:500] + ('...' if len(note.content) > 500 else ''),
+                        'full_content': note.content if args.full_content else None,
+                        'word_count': note.word_count,
+                        'action_items': [
+                            {
+                                'text': item.text,
+                                'completed': item.completed,
+                                'assignee': item.assignee,
+                                'due_date': item.due_date
+                            }
+                            for item in note.action_items
+                        ],
+                        'suggested_category': note.suggested_category.value,
+                        'current_category': 'inbox',
+                        'confidence': 0.8,  # Mock confidence
+                        'tags': note.tags,
+                        'available_actions': [
+                            'categorize',
+                            'edit',
+                            'delete',
+                            'skip'
+                        ],
+                        'category_options': [
+                            'projects',
+                            'areas',
+                            'resources',
+                            'archive'
+                        ]
+                    }
+
+                    return self.format_success_result(
+                        'review-note',
+                        f"Review options for '{file_path.name}'",
+                        review_data,
+                        [
+                            f"Categorize: /notes review-note --file {args.file} --category {note.suggested_category.value}",
+                            f"Edit: code {args.file}",
+                            f"Skip: /notes process-inbox --interactive"
+                        ]
+                    )
+            else:
+                # Fallback for subprocess mode
+                return self.format_error_result(
+                    'review-note',
+                    "Review note functionality requires native mode",
+                    suggestions=["Install required dependencies for native mode"]
+                )
+
+        except Exception as e:
+            return self.format_error_result(
+                'review-note',
+                f"Review failed: {str(e)}",
+                str(e),
+                ["Check file permissions", "Verify file format"]
+            )
+
+    def _move_note_to_category(self, note, category: str) -> bool:
+        """Move a note to the specified PARA category"""
+        try:
+            source_path = Path(note.file_path)
+
+            # Create category directory if it doesn't exist
+            category_dir = Path(self._get_category_path(category))
+            category_dir.mkdir(parents=True, exist_ok=True)
+
+            # Move the file
+            destination_path = category_dir / source_path.name
+            source_path.rename(destination_path)
+
+            return True
+        except Exception as e:
+            return False
+
+    def _get_category_path(self, category: str) -> str:
+        """Get the directory path for a PARA category"""
+        category_paths = {
+            'projects': '1-projects',
+            'areas': '2-areas',
+            'resources': '3-resources',
+            'archive': '4-archive'
+        }
+        return category_paths.get(category, category)
 
     def cmd_research(self, args) -> CommandResult:
         """Research and analyze existing notes"""
@@ -790,6 +1013,10 @@ def main():
 Examples:
   /notes capture --template meeting --topic "Q4 Planning" --attendees "john,sarah"
   /notes process-inbox --auto-suggest --batch 5
+  /notes process-inbox --list
+  /notes process-inbox --interactive --batch 3
+  /notes review-note --file "inbox/meeting-notes.md"
+  /notes review-note --file "inbox/meeting-notes.md" --category projects
   /notes research --file "project-kickoff.md" --expand-topics
   /notes find --query "budget concerns" --date-range last-month
   /notes follow-up --status overdue
@@ -822,6 +1049,15 @@ Natural language support:
     process_parser.add_argument('--pattern', default='*.md', help='File pattern')
     process_parser.add_argument('--auto-suggest', action='store_true', help='Auto-suggest PARA categories')
     process_parser.add_argument('--batch', type=int, help='Limit number of notes to process')
+    process_parser.add_argument('--list', action='store_true', help='List notes without processing')
+    process_parser.add_argument('--interactive', action='store_true', help='Interactive review mode for Claude Code')
+
+    # Review note command
+    review_parser = subparsers.add_parser('review-note', help='Review and process individual notes')
+    review_parser.add_argument('--file', required=True, help='Note file to review')
+    review_parser.add_argument('--category', choices=['projects', 'areas', 'resources', 'archive'], help='Move to PARA category')
+    review_parser.add_argument('--full-content', action='store_true', help='Include full content in response')
+    review_parser.add_argument('--undo-move', action='store_true', help='Undo previous move operation')
 
     # Research command
     research_parser = subparsers.add_parser('research', help='Research and analyze notes')
@@ -866,6 +1102,7 @@ Natural language support:
         command_methods = {
             'capture': interface.cmd_capture,
             'process-inbox': interface.cmd_process_inbox,
+            'review-note': interface.cmd_review_note,
             'research': interface.cmd_research,
             'find': interface.cmd_find,
             'follow-up': interface.cmd_follow_up,
