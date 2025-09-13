@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PARA Notes API Response Schemas",
+  "description": "JSON Schema definitions for all PARA Notes API command responses",
+  "definitions": {
+    "baseResponse": {
+      "type": "object",
+      "required": ["success", "command", "message", "data", "suggestions", "error_details"],
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Whether the command executed successfully"
+        },
+        "command": {
+          "type": "string",
+          "description": "The command that was executed"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable status message"
+        },
+        "data": {
+          "type": ["object", "null"],
+          "description": "Command-specific data payload"
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Helpful next action suggestions"
+        },
+        "error_details": {
+          "type": ["string", "null"],
+          "description": "Detailed error information (null on success)"
+        }
+      }
+    },
+    "captureResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "command": {"const": "capture"},
+            "data": {
+              "type": "object",
+              "required": ["file_path", "template", "variables"],
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to the created note file"
+                },
+                "template": {
+                  "type": "string",
+                  "enum": ["brainstorm", "meeting", "one-on-one", "quick-note", "research", "project-kickoff"],
+                  "description": "Template used for note creation"
+                },
+                "variables": {
+                  "type": "object",
+                  "properties": {
+                    "title": {"type": "string"},
+                    "attendees": {"type": "string"},
+                    "date": {"type": "string", "format": "date"}
+                  },
+                  "additionalProperties": {"type": "string"},
+                  "description": "Template variables applied"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "processInboxResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "command": {"const": "process-inbox"},
+            "data": {
+              "type": "object",
+              "required": ["notes_processed", "total_notes", "total_words", "action_items"],
+              "properties": {
+                "notes_processed": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Number of notes processed in this batch"
+                },
+                "total_notes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Total notes found in directory"
+                },
+                "total_words": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Total word count across all processed notes"
+                },
+                "action_items": {
+                  "type": "object",
+                  "required": ["total", "completed", "pending"],
+                  "properties": {
+                    "total": {"type": "integer", "minimum": 0},
+                    "completed": {"type": "integer", "minimum": 0},
+                    "pending": {"type": "integer", "minimum": 0}
+                  },
+                  "description": "Action item statistics"
+                },
+                "suggestions": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string",
+                    "enum": ["projects", "areas", "resources", "archive"]
+                  },
+                  "description": "PARA category suggestions for files"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "researchResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "command": {"const": "research"},
+            "data": {
+              "type": "object",
+              "required": ["file_path", "analysis"],
+              "properties": {
+                "file_path": {
+                  "type": "string",
+                  "description": "Path to the analyzed note file"
+                },
+                "analysis": {
+                  "type": "object",
+                  "required": ["word_count", "estimated_read_time"],
+                  "properties": {
+                    "word_count": {"type": "integer", "minimum": 0},
+                    "estimated_read_time": {"type": "integer", "minimum": 1},
+                    "action_items": {"type": "integer", "minimum": 0},
+                    "attendees": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    },
+                    "dates": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    },
+                    "tags": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    }
+                  }
+                },
+                "suggestions": {
+                  "type": "object",
+                  "properties": {
+                    "category": {
+                      "type": "string",
+                      "enum": ["projects", "areas", "resources", "archive"]
+                    },
+                    "related_topics": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    },
+                    "next_actions": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "findResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "command": {"const": "find"},
+            "data": {
+              "type": "object",
+              "required": ["total_results", "results"],
+              "properties": {
+                "query": {"type": "string"},
+                "total_results": {"type": "integer", "minimum": 0},
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["file_path", "title", "created"],
+                    "properties": {
+                      "file_path": {"type": "string"},
+                      "title": {"type": "string"},
+                      "created": {"type": "string", "format": "date"},
+                      "category": {
+                        "type": "string",
+                        "enum": ["projects", "areas", "resources", "archive", "inbox"]
+                      },
+                      "excerpt": {"type": "string"},
+                      "relevance_score": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    }
+                  }
+                },
+                "search_metadata": {
+                  "type": "object",
+                  "properties": {
+                    "search_time_ms": {"type": "integer", "minimum": 0},
+                    "directories_searched": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "followUpResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "command": {"const": "follow-up"},
+            "data": {
+              "type": "object",
+              "required": ["total_items", "items"],
+              "properties": {
+                "filter_criteria": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": ["string", "null"],
+                      "enum": ["all", "overdue", "pending", "completed", null]
+                    },
+                    "assignee": {"type": ["string", "null"]}
+                  }
+                },
+                "total_items": {"type": "integer", "minimum": 0},
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "text", "status", "source_file", "line_number"],
+                    "properties": {
+                      "id": {"type": "string"},
+                      "text": {"type": "string"},
+                      "assignee": {"type": ["string", "null"]},
+                      "due_date": {"type": ["string", "null"], "format": "date"},
+                      "status": {
+                        "type": "string",
+                        "enum": ["overdue", "pending", "completed"]
+                      },
+                      "source_file": {"type": "string"},
+                      "line_number": {"type": "integer", "minimum": 1},
+                      "priority": {
+                        "type": ["string", "null"],
+                        "enum": ["low", "medium", "high", null]
+                      }
+                    }
+                  }
+                },
+                "summary": {
+                  "type": "object",
+                  "required": ["overdue", "pending", "completed"],
+                  "properties": {
+                    "overdue": {"type": "integer", "minimum": 0},
+                    "pending": {"type": "integer", "minimum": 0},
+                    "completed": {"type": "integer", "minimum": 0}
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "prepResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "command": {"const": "prep"},
+            "data": {
+              "type": "object",
+              "required": ["file_path", "meeting_info"],
+              "properties": {
+                "file_path": {"type": "string"},
+                "meeting_info": {
+                  "type": "object",
+                  "required": ["topic", "attendees", "date", "template_used"],
+                  "properties": {
+                    "topic": {"type": "string"},
+                    "attendees": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    },
+                    "date": {"type": "string", "format": "date"},
+                    "template_used": {"type": "string"}
+                  }
+                },
+                "preparation_items": {
+                  "type": "array",
+                  "items": {"type": "string"},
+                  "description": "List of preparation checklist items"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "listTemplatesResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "command": {"const": "list-templates"},
+            "data": {
+              "type": "object",
+              "required": ["templates", "total"],
+              "properties": {
+                "templates": {
+                  "type": "object",
+                  "properties": {
+                    "Built-in": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["name", "description"],
+                        "properties": {
+                          "name": {"type": "string"},
+                          "description": {"type": "string"}
+                        }
+                      }
+                    },
+                    "Custom": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["name", "description"],
+                        "properties": {
+                          "name": {"type": "string"},
+                          "description": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "total": {"type": "integer", "minimum": 0}
+              }
+            }
+          }
+        }
+      ]
+    },
+    "errorResponse": {
+      "allOf": [
+        {"$ref": "#/definitions/baseResponse"},
+        {
+          "properties": {
+            "success": {"const": false},
+            "data": {"const": null},
+            "error_details": {"type": "string"}
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {"$ref": "#/definitions/captureResponse"},
+    {"$ref": "#/definitions/processInboxResponse"},
+    {"$ref": "#/definitions/researchResponse"},
+    {"$ref": "#/definitions/findResponse"},
+    {"$ref": "#/definitions/followUpResponse"},
+    {"$ref": "#/definitions/prepResponse"},
+    {"$ref": "#/definitions/listTemplatesResponse"},
+    {"$ref": "#/definitions/errorResponse"}
+  ]
+}
