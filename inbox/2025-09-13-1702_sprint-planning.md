@@ -1,0 +1,48 @@
+# Meeting: sprint planning - 2025-09-13
+
+**Date:** 2025-09-13 17:02
+**Attendees:** john,sarah
+**Duration:** [Duration]
+
+## Pre-Meeting
+- [ ] Agenda prepared
+- [ ] Materials shared
+- [ ] Participants notified
+
+## Agenda
+1. [Agenda item 1]
+2. [Agenda item 2]
+3. [Agenda item 3]
+
+## Discussion
+
+### [Topic 1]
+- Discussion points
+- Key decisions
+- Concerns raised
+
+### [Topic 2]
+- Discussion points
+- Key decisions
+- Concerns raised
+
+## Decisions Made
+- [ ] Decision 1 - [Decision details]
+- [ ] Decision 2 - [Decision details]
+
+## Action Items
+- [ ] [Action item 1] - @[person] - Due: [date]
+- [ ] [Action item 2] - @[person] - Due: [date]
+- [ ] [Action item 3] - @[person] - Due: [date]
+
+## Next Steps
+- [ ] Schedule follow-up meeting
+- [ ] Send meeting summary
+- [ ] Update project documentation
+
+## Follow-up
+**Next Meeting:** [Date/Time]
+**Agenda Preview:** [Items for next meeting]
+
+---
+**Tags:** meeting**PARA Location:** 2-areas/meetings/
