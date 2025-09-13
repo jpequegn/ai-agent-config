@@ -1,0 +1,130 @@
+# PARA Method Configuration
+# Configuration file for Personal Knowledge Management using the PARA Method
+
+# User Information
+user:
+  name: "Julien Pequegnot"
+  email: "jpequegn@gmail.com"
+  timezone: "America/Los_Angeles"
+
+# Directory Structure Settings
+directories:
+  projects: "1-projects"
+  areas: "2-areas"
+  resources: "3-resources"
+  archive: "4-archive"
+  inbox: "inbox"
+
+# File Naming Conventions
+naming:
+  # Date format for file prefixes (ISO 8601)
+  date_format: "YYYY-MM-DD"
+  # Timestamp format for inbox items
+  timestamp_format: "YYYY-MM-DD-HHMM"
+  # Use slugs for readability (lowercase, hyphens)
+  use_slugs: true
+  # Max length for file names
+  max_filename_length: 100
+
+# Default Tags and Categories
+tags:
+  default:
+    - "unprocessed"
+  project_tags:
+    - "active"
+    - "planning"
+    - "review"
+    - "blocked"
+  area_tags:
+    - "maintenance"
+    - "improvement"
+    - "monitoring"
+  resource_tags:
+    - "reference"
+    - "learning"
+    - "template"
+
+# Common Attendees (for meeting notes)
+contacts:
+  common_attendees:
+    - "John Doe <john.doe@company.com>"
+    - "Jane Smith <jane.smith@company.com>"
+    - "Team Lead <team.lead@company.com>"
+
+# Active Projects (to be updated regularly)
+active_projects:
+  - name: "Q4 Planning"
+    start_date: "2024-09-01"
+    deadline: "2024-12-31"
+    status: "active"
+  - name: "PARA System Setup"
+    start_date: "2024-09-13"
+    deadline: "2024-09-20"
+    status: "active"
+
+# Template Settings
+templates:
+  # Default template for project notes
+  project_note: |
+    # {project_name} - {date}
+
+    ## Objective
+    [Define project objective]
+
+    ## Key Results
+    - [ ] Result 1
+    - [ ] Result 2
+
+    ## Notes
+    [Meeting/project notes]
+
+    ## Next Actions
+    - [ ] Action item 1
+    - [ ] Action item 2
+
+    ---
+    Tags: {tags}
+
+  # Default template for meeting notes
+  meeting_note: |
+    # Meeting: {title} - {date}
+
+    **Date:** {date}
+    **Attendees:** {attendees}
+    **Duration:** {duration}
+
+    ## Agenda
+    - Topic 1
+    - Topic 2
+
+    ## Discussion
+    [Meeting discussion points]
+
+    ## Action Items
+    - [ ] Item 1 (@person, due: date)
+    - [ ] Item 2 (@person, due: date)
+
+    ## Next Meeting
+    **Date:** TBD
+    **Agenda:** TBD
+
+    ---
+    Tags: meeting, {project_tag}
+
+# Automation Settings
+automation:
+  # Auto-archive completed projects after N days
+  auto_archive_completed: 30
+  # Inbox reminder frequency (in days)
+  inbox_reminder_days: 3
+  # Default editor for notes
+  default_editor: "code"  # VS Code
+
+# Review Settings
+review:
+  # Weekly review day (0=Sunday, 6=Saturday)
+  weekly_review_day: 0  # Sunday
+  # Monthly review date (day of month)
+  monthly_review_day: 1  # First of month
+  # Quarterly review months
+  quarterly_review_months: [3, 6, 9, 12]  # Mar, Jun, Sep, Dec

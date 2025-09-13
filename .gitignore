@@ -42,3 +42,27 @@ logs/
 *.temp
 .tmp/
 .temp/
+
+# PARA Method specific ignores
+# Personal/Private notes (if you want to keep some private)
+**/private/
+**/personal/
+**/sensitive/
+
+# Archive of sensitive information
+4-archive/**/sensitive/
+4-archive/**/private/
+
+# Backup files
+*.bak
+*.backup
+
+# Note-taking specific
+*.draft
+*.wip
+.notes-cache/
+
+# Review files (temporary)
+**/review-temp/
+**/weekly-review-temp.md
+**/monthly-review-temp.md

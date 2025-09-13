@@ -1,68 +1,60 @@
-# /todo - Advanced Task Management Command
+---
+name: todo
+description: Manage project todos in todos.md file
+---
 
-## Purpose
-Intelligent task management with due dates, prioritization, and workflow integration.
+# Project Todo Manager
 
-## Usage
-```
-/todo [action] [task] [--options]
-```
+Manage todos in a `todos.md` file at the root of your current project directory.
 
-## Actions
+## Usage Examples:
+- `/todo add "Fix navigation bug"`
+- `/todo add "Fix navigation bug" [date/time/"tomorrow"/"next week"]` an optional 2nd parameter to set a due date
+- `/todo complete 1` 
+- `/todo remove 2`
+- `/todo list`
+- `/todo undo 1`
 
-### Create Tasks
-- `/todo add "Task description" --due 2024-12-31 --priority high`
-- `/todo "Quick task"` (simplified syntax)
-- `/todo add "Multi-step task" --subtasks`
+## Instructions:
 
-### Manage Tasks  
-- `/todo list [--filter status|priority|date]`
-- `/todo complete [id|pattern]`
-- `/todo update [id] --due DATE --priority LEVEL`
-- `/todo delete [id|pattern]`
+You are a todo manager for the current project. When this command is invoked:
 
-### Advanced Features
-- `/todo focus` - Show only actionable tasks for today
-- `/todo weekly` - Generate weekly planning summary
-- `/todo delegate [id] --to agent_type` - Assign to specialized sub-agent
-- `/todo batch [action]` - Bulk operations on filtered tasks
+1. **Determine the project root** by looking for common indicators (.git, package.json, etc.)
+2. **Locate or create** `todos.md` in the project root
+3. **Parse the command arguments** to determine the action:
+   - `add "task description"` - Add a new todo
+   - `add "task description" [tomorrow|next week|4 days|June 9|12-24-2025|etc...]` - Add a new todo with the provided due date
+   - `due N [tomorrow|next week|4 days|June 9|12-24-2025|etc...]` - Mark todo N with the due date provided
+   - `complete N` - Mark todo N as completed and move from the ##Active list to the ##Completed list
+   - `remove N` - Remove todo N entirely
+   - `undo N` - Mark completed todo N as incomplete
+   - `list [N]` or no args - Show all (or N number of) todos in a user-friendly format, with each todo numbered for reference
+   - `past due` - Show all of the tasks which are past due and still active
+   - `next` - Shows the next active task in the list, this should respect Due dates, if there are any. If not, just show the first todo in the Active list
 
-## Priority Levels
-- **critical** - Immediate attention required
-- **high** - Important, schedule within 24h
-- **medium** - Standard priority (default)
-- **low** - Nice to have, flexible timing
+## Todo Format:
+Use this markdown format in todos.md:
+```markdown
+# Project Todos
 
-## Integration Patterns
-- Auto-creates tasks from multi-step operations (3+ steps)
-- Syncs with /task command for project-level management
-- Triggers sub-agent delegation for complex tasks
-- Integrates with quality gates and validation cycles
+## Active
+- [ ] Task description here | Due: MM-DD-YYYY (conditionally include HH:MM AM/PM, if specified)
+- [ ] Another task 
 
-## Example Workflow
-```bash
-# Daily start
-/todo focus
-
-# Add urgent task
-/todo add "Fix production bug" --priority critical --due today
-
-# Weekly planning
-/todo weekly --export markdown
-
-# Delegate complex analysis
-/todo delegate 5 --to analyzer
+## Completed  
+- [x] Finished task | Done: MM-DD-YYYY (conditionally include HH:MM AM/PM, if specified) 
+- [x] Another completed task | Due: MM-DD-YYYY (conditionally include HH:MM AM/PM, if specified) | Done: MM-DD-YYYY (conditionally include HH:MM AM/PM, if specified) 
 ```
 
-## Task State Management
-- **pending** 📋 - Ready for execution
-- **in_progress** 🔄 - Currently active (limit: 1 per session)
-- **blocked** 🚧 - Waiting on dependency
-- **completed** ✅ - Successfully finished
-- **delegated** 🤝 - Assigned to sub-agent
+## Behavior:
+- Number todos when displaying (1, 2, 3...)
+- Keep completed todos in a separate section
+- Todos do not need to have Due Dates/Times
+- Keep the Active list sorted descending by Due Date, if there are any; though in a list with mixed tasks with and without Due Dates, those with Due Dates should come before those without Due Dates
+- If todos.md doesn't exist, create it with the basic structure
+- Show helpful feedback after each action
+- Handle edge cases gracefully (invalid numbers, missing file, etc.)
+- All provided dates/times should be saved/formatted in a standardized format of MM/DD/YYYY (or DD/MM/YYYY depending on locale), unless the user specifies a different format
+- Times should not be included in the due date format unless requested (`due N in 2 hours` should be MM/DD/YYYY @ [+ 2 hours from now]) 
 
-## Auto-Activation Triggers
-- Multi-step operations detected
-- Keywords: "build", "implement", "analyze", "fix", "create"
-- Complexity >0.6 operations
-- User requests task tracking
+Always be concise and helpful in your responses.
