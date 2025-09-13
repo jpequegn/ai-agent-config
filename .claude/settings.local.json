@@ -7,7 +7,12 @@
       "WebFetch(domain:claudecode.io)",
       "Bash(mkdir:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(gh issue view:*)",
+      "Bash(git checkout:*)",
+      "Bash(chmod:*)",
+      "Bash(./setup-para.sh:*)"
     ],
     "deny": [],
     "ask": []
