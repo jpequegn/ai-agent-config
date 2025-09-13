@@ -1,0 +1,10 @@
+# PARA Method Template System Requirements
+
+# Template engine
+Jinja2>=3.0.0
+
+# YAML configuration parsing
+PyYAML>=6.0
+
+# Optional: Enhanced CLI interface
+click>=8.0.0
