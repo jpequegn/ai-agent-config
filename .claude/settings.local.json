@@ -21,7 +21,19 @@
       "Bash(gh pr create:*)",
       "Bash(./para-processor.py parse:*)",
       "Bash(./para-processor.py batch test-notes --summary)",
-      "Bash(./para-processor.py actions:*)"
+      "Bash(./para-processor.py actions:*)",
+      "Bash(./para-processor.py --help)",
+      "Bash(./notes --help)",
+      "Bash(./notes list-templates)",
+      "Bash(./notes capture:*)",
+      "Bash(python3:*)",
+      "Bash(./notes process-inbox --help)",
+      "Bash(./notes process-inbox --auto-suggest --batch 2)",
+      "Bash(./para-processor.py batch:*)",
+      "Bash(./notes process-inbox --auto-suggest --batch 3)",
+      "Bash(./notes research --help)",
+      "Bash(./notes research:*)",
+      "Bash(./notes list-templates --json)"
     ],
     "deny": [],
     "ask": []
