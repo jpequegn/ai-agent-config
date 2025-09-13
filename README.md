@@ -199,6 +199,104 @@ para_suggestion: "1-projects"
 - [ ] Action item 1
 ```
 
+## Note Processing Engine
+
+The PARA system includes a powerful note processing engine that can parse, analyze, and manipulate existing markdown files.
+
+### Processing Features
+- **Frontmatter parsing** with YAML support and error handling
+- **Action item extraction** from checkbox patterns (`- [ ]` and `- [x]`)
+- **Attendee and date extraction** using intelligent pattern matching
+- **Tag extraction** from hashtags and frontmatter
+- **Content analysis** for automatic PARA categorization
+- **Safe file operations** with automatic backup creation
+- **Graceful error handling** for malformed notes
+
+### Processing Commands
+
+```bash
+# Parse a single note file
+./para-processor.py parse path/to/note.md
+
+# Parse with graceful error handling (handles malformed notes)
+./para-processor.py parse path/to/note.md --graceful
+
+# Process multiple notes in a directory
+./para-processor.py batch inbox/ --summary
+
+# Find all action items
+./para-processor.py actions --directory .
+
+# Find potentially orphaned action items
+./para-processor.py actions --orphaned
+
+# Update note frontmatter safely
+./para-processor.py update note.md --key status=reviewed --key priority=high
+```
+
+### What Gets Extracted
+
+The processing engine automatically extracts:
+
+**Action Items:**
+- Text content and completion status
+- Assignees (`@username`)
+- Due dates (`Due: date` format)
+- Priority levels (`[high]`, `[medium]`, `[low]`)
+- Line numbers for reference
+
+**People & Contacts:**
+- Attendee lists from structured patterns
+- Email addresses
+- Names from meeting templates
+
+**Temporal Information:**
+- ISO dates (YYYY-MM-DD)
+- Timestamps with times
+- Due dates and deadlines
+
+**Organization:**
+- Hashtags (`#tag`)
+- Frontmatter tags
+- PARA category suggestions
+- Word count and read time estimates
+
+### Auto-Categorization
+
+The engine analyzes content to suggest PARA categories:
+
+- **Projects** - Keywords: deadline, deliverable, milestone, goal, objective
+- **Areas** - Keywords: responsibility, maintain, ongoing, team, process
+- **Resources** - Keywords: reference, documentation, research, learning
+- **Archive** - Older content or completed items
+- **Inbox** - Default for uncategorized content
+
+### Safe Operations
+
+All file modifications include:
+- **Automatic backups** in `.para-backups/` directory
+- **Atomic operations** that succeed or fail completely
+- **Error recovery** with detailed error messages
+- **Validation** before writing changes
+
+### Batch Processing
+
+Process entire directories of notes:
+```bash
+# Process all markdown files with summary
+./para-processor.py batch 1-projects/ --summary
+
+# Process specific file pattern
+./para-processor.py batch . --pattern "meeting-*.md"
+```
+
+Output includes:
+- Total notes processed
+- Word count across all notes
+- Action item completion rates
+- Category distribution
+- Processing errors (if any)
+
 ## Configuration File
 
 The `.para-config.yaml` file contains:

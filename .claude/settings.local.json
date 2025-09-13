@@ -17,7 +17,11 @@
       "Bash(./para-templates.py list)",
       "Bash(./para-templates.py create:*)",
       "Bash(./para-templates.py info:*)",
-      "Bash(./para-templates.py:*)"
+      "Bash(./para-templates.py:*)",
+      "Bash(gh pr create:*)",
+      "Bash(./para-processor.py parse:*)",
+      "Bash(./para-processor.py batch test-notes --summary)",
+      "Bash(./para-processor.py actions:*)"
     ],
     "deny": [],
     "ask": []
