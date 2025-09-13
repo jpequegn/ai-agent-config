@@ -38,6 +38,15 @@ class ActionItem:
     priority: Optional[str] = None
 
 @dataclass
+class CategorizationResult:
+    """Represents a PARA categorization result with confidence and reasoning"""
+    category: ParaCategory
+    confidence: float  # 0.0 to 1.0
+    reasoning: List[str]  # List of reasons for this categorization
+    alternative_categories: List[Tuple[ParaCategory, float]]  # Other possibilities with scores
+    manual_override: bool = False  # Whether this was manually set
+
+@dataclass
 class ParsedNote:
     """Represents a fully parsed note with all extracted information"""
     file_path: str
@@ -48,7 +57,8 @@ class ParsedNote:
     attendees: List[str]
     dates: List[str]
     tags: List[str]
-    suggested_category: Optional[ParaCategory] = None
+    categorization_result: Optional[CategorizationResult] = None
+    suggested_category: Optional[ParaCategory] = None  # Maintained for backward compatibility
     word_count: int = 0
     estimated_read_time: int = 0  # in minutes
 
@@ -94,23 +104,45 @@ class ParaNoteProcessor:
             r'(?:^|\s)#([a-zA-Z0-9_-]+)'
         )
 
-        # Keywords for PARA categorization
+        # Enhanced keywords and patterns for PARA categorization
         self.categorization_keywords = {
             ParaCategory.PROJECTS: {
-                'high': ['project', 'deadline', 'deliverable', 'milestone', 'launch', 'complete', 'finish'],
-                'medium': ['task', 'goal', 'objective', 'outcome', 'result'],
-                'low': ['plan', 'strategy', 'roadmap']
+                'high': ['project', 'deadline', 'deliverable', 'milestone', 'launch', 'complete', 'finish',
+                        'campaign', 'initiative', 'sprint', 'release', 'build', 'implementation'],
+                'medium': ['task', 'goal', 'objective', 'outcome', 'result', 'target', 'achievement',
+                          'timeline', 'schedule', 'feature', 'development'],
+                'low': ['plan', 'strategy', 'roadmap', 'proposal', 'design', 'prototype']
             },
             ParaCategory.AREAS: {
-                'high': ['responsibility', 'maintain', 'ongoing', 'continuous', 'regular'],
-                'medium': ['team', 'process', 'standard', 'policy', 'procedure'],
-                'low': ['management', 'oversight', 'monitoring']
+                'high': ['responsibility', 'maintain', 'ongoing', 'continuous', 'regular', 'routine',
+                        'standard', 'process', 'procedure', 'policy', 'operational'],
+                'medium': ['team', 'department', 'role', 'function', 'service', 'support',
+                          'administration', 'management', 'oversight'],
+                'low': ['monitoring', 'review', 'assessment', 'evaluation', 'governance']
             },
             ParaCategory.RESOURCES: {
-                'high': ['reference', 'documentation', 'guide', 'tutorial', 'research'],
-                'medium': ['knowledge', 'learning', 'study', 'article', 'book'],
-                'low': ['information', 'data', 'facts', 'resource']
+                'high': ['reference', 'documentation', 'guide', 'tutorial', 'research', 'study',
+                        'article', 'paper', 'report', 'analysis', 'knowledge base'],
+                'medium': ['knowledge', 'learning', 'education', 'training', 'information',
+                          'insights', 'best practices', 'lessons learned'],
+                'low': ['data', 'facts', 'resource', 'material', 'content', 'archive']
             }
+        }
+
+        # Temporal indicators for enhanced categorization
+        self.temporal_patterns = {
+            'deadline_indicators': re.compile(r'\b(?:due|deadline|by|until|before)\s+(?:(?:\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|(?:\d{4}-\d{2}-\d{2})|(?:today|tomorrow|next week|next month))', re.IGNORECASE),
+            'project_timeframes': re.compile(r'\b(?:this week|next week|this month|next month|this quarter|Q[1-4]|sprint|iteration|phase \d+)', re.IGNORECASE),
+            'ongoing_indicators': re.compile(r'\b(?:always|regularly|daily|weekly|monthly|quarterly|annually|ongoing|continuous|perpetual)', re.IGNORECASE),
+            'completion_indicators': re.compile(r'\b(?:completed|finished|done|shipped|launched|delivered|closed)', re.IGNORECASE),
+            'research_indicators': re.compile(r'\b(?:investigate|research|study|analyze|explore|learn about|understand)', re.IGNORECASE)
+        }
+
+        # Content structure patterns
+        self.structure_patterns = {
+            'meeting_structure': re.compile(r'(?:agenda|attendees|action items|decisions|next steps)', re.IGNORECASE),
+            'project_structure': re.compile(r'(?:objectives|deliverables|timeline|milestones|risks|dependencies)', re.IGNORECASE),
+            'resource_structure': re.compile(r'(?:summary|key points|references|links|further reading)', re.IGNORECASE)
         }
 
     def _load_config(self) -> Dict[str, Any]:
@@ -242,41 +274,216 @@ class ParaNoteProcessor:
 
         return list(tags)
 
-    def analyze_content_category(self, content: str, frontmatter: Dict[str, Any] = None) -> Optional[ParaCategory]:
-        """Analyze content to suggest PARA category"""
+    def analyze_content_category(self, content: str, frontmatter: Dict[str, Any] = None) -> CategorizationResult:
+        """Analyze content to suggest PARA category with confidence and reasoning"""
         content_lower = content.lower()
+        reasoning = []
 
-        # Check frontmatter for explicit suggestion
+        # Check for manual override first
         if frontmatter:
-            para_suggestion = frontmatter.get('para_suggestion')
-            if para_suggestion:
+            manual_category = frontmatter.get('para_category') or frontmatter.get('para_suggestion')
+            if manual_category:
                 try:
-                    return ParaCategory(para_suggestion)
+                    category = ParaCategory(manual_category)
+                    return CategorizationResult(
+                        category=category,
+                        confidence=1.0,
+                        reasoning=['Manual override in frontmatter'],
+                        alternative_categories=[],
+                        manual_override=True
+                    )
                 except ValueError:
-                    pass
+                    reasoning.append(f"Invalid manual category '{manual_category}' ignored")
 
-        # Score each category based on keyword presence
-        scores = {}
+        # Initialize scoring system
+        scores = {
+            ParaCategory.PROJECTS: {'score': 0, 'factors': []},
+            ParaCategory.AREAS: {'score': 0, 'factors': []},
+            ParaCategory.RESOURCES: {'score': 0, 'factors': []},
+            ParaCategory.ARCHIVE: {'score': 0, 'factors': []}
+        }
 
+        # 1. Keyword-based scoring (40% weight)
         for category, keywords in self.categorization_keywords.items():
-            score = 0
+            keyword_score = 0
+            matched_keywords = []
+
             for weight_level, word_list in keywords.items():
                 weight = {'high': 3, 'medium': 2, 'low': 1}[weight_level]
                 for keyword in word_list:
                     occurrences = content_lower.count(keyword)
-                    score += occurrences * weight
-            scores[category] = score
+                    if occurrences > 0:
+                        keyword_score += occurrences * weight
+                        matched_keywords.append(f"{keyword}({occurrences})")
 
-        # Return category with highest score, if significant
-        if scores:
-            max_category = max(scores, key=scores.get)
-            max_score = scores[max_category]
+            if matched_keywords:
+                scores[category]['score'] += keyword_score * 0.4
+                scores[category]['factors'].append(f"Keywords: {', '.join(matched_keywords[:3])}")
 
-            # Only suggest if score is meaningful
-            if max_score >= 2:
-                return max_category
+        # 2. Temporal pattern analysis (30% weight)
+        temporal_score = self._analyze_temporal_patterns(content, scores)
 
-        return ParaCategory.INBOX  # Default fallback
+        # 3. Content structure analysis (20% weight)
+        structure_score = self._analyze_content_structure(content, scores)
+
+        # 4. Action item analysis (10% weight)
+        action_items = self.extract_action_items(content)
+        self._analyze_action_items(action_items, content, scores)
+
+        # 5. Archive detection for completed projects
+        self._detect_archive_candidates(content, frontmatter, scores)
+
+        # Calculate final scores and confidence
+        final_scores = [(cat, data['score']) for cat, data in scores.items()]
+        final_scores.sort(key=lambda x: x[1], reverse=True)
+
+        if final_scores[0][1] <= 0:
+            # No clear categorization found
+            return CategorizationResult(
+                category=ParaCategory.INBOX,
+                confidence=0.1,
+                reasoning=['No clear categorization signals found'],
+                alternative_categories=[]
+            )
+
+        best_category, best_score = final_scores[0]
+
+        # Calculate confidence based on score separation and absolute score
+        max_possible_score = 10.0  # Theoretical maximum
+        confidence = min(0.95, best_score / max_possible_score)
+
+        # Boost confidence if there's clear separation from alternatives
+        if len(final_scores) > 1:
+            second_score = final_scores[1][1]
+            if best_score > second_score * 1.5:  # 50% higher than second best
+                confidence = min(0.95, confidence * 1.2)
+
+        # Reduce confidence if multiple categories are close
+        if len(final_scores) > 1 and final_scores[1][1] > best_score * 0.8:
+            confidence *= 0.8
+
+        # Minimum confidence threshold
+        confidence = max(0.1, confidence)
+
+        # Build alternative categories (excluding the best one)
+        alternatives = []
+        for cat, score in final_scores[1:4]:  # Top 3 alternatives
+            if score > 0:
+                alt_confidence = min(0.9, score / max_possible_score)
+                alternatives.append((cat, alt_confidence))
+
+        # Compile reasoning from all factors
+        reasoning = scores[best_category]['factors']
+        if not reasoning:
+            reasoning = ['Based on content analysis']
+
+        return CategorizationResult(
+            category=best_category,
+            confidence=confidence,
+            reasoning=reasoning,
+            alternative_categories=alternatives,
+            manual_override=False
+        )
+
+    def _analyze_temporal_patterns(self, content: str, scores: Dict) -> None:
+        """Analyze temporal patterns in content to inform categorization"""
+
+        # Deadline indicators suggest projects
+        deadline_matches = self.temporal_patterns['deadline_indicators'].findall(content)
+        if deadline_matches:
+            scores[ParaCategory.PROJECTS]['score'] += len(deadline_matches) * 0.8
+            scores[ParaCategory.PROJECTS]['factors'].append(f"Deadlines detected: {len(deadline_matches)}")
+
+        # Project timeframe indicators
+        timeframe_matches = self.temporal_patterns['project_timeframes'].findall(content)
+        if timeframe_matches:
+            scores[ParaCategory.PROJECTS]['score'] += len(timeframe_matches) * 0.6
+            scores[ParaCategory.PROJECTS]['factors'].append(f"Project timeframes: {len(timeframe_matches)}")
+
+        # Ongoing indicators suggest areas
+        ongoing_matches = self.temporal_patterns['ongoing_indicators'].findall(content)
+        if ongoing_matches:
+            scores[ParaCategory.AREAS]['score'] += len(ongoing_matches) * 0.7
+            scores[ParaCategory.AREAS]['factors'].append(f"Ongoing activities: {len(ongoing_matches)}")
+
+        # Completion indicators might suggest archive
+        completion_matches = self.temporal_patterns['completion_indicators'].findall(content)
+        if completion_matches:
+            scores[ParaCategory.ARCHIVE]['score'] += len(completion_matches) * 0.5
+            scores[ParaCategory.ARCHIVE]['factors'].append(f"Completion indicators: {len(completion_matches)}")
+
+        # Research indicators suggest resources
+        research_matches = self.temporal_patterns['research_indicators'].findall(content)
+        if research_matches:
+            scores[ParaCategory.RESOURCES]['score'] += len(research_matches) * 0.6
+            scores[ParaCategory.RESOURCES]['factors'].append(f"Research activities: {len(research_matches)}")
+
+    def _analyze_content_structure(self, content: str, scores: Dict) -> None:
+        """Analyze content structure patterns"""
+
+        # Meeting structure suggests areas (ongoing responsibilities)
+        if self.structure_patterns['meeting_structure'].search(content):
+            scores[ParaCategory.AREAS]['score'] += 0.4
+            scores[ParaCategory.AREAS]['factors'].append("Meeting structure detected")
+
+        # Project structure suggests projects
+        if self.structure_patterns['project_structure'].search(content):
+            scores[ParaCategory.PROJECTS]['score'] += 0.5
+            scores[ParaCategory.PROJECTS]['factors'].append("Project structure detected")
+
+        # Resource structure suggests resources
+        if self.structure_patterns['resource_structure'].search(content):
+            scores[ParaCategory.RESOURCES]['score'] += 0.4
+            scores[ParaCategory.RESOURCES]['factors'].append("Resource structure detected")
+
+    def _analyze_action_items(self, action_items: List[ActionItem], content: str, scores: Dict) -> None:
+        """Analyze action items to inform categorization"""
+        if not action_items:
+            return
+
+        incomplete_items = [item for item in action_items if not item.completed]
+        completed_items = [item for item in action_items if item.completed]
+
+        # Many incomplete action items with deadlines suggest projects
+        deadline_items = [item for item in incomplete_items if item.due_date]
+        if deadline_items:
+            scores[ParaCategory.PROJECTS]['score'] += len(deadline_items) * 0.1
+            scores[ParaCategory.PROJECTS]['factors'].append(f"Action items with deadlines: {len(deadline_items)}")
+
+        # High ratio of completed items might suggest archive
+        if action_items:
+            completion_ratio = len(completed_items) / len(action_items)
+            if completion_ratio > 0.8:
+                scores[ParaCategory.ARCHIVE]['score'] += 0.3
+                scores[ParaCategory.ARCHIVE]['factors'].append(f"High completion ratio: {completion_ratio:.1%}")
+
+    def _detect_archive_candidates(self, content: str, frontmatter: Dict[str, Any], scores: Dict) -> None:
+        """Detect if content should be archived"""
+
+        # Check for explicit completion status
+        if frontmatter:
+            status = frontmatter.get('status', '').lower()
+            if status in ['completed', 'done', 'finished', 'shipped', 'cancelled']:
+                scores[ParaCategory.ARCHIVE]['score'] += 1.0
+                scores[ParaCategory.ARCHIVE]['factors'].append(f"Status: {status}")
+
+        # Check for age-based archiving (if we have creation date)
+        if frontmatter:
+            created = frontmatter.get('created') or frontmatter.get('date')
+            if created:
+                try:
+                    # Try to parse date
+                    from dateutil.parser import parse
+                    created_date = parse(str(created)).date()
+                    age_days = (datetime.date.today() - created_date).days
+
+                    # Suggest archiving for old completed projects (6+ months)
+                    if age_days > 180 and any(word in content.lower() for word in ['completed', 'finished', 'done']):
+                        scores[ParaCategory.ARCHIVE]['score'] += 0.4
+                        scores[ParaCategory.ARCHIVE]['factors'].append(f"Old completed content: {age_days} days")
+
+                except:
+                    pass  # Ignore date parsing errors
 
     def calculate_read_time(self, content: str) -> Tuple[int, int]:
         """Calculate word count and estimated read time"""
@@ -316,7 +523,7 @@ class ParaNoteProcessor:
             attendees = self.extract_attendees(content)
             dates = self.extract_dates(content)
             tags = self.extract_tags(content, frontmatter)
-            suggested_category = self.analyze_content_category(content, frontmatter)
+            categorization_result = self.analyze_content_category(content, frontmatter)
             word_count, read_time = self.calculate_read_time(content)
 
             return ParsedNote(
@@ -328,7 +535,8 @@ class ParaNoteProcessor:
                 attendees=attendees,
                 dates=dates,
                 tags=tags,
-                suggested_category=suggested_category,
+                categorization_result=categorization_result,
+                suggested_category=categorization_result.category,  # Backward compatibility
                 word_count=word_count,
                 estimated_read_time=read_time
             )
@@ -351,7 +559,7 @@ class ParaNoteProcessor:
                     attendees = self.extract_attendees(content)
                     dates = self.extract_dates(content)
                     tags = self.extract_tags(content)
-                    suggested_category = self.analyze_content_category(content)
+                    categorization_result = self.analyze_content_category(content)
                     word_count, read_time = self.calculate_read_time(content)
 
                     return ParsedNote(
@@ -363,12 +571,19 @@ class ParaNoteProcessor:
                         attendees=attendees,
                         dates=dates,
                         tags=tags,
-                        suggested_category=suggested_category or ParaCategory.INBOX,
+                        categorization_result=categorization_result,
+                        suggested_category=categorization_result.category if categorization_result else ParaCategory.INBOX,
                         word_count=word_count,
                         estimated_read_time=read_time
                     )
                 except:
                     # If even graceful parsing fails, return minimal data
+                    fallback_categorization = CategorizationResult(
+                        category=ParaCategory.INBOX,
+                        confidence=0.0,
+                        reasoning=['Failed to parse content - defaulted to inbox'],
+                        alternative_categories=[]
+                    )
                     return ParsedNote(
                         file_path=str(file_path),
                         frontmatter={},
@@ -378,6 +593,7 @@ class ParaNoteProcessor:
                         attendees=[],
                         dates=[],
                         tags=[],
+                        categorization_result=fallback_categorization,
                         suggested_category=ParaCategory.INBOX,
                         word_count=0,
                         estimated_read_time=1
@@ -468,6 +684,240 @@ class ParaNoteProcessor:
         except:
             return False
 
+    def analyze_project_lifecycle(self, note: ParsedNote) -> Dict[str, Any]:
+        """Analyze project lifecycle stage and recommend actions"""
+        lifecycle_analysis = {
+            'current_stage': 'unknown',
+            'completion_percentage': 0.0,
+            'recommended_action': 'review',
+            'archive_candidate': False,
+            'reasons': []
+        }
+
+        content_lower = note.content.lower()
+        frontmatter = note.frontmatter
+
+        # Check explicit project status in frontmatter
+        status = frontmatter.get('status', '').lower()
+        if status:
+            if status in ['completed', 'done', 'finished', 'shipped', 'delivered']:
+                lifecycle_analysis['current_stage'] = 'completed'
+                lifecycle_analysis['completion_percentage'] = 1.0
+                lifecycle_analysis['archive_candidate'] = True
+                lifecycle_analysis['recommended_action'] = 'archive'
+                lifecycle_analysis['reasons'].append(f'Status marked as: {status}')
+            elif status in ['cancelled', 'abandoned', 'on-hold', 'paused']:
+                lifecycle_analysis['current_stage'] = 'stalled'
+                lifecycle_analysis['archive_candidate'] = True
+                lifecycle_analysis['recommended_action'] = 'archive_or_revive'
+                lifecycle_analysis['reasons'].append(f'Status marked as: {status}')
+            elif status in ['active', 'in-progress', 'ongoing']:
+                lifecycle_analysis['current_stage'] = 'active'
+                lifecycle_analysis['recommended_action'] = 'monitor'
+                lifecycle_analysis['reasons'].append(f'Status marked as: {status}')
+
+        # Analyze action items completion rate
+        if note.action_items:
+            completed_count = sum(1 for item in note.action_items if item.completed)
+            completion_rate = completed_count / len(note.action_items)
+            lifecycle_analysis['completion_percentage'] = completion_rate
+
+            if completion_rate >= 0.9:
+                lifecycle_analysis['current_stage'] = 'nearly_complete'
+                lifecycle_analysis['archive_candidate'] = True
+                lifecycle_analysis['recommended_action'] = 'review_for_archive'
+                lifecycle_analysis['reasons'].append(f'High completion rate: {completion_rate:.1%}')
+            elif completion_rate >= 0.7:
+                lifecycle_analysis['current_stage'] = 'active'
+                lifecycle_analysis['recommended_action'] = 'push_to_complete'
+                lifecycle_analysis['reasons'].append(f'Good progress: {completion_rate:.1%}')
+            elif completion_rate <= 0.2 and len(note.action_items) > 3:
+                lifecycle_analysis['current_stage'] = 'stalled'
+                lifecycle_analysis['recommended_action'] = 'review_viability'
+                lifecycle_analysis['reasons'].append(f'Low progress: {completion_rate:.1%}')
+
+        # Analyze temporal indicators
+        if 'completed' in content_lower or 'finished' in content_lower or 'shipped' in content_lower:
+            lifecycle_analysis['archive_candidate'] = True
+            lifecycle_analysis['reasons'].append('Completion indicators found in content')
+
+        # Check for age-based lifecycle decisions
+        created_date = frontmatter.get('created') or frontmatter.get('date')
+        if created_date:
+            try:
+                from dateutil.parser import parse
+                created_date = parse(str(created_date)).date()
+                age_days = (datetime.date.today() - created_date).days
+
+                if age_days > 365:  # More than a year old
+                    if lifecycle_analysis['completion_percentage'] < 0.3:
+                        lifecycle_analysis['archive_candidate'] = True
+                        lifecycle_analysis['recommended_action'] = 'review_viability'
+                        lifecycle_analysis['reasons'].append(f'Stale project: {age_days} days old with minimal progress')
+                elif age_days > 180:  # More than 6 months
+                    if lifecycle_analysis['completion_percentage'] < 0.1:
+                        lifecycle_analysis['recommended_action'] = 'review_viability'
+                        lifecycle_analysis['reasons'].append(f'Aging project: {age_days} days with little progress')
+            except:
+                pass  # Ignore date parsing errors
+
+        # Check for overdue items that might indicate stalled project
+        overdue_items = 0
+        for item in note.action_items:
+            if item.due_date and self._is_overdue(item.due_date) and not item.completed:
+                overdue_items += 1
+
+        if overdue_items > 2:
+            lifecycle_analysis['current_stage'] = 'at_risk'
+            lifecycle_analysis['recommended_action'] = 'urgent_review'
+            lifecycle_analysis['reasons'].append(f'{overdue_items} overdue action items')
+
+        return lifecycle_analysis
+
+    def find_cross_references(self, note: ParsedNote, all_notes: List[ParsedNote]) -> Dict[str, List[str]]:
+        """Find cross-references between notes for better organization"""
+        cross_refs = {
+            'related_projects': [],
+            'related_areas': [],
+            'related_resources': [],
+            'shared_tags': [],
+            'shared_people': [],
+            'similar_content': []
+        }
+
+        note_tags = set(note.tags)
+        note_attendees = set(note.attendees)
+        note_content_words = set(note.content.lower().split())
+
+        # Remove common words for better content matching
+        common_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should'}
+        note_content_words -= common_words
+
+        for other_note in all_notes:
+            if other_note.file_path == note.file_path:
+                continue
+
+            # Find notes with shared tags
+            other_tags = set(other_note.tags)
+            shared_tags = note_tags & other_tags
+            if shared_tags and len(shared_tags) >= 2:  # At least 2 shared tags
+                category_key = f'related_{other_note.categorization_result.category.value.split("-")[1] if other_note.categorization_result else "notes"}'
+                if category_key in cross_refs:
+                    cross_refs[category_key].append({
+                        'file': other_note.file_path,
+                        'reason': f'Shared tags: {", ".join(shared_tags)}',
+                        'confidence': min(0.9, len(shared_tags) * 0.3)
+                    })
+
+            # Find notes with shared people
+            other_attendees = set(other_note.attendees)
+            shared_people = note_attendees & other_attendees
+            if shared_people and len(shared_people) >= 1:
+                cross_refs['shared_people'].append({
+                    'file': other_note.file_path,
+                    'reason': f'Shared people: {", ".join(shared_people)}',
+                    'confidence': min(0.8, len(shared_people) * 0.4)
+                })
+
+            # Find notes with similar content (basic word overlap)
+            other_content_words = set(other_note.content.lower().split()) - common_words
+            if len(note_content_words) > 10 and len(other_content_words) > 10:  # Only for substantial notes
+                word_overlap = note_content_words & other_content_words
+                if len(word_overlap) > 5:  # At least 5 shared meaningful words
+                    similarity_score = len(word_overlap) / min(len(note_content_words), len(other_content_words))
+                    if similarity_score > 0.15:  # At least 15% word overlap
+                        cross_refs['similar_content'].append({
+                            'file': other_note.file_path,
+                            'reason': f'Content similarity: {similarity_score:.1%}',
+                            'confidence': min(0.7, similarity_score * 2)
+                        })
+
+        # Sort each category by confidence
+        for category in cross_refs:
+            if isinstance(cross_refs[category], list) and cross_refs[category]:
+                cross_refs[category].sort(key=lambda x: x.get('confidence', 0), reverse=True)
+                # Keep only top 5 in each category
+                cross_refs[category] = cross_refs[category][:5]
+
+        return cross_refs
+
+    def suggest_reorganization(self, directory: str = ".") -> Dict[str, Any]:
+        """Analyze notes and suggest PARA reorganization"""
+        notes = self.batch_process_notes(directory)
+
+        reorganization_plan = {
+            'total_notes': len(notes),
+            'category_distribution': {},
+            'archive_candidates': [],
+            'cross_reference_opportunities': [],
+            'lifecycle_actions': [],
+            'confidence_issues': []
+        }
+
+        # Analyze category distribution
+        for note in notes:
+            if note.categorization_result:
+                category = note.categorization_result.category.value
+                if category not in reorganization_plan['category_distribution']:
+                    reorganization_plan['category_distribution'][category] = {
+                        'count': 0,
+                        'avg_confidence': 0,
+                        'low_confidence_count': 0
+                    }
+
+                cat_data = reorganization_plan['category_distribution'][category]
+                cat_data['count'] += 1
+                cat_data['avg_confidence'] += note.categorization_result.confidence
+
+                if note.categorization_result.confidence < 0.6:
+                    cat_data['low_confidence_count'] += 1
+                    reorganization_plan['confidence_issues'].append({
+                        'file': note.file_path,
+                        'category': category,
+                        'confidence': note.categorization_result.confidence,
+                        'alternatives': [(alt[0].value, alt[1]) for alt in note.categorization_result.alternative_categories[:2]]
+                    })
+
+        # Calculate average confidence per category
+        for category in reorganization_plan['category_distribution']:
+            cat_data = reorganization_plan['category_distribution'][category]
+            if cat_data['count'] > 0:
+                cat_data['avg_confidence'] /= cat_data['count']
+
+        # Find archive candidates and lifecycle actions
+        for note in notes:
+            if note.categorization_result and note.categorization_result.category != ParaCategory.ARCHIVE:
+                lifecycle = self.analyze_project_lifecycle(note)
+                if lifecycle['archive_candidate']:
+                    reorganization_plan['archive_candidates'].append({
+                        'file': note.file_path,
+                        'current_category': note.categorization_result.category.value,
+                        'completion_rate': lifecycle['completion_percentage'],
+                        'reasons': lifecycle['reasons']
+                    })
+
+                if lifecycle['recommended_action'] in ['urgent_review', 'review_viability']:
+                    reorganization_plan['lifecycle_actions'].append({
+                        'file': note.file_path,
+                        'action': lifecycle['recommended_action'],
+                        'stage': lifecycle['current_stage'],
+                        'reasons': lifecycle['reasons']
+                    })
+
+        # Find cross-reference opportunities (sample a few notes to avoid performance issues)
+        sample_notes = notes[:10] if len(notes) > 10 else notes
+        for note in sample_notes:
+            cross_refs = self.find_cross_references(note, notes)
+            for category, refs in cross_refs.items():
+                if refs:  # If there are cross-references
+                    reorganization_plan['cross_reference_opportunities'].append({
+                        'file': note.file_path,
+                        'category': category,
+                        'references': refs[:3]  # Top 3 references
+                    })
+
+        return reorganization_plan
+
 def main():
     """CLI interface for note processing engine"""
     parser = argparse.ArgumentParser(description="PARA Method Note Processing Engine")
@@ -494,6 +944,22 @@ def main():
     update_parser = subparsers.add_parser('update', help='Update note frontmatter')
     update_parser.add_argument('file', help='Note file to update')
     update_parser.add_argument('--key', action='append', help='Key to update (key=value format)')
+
+    # Project lifecycle command
+    lifecycle_parser = subparsers.add_parser('lifecycle', help='Analyze project lifecycle')
+    lifecycle_parser.add_argument('file', help='Note file to analyze')
+    lifecycle_parser.add_argument('--json', action='store_true', help='Output as JSON')
+
+    # Cross-references command
+    crossref_parser = subparsers.add_parser('crossref', help='Find cross-references for a note')
+    crossref_parser.add_argument('file', help='Note file to analyze')
+    crossref_parser.add_argument('--directory', default='.', help='Directory to search for references')
+    crossref_parser.add_argument('--json', action='store_true', help='Output as JSON')
+
+    # Reorganization analysis command
+    reorg_parser = subparsers.add_parser('reorganize', help='Suggest PARA reorganization')
+    reorg_parser.add_argument('--directory', default='.', help='Directory to analyze')
+    reorg_parser.add_argument('--json', action='store_true', help='Output as JSON')
 
     args = parser.parse_args()
 
@@ -591,6 +1057,75 @@ def main():
                 print(f"✅ Updated frontmatter in {args.file}")
             else:
                 print(f"❌ Failed to update {args.file}")
+
+        elif args.command == 'lifecycle':
+            note = processor.parse_note(args.file)
+            lifecycle = processor.analyze_project_lifecycle(note)
+
+            if args.json:
+                import json
+                print(json.dumps(lifecycle, indent=2, default=str))
+            else:
+                print(f"🔄 Project Lifecycle Analysis: {Path(args.file).name}")
+                print(f"📊 Stage: {lifecycle['current_stage']}")
+                print(f"✅ Completion: {lifecycle['completion_percentage']:.1%}")
+                print(f"🎯 Recommended action: {lifecycle['recommended_action']}")
+                if lifecycle['archive_candidate']:
+                    print("📦 Archive candidate: Yes")
+                if lifecycle['reasons']:
+                    print("💡 Reasons:")
+                    for reason in lifecycle['reasons']:
+                        print(f"   • {reason}")
+
+        elif args.command == 'crossref':
+            note = processor.parse_note(args.file)
+            all_notes = processor.batch_process_notes(args.directory)
+            cross_refs = processor.find_cross_references(note, all_notes)
+
+            if args.json:
+                import json
+                print(json.dumps(cross_refs, indent=2, default=str))
+            else:
+                print(f"🔗 Cross-references for: {Path(args.file).name}")
+                total_refs = sum(len(refs) for refs in cross_refs.values() if isinstance(refs, list))
+                if total_refs == 0:
+                    print("   No cross-references found")
+                else:
+                    for category, refs in cross_refs.items():
+                        if refs:
+                            print(f"\n📂 {category.replace('_', ' ').title()}: ({len(refs)} found)")
+                            for ref in refs[:3]:  # Show top 3
+                                print(f"   • {Path(ref['file']).name} - {ref['reason']} (confidence: {ref['confidence']:.1%})")
+
+        elif args.command == 'reorganize':
+            reorg_plan = processor.suggest_reorganization(args.directory)
+
+            if args.json:
+                import json
+                print(json.dumps(reorg_plan, indent=2, default=str))
+            else:
+                print(f"📊 PARA Reorganization Analysis ({reorg_plan['total_notes']} notes)")
+
+                print("\n📂 Category Distribution:")
+                for category, data in reorg_plan['category_distribution'].items():
+                    print(f"   {category}: {data['count']} notes (avg confidence: {data['avg_confidence']:.1%})")
+                    if data['low_confidence_count'] > 0:
+                        print(f"      ⚠️  {data['low_confidence_count']} with low confidence")
+
+                if reorg_plan['archive_candidates']:
+                    print(f"\n📦 Archive Candidates ({len(reorg_plan['archive_candidates'])} found):")
+                    for candidate in reorg_plan['archive_candidates'][:5]:  # Show first 5
+                        print(f"   • {Path(candidate['file']).name} ({candidate['completion_rate']:.1%} complete)")
+
+                if reorg_plan['lifecycle_actions']:
+                    print(f"\n🔄 Lifecycle Actions ({len(reorg_plan['lifecycle_actions'])} needed):")
+                    for action in reorg_plan['lifecycle_actions'][:5]:  # Show first 5
+                        print(f"   • {Path(action['file']).name}: {action['action']} ({action['stage']})")
+
+                if reorg_plan['confidence_issues']:
+                    print(f"\n⚠️  Low Confidence Issues ({len(reorg_plan['confidence_issues'])} found):")
+                    for issue in reorg_plan['confidence_issues'][:5]:  # Show first 5
+                        print(f"   • {Path(issue['file']).name}: {issue['confidence']:.1%} confidence")
 
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
