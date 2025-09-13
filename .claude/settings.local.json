@@ -12,7 +12,12 @@
       "Bash(gh issue view:*)",
       "Bash(git checkout:*)",
       "Bash(chmod:*)",
-      "Bash(./setup-para.sh:*)"
+      "Bash(./setup-para.sh:*)",
+      "Bash(pip3 install:*)",
+      "Bash(./para-templates.py list)",
+      "Bash(./para-templates.py create:*)",
+      "Bash(./para-templates.py info:*)",
+      "Bash(./para-templates.py:*)"
     ],
     "deny": [],
     "ask": []

@@ -116,6 +116,89 @@ Edit `.para-config.yaml` to customize:
 2. **Process:** Regularly review inbox and move items to appropriate PARA folders
 3. **Review:** Conduct weekly/monthly reviews to maintain system
 
+## Note Templates System
+
+The PARA system includes a powerful template engine for creating consistent, well-structured notes.
+
+### Template Features
+- **Variable substitution** with Jinja2 templating
+- **Built-in templates** for common note types
+- **Custom template creation** and management
+- **Metadata support** for PARA categorization hints
+- **CLI interface** for easy note creation
+
+### Built-in Templates
+
+| Template | Description | Use Case |
+|----------|-------------|----------|
+| `meeting` | General meeting notes | Team meetings, client calls |
+| `one-on-one` | 1:1 meeting template | Performance reviews, check-ins |
+| `brainstorm` | Brainstorming sessions | Creative sessions, planning |
+| `quick-note` | Quick capture template | Ideas, thoughts, inbox items |
+| `research` | Research and learning | Study notes, documentation |
+
+### Using Templates
+
+```bash
+# Install Python dependencies (one-time setup)
+pip3 install -r requirements.txt
+
+# List available templates
+./para-templates.py list
+
+# Create a note from template
+./para-templates.py create meeting --title "Sprint Planning" --attendees "Team"
+
+# Get template information
+./para-templates.py info meeting
+
+# Create custom template
+./para-templates.py new-template "my-template"
+```
+
+### Template Variables
+
+Common variables available in all templates:
+- `date` - Current date (YYYY-MM-DD)
+- `datetime` - Current date and time
+- `timestamp` - Filename-friendly timestamp
+- `user_name` - From configuration
+- `title` - Note title
+- `project` - Project name
+- `attendees` - Meeting attendees
+
+### Custom Templates
+
+Create your own templates in `templates/custom/`. Templates support:
+- **Frontmatter metadata** (YAML)
+- **Jinja2 variables** and filters
+- **Conditional content** and loops
+- **PARA categorization hints**
+
+Example custom template:
+```markdown
+---
+description: "Project planning template"
+category: "project"
+para_suggestion: "1-projects"
+---
+
+# {{ title }} - Project Plan
+
+**Date:** {{ date }}
+**Owner:** {{ user_name }}
+
+## Objectives
+[Define project goals]
+
+## Timeline
+- Start: {{ date }}
+- Deadline: [Project deadline]
+
+## Next Steps
+- [ ] Action item 1
+```
+
 ## Configuration File
 
 The `.para-config.yaml` file contains:
