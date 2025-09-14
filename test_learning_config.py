@@ -254,7 +254,9 @@ def validate_learning_commands():
         'learn-book.md',
         'learn-article.md',
         'learn-meeting.md',
-        'learn-course.md'
+        'learn-course.md',
+        'learn-insights.md',
+        'learn-map.md'
     ]
 
     all_exist = True
@@ -276,7 +278,9 @@ def validate_cache_structure():
     cache_files = [
         'learning_captures.json',
         'learning_connections.json',
-        'learning_reviews.json'
+        'learning_reviews.json',
+        'insights_reports.json',
+        'knowledge_maps.json'
     ]
 
     warnings = []
@@ -298,6 +302,10 @@ def validate_cache_structure():
                     warnings.append(f"  ⚠️  {filename}: Missing 'connections' array")
                 elif filename == 'learning_reviews.json' and 'reviews' not in data:
                     warnings.append(f"  ⚠️  {filename}: Missing 'reviews' array")
+                elif filename == 'insights_reports.json' and 'reports' not in data:
+                    warnings.append(f"  ⚠️  {filename}: Missing 'reports' array")
+                elif filename == 'knowledge_maps.json' and 'maps' not in data:
+                    warnings.append(f"  ⚠️  {filename}: Missing 'maps' array")
         else:
             print(f"  ℹ️  {filename} will be created on first use")
 
