@@ -22,14 +22,35 @@ current_dir = Path(__file__).parent.absolute()
 sys.path.insert(0, str(current_dir))
 
 try:
-    # Import from our existing modules
-    from para_processor import ParaNoteProcessor, ParsedNote, ActionItem, ParaCategory
-    from para_templates import ParaTemplateEngine
-except ImportError:
+    # Import from our existing modules using importlib for dash-named files
+    import importlib.util
+
+    # Load para-processor.py
+    spec = importlib.util.spec_from_file_location("para_processor", "para-processor.py")
+    para_processor_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(para_processor_module)
+
+    # Load para-templates.py
+    spec = importlib.util.spec_from_file_location("para_templates", "para-templates.py")
+    para_templates_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(para_templates_module)
+
+    # Extract the classes we need
+    ParaNoteProcessor = para_processor_module.ParaNoteProcessor
+    ParsedNote = para_processor_module.ParsedNote
+    ActionItem = para_processor_module.ActionItem
+    ParaCategory = para_processor_module.ParaCategory
+    ParaTemplateEngine = para_templates_module.ParaTemplateEngine
+
+    subprocess_mode = False
+except Exception as e:
     # Fallback: execute as subprocess if modules can't be imported
     subprocess_mode = True
-else:
-    subprocess_mode = False
+    ParaNoteProcessor = None
+    ParsedNote = None
+    ActionItem = None
+    ParaCategory = None
+    ParaTemplateEngine = None
 
 @dataclass
 class CommandResult:
@@ -682,66 +703,135 @@ class NotesCommandInterface:
             )
 
     def cmd_find(self, args) -> CommandResult:
-        """Find notes based on query, date range, or other criteria"""
+        """Enhanced find with advanced search capabilities"""
         try:
             directory = args.directory or '.'
-            results = []
 
             # Get all notes in directory
             notes = self.processor.batch_process_notes(directory, '*.md')
 
-            # Apply query filter
+            # Track applied filters for user feedback
+            filters_applied = []
+
+            # 1. Similarity search (if specified, this becomes the primary filter)
+            if args.similar:
+                notes, similarity_info = self._apply_similarity_filter(notes, args.similar)
+                filters_applied.append(f"similar to '{Path(args.similar).name}'")
+
+            # 2. Text query filter (enhanced scoring)
             if args.query:
-                query_terms = args.query.lower().split()
-                filtered_notes = []
+                notes = self._apply_query_filter(notes, args.query)
+                filters_applied.append(f"query: '{args.query}'")
 
-                for note in notes:
-                    # Search in content, tags, and frontmatter
-                    search_text = (
-                        note.content.lower() + ' ' +
-                        ' '.join(note.tags).lower() + ' ' +
-                        json.dumps(note.frontmatter).lower()
-                    )
+            # 3. Tag-based filtering
+            if args.tags:
+                notes = self._apply_tag_filter(notes, args.tags)
+                filters_applied.append(f"tags: {args.tags}")
 
-                    if any(term in search_text for term in query_terms):
-                        # Calculate relevance score
-                        score = sum(search_text.count(term) for term in query_terms)
-                        filtered_notes.append((note, score))
+            # 4. Attendee-based filtering
+            if args.attendees:
+                notes = self._apply_attendee_filter(notes, args.attendees)
+                filters_applied.append(f"attendees: {args.attendees}")
 
-                # Sort by relevance
-                filtered_notes.sort(key=lambda x: x[1], reverse=True)
-                notes = [note for note, score in filtered_notes]
+            # 5. Category filtering
+            if args.category:
+                notes = self._apply_category_filter(notes, args.category)
+                filters_applied.append(f"category: {args.category}")
 
-            # Apply date range filter
+            # 6. Date range filtering (preset)
             if args.date_range:
                 notes = self._filter_by_date_range(notes, args.date_range)
+                filters_applied.append(f"date range: {args.date_range}")
+
+            # 7. Custom date range filtering
+            if args.date_from or args.date_to:
+                notes = self._apply_custom_date_filter(notes, args.date_from, args.date_to)
+                date_filter_desc = f"from {args.date_from or 'beginning'} to {args.date_to or 'now'}"
+                filters_applied.append(f"custom dates: {date_filter_desc}")
+
+            # Sort by relevance/recency (enhanced algorithm)
+            notes = self._sort_search_results(notes, args.query, args.similar)
 
             # Limit results
             limit = args.limit or 10
+            total_matches = len(notes)
             results = notes[:limit]
 
-            # Format results
+            # Format results with enhanced information
             result_data = []
-            for note in results:
-                result_data.append({
+            for note_data in results:
+                note = note_data['note'] if isinstance(note_data, dict) else note_data
+
+                result_entry = {
                     'file': str(Path(note.file_path).name),
                     'path': note.file_path,
                     'words': note.word_count,
                     'tags': note.tags,
-                    'category': note.suggested_category.value,
-                    'action_items': len([item for item in note.action_items if not item.completed])
-                })
+                    'category': note.suggested_category.value if hasattr(note.suggested_category, 'value') else str(note.suggested_category),
+                    'action_items': len([item for item in note.action_items if not item.completed]),
+                    'attendees': note.attendees[:3] if note.attendees else []  # Show first 3 attendees
+                }
+
+                # Add relevance score if available
+                if isinstance(note_data, dict) and 'score' in note_data:
+                    result_entry['relevance_score'] = round(note_data['score'], 2)
+
+                # Add content preview if requested
+                if args.preview:
+                    preview_text = self._extract_content_preview(note, args.query)
+                    result_entry['preview'] = preview_text
+
+                # Add similarity info if similarity search was used
+                if args.similar and isinstance(note_data, dict) and 'similarity' in note_data:
+                    result_entry['similarity'] = round(note_data['similarity'], 2)
+
+                result_data.append(result_entry)
+
+            # Generate search summary
+            search_summary = f"Found {total_matches} matching notes"
+            if filters_applied:
+                search_summary += f" (filters: {', '.join(filters_applied)})"
+
+            # Generate helpful suggestions
+            suggestions = []
+            if result_data:
+                first_result = result_data[0]
+                suggestions.append(f"Open result: code {first_result['path']}")
+            if total_matches > limit:
+                suggestions.append(f"See more: add --limit {min(total_matches, 50)} to see more results")
+            if args.query and not args.preview:
+                suggestions.append("Add --preview to see content snippets")
+            if not args.similar and result_data:
+                first_result = result_data[0]
+                suggestions.append(f"Find similar: --similar {first_result['path']}")
+
+            # Build response data
+            response_data = {
+                'search_terms': {
+                    'query': args.query,
+                    'tags': args.tags,
+                    'attendees': args.attendees,
+                    'category': args.category,
+                    'similar_to': args.similar
+                },
+                'filters_applied': filters_applied,
+                'total_matches': total_matches,
+                'results_shown': len(results),
+                'results': result_data
+            }
+
+            # Add similarity search info if used
+            if args.similar:
+                response_data['similarity_search'] = similarity_info if 'similarity_info' in locals() else {
+                    'reference_file': args.similar,
+                    'method': 'content_similarity'
+                }
 
             return self.format_success_result(
                 'find',
-                f"Found {len(results)} matching notes",
-                {
-                    'query': args.query or 'all',
-                    'total_matches': len(notes),
-                    'results_shown': len(results),
-                    'results': result_data
-                },
-                [f"Open result: code {results[0].file_path}" if results else "Refine search query"]
+                search_summary,
+                response_data,
+                suggestions
             )
 
         except Exception as e:
@@ -749,7 +839,7 @@ class NotesCommandInterface:
                 'find',
                 f"Search failed: {str(e)}",
                 str(e),
-                ["Check directory exists", "Verify search query format"]
+                ["Check directory exists", "Verify search parameters", "Check file paths"]
             )
 
     def cmd_follow_up(self, args) -> CommandResult:
@@ -980,7 +1070,308 @@ class NotesCommandInterface:
         # Remove duplicates and return unique topics
         return list(set(topics))[:10]  # Limit to 10 topics
 
-    def _filter_by_date_range(self, notes: List['ParsedNote'], date_range: str) -> List['ParsedNote']:
+    def _apply_similarity_filter(self, notes: List['ParsedNote'], reference_file: str) -> tuple:
+        """Find notes similar to the reference file using content similarity"""
+        try:
+            # Parse the reference file
+            reference_note = self.processor.parse_note(reference_file)
+            reference_words = set(reference_note.content.lower().split())
+
+            # Remove common words for better similarity matching
+            common_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'this', 'that', 'these', 'those'}
+            reference_words -= common_words
+
+            similar_notes = []
+            for note in notes:
+                if note.file_path == reference_file:
+                    continue  # Skip the reference file itself
+
+                note_words = set(note.content.lower().split()) - common_words
+
+                # Calculate word overlap similarity (Jaccard index)
+                if len(reference_words) > 0 and len(note_words) > 0:
+                    intersection = len(reference_words & note_words)
+                    union = len(reference_words | note_words)
+                    similarity = intersection / union if union > 0 else 0
+
+                    # Also consider tag similarity
+                    ref_tags = set(reference_note.tags)
+                    note_tags = set(note.tags)
+                    if ref_tags and note_tags:
+                        tag_similarity = len(ref_tags & note_tags) / len(ref_tags | note_tags)
+                        similarity = (similarity * 0.8) + (tag_similarity * 0.2)  # Weight content higher
+
+                    if similarity > 0.05:  # Only include notes with some similarity
+                        similar_notes.append({
+                            'note': note,
+                            'similarity': similarity,
+                            'score': similarity * 100  # For sorting compatibility
+                        })
+
+            # Sort by similarity
+            similar_notes.sort(key=lambda x: x['similarity'], reverse=True)
+
+            similarity_info = {
+                'reference_file': reference_file,
+                'method': 'word_overlap_plus_tags',
+                'total_compared': len(notes) - 1
+            }
+
+            return similar_notes, similarity_info
+
+        except Exception as e:
+            # If reference file can't be read, return empty results
+            return [], {'error': str(e), 'reference_file': reference_file}
+
+    def _apply_query_filter(self, notes: List['ParsedNote'], query: str) -> List:
+        """Apply text query filter with enhanced relevance scoring"""
+        query_terms = query.lower().split()
+        filtered_notes = []
+
+        for note in notes:
+            # Create searchable text with different weights for different sections
+            content_text = note.content.lower()
+            tags_text = ' '.join(note.tags).lower()
+            frontmatter_text = json.dumps(note.frontmatter).lower()
+            title_text = note.frontmatter.get('title', '').lower()
+
+            # Calculate weighted relevance score
+            content_score = sum(content_text.count(term) for term in query_terms) * 1.0
+            title_score = sum(title_text.count(term) for term in query_terms) * 3.0  # Titles are very important
+            tags_score = sum(tags_text.count(term) for term in query_terms) * 2.0   # Tags are important
+            frontmatter_score = sum(frontmatter_text.count(term) for term in query_terms) * 0.5
+
+            total_score = content_score + title_score + tags_score + frontmatter_score
+
+            # Check if any terms are present
+            all_text = f"{content_text} {tags_text} {frontmatter_text} {title_text}"
+            if any(term in all_text for term in query_terms) and total_score > 0:
+                # Boost score for exact phrase matches
+                if len(query_terms) > 1 and query.lower() in all_text:
+                    total_score *= 1.5
+
+                filtered_notes.append({
+                    'note': note,
+                    'score': total_score
+                })
+
+        return filtered_notes
+
+    def _extract_note_and_score(self, item):
+        """Helper to extract note and score from either note object or dict format"""
+        if isinstance(item, dict) and 'note' in item:
+            return item['note'], item.get('score', 1.0)
+        else:
+            return item, 1.0
+
+    def _apply_tag_filter(self, notes: List, tags_filter: str) -> List:
+        """Filter notes by specific tags"""
+        required_tags = [tag.strip().lower() for tag in tags_filter.split(',')]
+        filtered_notes = []
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_tags = [tag.lower() for tag in note.tags]
+
+            # Check if note has all required tags (AND logic) or any required tags (OR logic)
+            # Using OR logic for more flexible searching
+            if any(req_tag in note_tags for req_tag in required_tags):
+                tag_score = len([tag for tag in required_tags if tag in note_tags]) * 2
+                filtered_notes.append({
+                    'note': note,
+                    'score': existing_score + tag_score  # Add to existing score
+                })
+
+        return filtered_notes
+
+    def _apply_attendee_filter(self, notes: List, attendees_filter: str) -> List:
+        """Filter notes by attendees"""
+        required_attendees = [attendee.strip().lower() for attendee in attendees_filter.split(',')]
+        filtered_notes = []
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_attendees = [attendee.lower() for attendee in note.attendees]
+
+            # Check if note has any of the required attendees
+            matches = []
+            for req_attendee in required_attendees:
+                # Support partial name matching
+                for note_attendee in note_attendees:
+                    if req_attendee in note_attendee or note_attendee in req_attendee:
+                        matches.append(req_attendee)
+                        break
+
+            if matches:
+                attendee_score = len(matches) * 3  # High score for attendee matches
+                filtered_notes.append({
+                    'note': note,
+                    'score': existing_score + attendee_score  # Add to existing score
+                })
+
+        return filtered_notes
+
+    def _apply_category_filter(self, notes: List, category_filter: str) -> List:
+        """Filter notes by PARA category"""
+        # Map category names to category values
+        category_mapping = {
+            'projects': ['1-projects', '1_projects'],
+            'areas': ['2-areas', '2_areas'],
+            'resources': ['3-resources', '3_resources'],
+            'archive': ['4-archive', '4_archive'],
+            'inbox': ['inbox']
+        }
+
+        target_categories = category_mapping.get(category_filter.lower(), [category_filter])
+        filtered_notes = []
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_category = note.suggested_category.value if hasattr(note.suggested_category, 'value') else str(note.suggested_category)
+
+            if any(target_cat in note_category.lower() for target_cat in target_categories):
+                filtered_notes.append({
+                    'note': note,
+                    'score': existing_score + 1  # Add to existing score for category match
+                })
+
+        return filtered_notes
+
+    def _apply_custom_date_filter(self, notes: List, date_from: str, date_to: str) -> List:
+        """Filter notes by custom date range"""
+        filtered_notes = []
+
+        # Parse date boundaries
+        try:
+            from_date = datetime.datetime.strptime(date_from, '%Y-%m-%d').date() if date_from else None
+            to_date = datetime.datetime.strptime(date_to, '%Y-%m-%d').date() if date_to else None
+        except ValueError:
+            # Return all notes with preserved scores if invalid date format
+            return [{'note': self._extract_note_and_score(item)[0], 'score': self._extract_note_and_score(item)[1]} for item in notes]
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_dates = []
+
+            # Extract dates from note content and metadata
+            if note.dates:
+                for date_str in note.dates:
+                    try:
+                        if len(date_str.split()) > 1:  # Handle datetime strings
+                            note_date = datetime.datetime.strptime(date_str.split()[0], '%Y-%m-%d').date()
+                        else:
+                            note_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+                        note_dates.append(note_date)
+                    except ValueError:
+                        continue
+
+            # Also check file modification time as fallback
+            try:
+                file_date = datetime.date.fromtimestamp(Path(note.file_path).stat().st_mtime)
+                note_dates.append(file_date)
+            except:
+                pass
+
+            # Check if any date falls within range
+            if note_dates:
+                for note_date in note_dates:
+                    within_range = True
+                    if from_date and note_date < from_date:
+                        within_range = False
+                    if to_date and note_date > to_date:
+                        within_range = False
+
+                    if within_range:
+                        filtered_notes.append({
+                            'note': note,
+                            'score': existing_score + 1  # Add to existing score for date match
+                        })
+                        break
+
+        return filtered_notes
+
+    def _sort_search_results(self, notes: List, query: str = None, similar_file: str = None) -> List:
+        """Sort search results by relevance and recency"""
+        if not notes:
+            return notes
+
+        # If notes are already scored (from filters), maintain that
+        if isinstance(notes[0], dict) and 'score' in notes[0]:
+            # Sort by score primarily, then by recency
+            def sort_key(note_data):
+                note = note_data['note']
+                score = note_data.get('score', 0)
+
+                # Add recency bonus - more recent files get slight boost
+                try:
+                    file_age_days = (datetime.datetime.now() - datetime.datetime.fromtimestamp(
+                        Path(note.file_path).stat().st_mtime)).days
+                    recency_bonus = max(0, (30 - file_age_days) / 30 * 0.2)  # Up to 0.2 bonus for recent files
+                except:
+                    recency_bonus = 0
+
+                return score + recency_bonus
+
+            notes.sort(key=sort_key, reverse=True)
+        else:
+            # For unscored notes, sort by file modification time
+            def sort_key(note):
+                try:
+                    return Path(note.file_path).stat().st_mtime
+                except:
+                    return 0
+
+            notes.sort(key=sort_key, reverse=True)
+            # Convert to scored format for consistency
+            notes = [{'note': note, 'score': 0} for note in notes]
+
+        return notes
+
+    def _extract_content_preview(self, note: 'ParsedNote', query: str = None) -> str:
+        """Extract relevant content preview, highlighting search terms if query provided"""
+        content = note.content
+        preview_length = 200
+
+        if query and query.strip():
+            # Find the first occurrence of any query term for context
+            query_terms = query.lower().split()
+            content_lower = content.lower()
+
+            best_position = 0
+            for term in query_terms:
+                position = content_lower.find(term)
+                if position != -1:
+                    # Start preview a bit before the term for context
+                    best_position = max(0, position - 50)
+                    break
+
+            # Extract preview around the found term
+            start = best_position
+            end = min(len(content), start + preview_length)
+            preview = content[start:end]
+
+            # Clean up the preview
+            if start > 0:
+                preview = '...' + preview
+            if end < len(content):
+                preview = preview + '...'
+
+        else:
+            # Just take the beginning of the content
+            preview = content[:preview_length]
+            if len(content) > preview_length:
+                preview += '...'
+
+        # Clean up markdown formatting for readability
+        preview = re.sub(r'#{1,6}\s+', '', preview)  # Remove headers
+        preview = re.sub(r'\*\*(.+?)\*\*', r'\1', preview)  # Remove bold
+        preview = re.sub(r'\*(.+?)\*', r'\1', preview)  # Remove italic
+        preview = re.sub(r'\n+', ' ', preview)  # Replace newlines with spaces
+        preview = re.sub(r'\s+', ' ', preview).strip()  # Normalize whitespace
+
+        return preview
+
+    def _filter_by_date_range(self, notes: List, date_range: str) -> List:
         """Filter notes by date range"""
         if date_range == 'today':
             target_date = datetime.date.today().strftime('%Y-%m-%d')
@@ -991,16 +1382,18 @@ class NotesCommandInterface:
         elif date_range == 'last-month':
             target_date = (datetime.date.today() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
         else:
-            return notes  # Unknown date range, return all
+            # Unknown date range, return all notes with preserved scores
+            return [{'note': self._extract_note_and_score(item)[0], 'score': self._extract_note_and_score(item)[1]} for item in notes]
 
         filtered = []
-        for note in notes:
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
             # Check if any date in the note matches our criteria
             if any(date >= target_date for date in note.dates):
-                filtered.append(note)
+                filtered.append({'note': note, 'score': existing_score + 1})
             # Also check file modification time as fallback
             elif Path(note.file_path).stat().st_mtime > (datetime.datetime.now() - datetime.timedelta(days=7)).timestamp():
-                filtered.append(note)
+                filtered.append({'note': note, 'score': existing_score + 1})
 
         return filtered
 
@@ -1068,7 +1461,14 @@ Natural language support:
     # Find command
     find_parser = subparsers.add_parser('find', help='Search for notes')
     find_parser.add_argument('--query', help='Search query')
-    find_parser.add_argument('--date-range', choices=['today', 'yesterday', 'last-week', 'last-month'], help='Date range filter')
+    find_parser.add_argument('--tags', help='Filter by comma-separated tags')
+    find_parser.add_argument('--attendees', help='Filter by comma-separated attendees')
+    find_parser.add_argument('--date-range', choices=['today', 'yesterday', 'last-week', 'last-month'], help='Date range filter (preset)')
+    find_parser.add_argument('--date-from', help='Custom start date (YYYY-MM-DD)')
+    find_parser.add_argument('--date-to', help='Custom end date (YYYY-MM-DD)')
+    find_parser.add_argument('--similar', help='Find notes similar to specified file')
+    find_parser.add_argument('--preview', action='store_true', help='Show content preview')
+    find_parser.add_argument('--category', choices=['projects', 'areas', 'resources', 'archive', 'inbox'], help='Filter by PARA category')
     find_parser.add_argument('--directory', default='.', help='Directory to search')
     find_parser.add_argument('--limit', type=int, default=10, help='Maximum results')
 
