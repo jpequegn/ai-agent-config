@@ -1277,24 +1277,15 @@ class NotesCommandInterface:
             # Create meeting prep note with comprehensive data
             prep_content = self._format_meeting_brief(brief_data)
 
-            if self.template_engine:
-                variables = {
-                    'title': f"Meeting Brief: {topic}",
-                    'topic': topic,
-                    'attendees': attendees,
-                    'date': datetime.date.today().strftime('%Y-%m-%d'),
-                    'content': prep_content
-                }
+            # Create output file directly with comprehensive content
+            if args.output:
+                output_path = args.output
+            else:
+                output_path = f"meeting-brief-{datetime.date.today().strftime('%Y-%m-%d')}-{topic.lower().replace(' ', '-')}.md"
 
-                try:
-                    output_path = self.template_engine.create_note('meeting', variables, args.output)
-                    brief_data['prep_file'] = output_path
-                except:
-                    # Fallback: create simple note file
-                    output_path = f"meeting-prep-{datetime.date.today().strftime('%Y-%m-%d')}-{topic.lower().replace(' ', '-')}.md"
-                    with open(output_path, 'w') as f:
-                        f.write(prep_content)
-                    brief_data['prep_file'] = output_path
+            with open(output_path, 'w') as f:
+                f.write(prep_content)
+            brief_data['prep_file'] = output_path
 
             # Calculate overall confidence and provide summary
             overall_confidence = sum(brief_data['confidence_scores'].values()) / len(brief_data['confidence_scores'])
@@ -1498,29 +1489,45 @@ class NotesCommandInterface:
                 for note in notes:
                     # Extract action items from each note
                     for action in note.action_items:
+                        # Determine status from completed and due_date
+                        if action.completed:
+                            status = 'completed'
+                        elif action.due_date:
+                            try:
+                                due_date = datetime.datetime.strptime(action.due_date, '%Y-%m-%d')
+                                if due_date < datetime.datetime.now():
+                                    status = 'overdue'
+                                else:
+                                    status = 'pending'
+                            except:
+                                status = 'pending'
+                        else:
+                            status = 'pending'
+
                         action_dict = {
-                            'task': action.task,
-                            'assignee': action.assignee,
+                            'task': action.text,
+                            'assignee': action.assignee or 'unassigned',
                             'due_date': action.due_date,
-                            'status': action.status,
+                            'status': status,
+                            'completed': action.completed,
                             'file': str(Path(note.file_path).name),
                             'path': note.file_path
                         }
 
                         # Filter by status
-                        if args.status == 'all' or action.status == args.status:
+                        if args.status == 'all' or status == args.status:
                             # Check if action is related to attendees
                             if attendee_list and action.assignee and any(attendee.lower() in action.assignee.lower() for attendee in attendee_list):
                                 action_items['attendee_related'].append(action_dict)
 
                             # Check if action is related to topic
-                            if topic and topic.lower() in action.task.lower():
+                            if topic and topic.lower() in action.text.lower():
                                 action_items['topic_related'].append(action_dict)
 
                             # Categorize by status
-                            if action.status == 'pending':
+                            if status == 'pending':
                                 action_items['pending_actions'].append(action_dict)
-                            elif action.status == 'overdue':
+                            elif status == 'overdue':
                                 action_items['overdue_actions'].append(action_dict)
 
             total_actions = len(action_items['pending_actions']) + len(action_items['overdue_actions'])
@@ -1614,12 +1621,27 @@ class NotesCommandInterface:
 
                     # Collect recent action items for follow-up
                     for action in note.action_items:
-                        if action.status in ['pending', 'overdue']:
+                        # Determine status from completed and due_date
+                        if action.completed:
+                            status = 'completed'
+                        elif action.due_date:
+                            try:
+                                due_date = datetime.datetime.strptime(action.due_date, '%Y-%m-%d')
+                                if due_date < datetime.datetime.now():
+                                    status = 'overdue'
+                                else:
+                                    status = 'pending'
+                            except:
+                                status = 'pending'
+                        else:
+                            status = 'pending'
+
+                        if status in ['pending', 'overdue']:
                             if not attendee_list or (action.assignee and any(attendee.lower() in action.assignee.lower() for attendee in attendee_list)):
                                 recent_actions.append({
-                                    'task': action.task,
-                                    'assignee': action.assignee,
-                                    'status': action.status
+                                    'task': action.text,
+                                    'assignee': action.assignee or 'unassigned',
+                                    'status': status
                                 })
 
                 # Generate topic-specific suggestions
