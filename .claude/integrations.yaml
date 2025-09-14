@@ -1,0 +1,195 @@
+# Integration Configuration
+# Manages API connections and external service integrations
+# IMPORTANT: Store sensitive credentials in environment variables, not in this file
+
+integrations:
+  github:
+    enabled: true
+    type: "version_control"
+    description: "GitHub API integration for repository management"
+    config:
+      base_url: "https://api.github.com"
+      api_version: "2022-11-28"
+      # Use environment variable: GITHUB_TOKEN
+      token_env: "GITHUB_TOKEN"
+      default_org: "your-org"
+      rate_limit:
+        requests_per_hour: 5000
+        concurrent_requests: 10
+    features:
+      - repo_management
+      - issue_tracking
+      - pull_requests
+      - actions_workflows
+      - project_boards
+    validation:
+      required_env_vars: ["GITHUB_TOKEN"]
+      test_endpoint: "/user"
+
+  slack:
+    enabled: false
+    type: "communication"
+    description: "Slack integration for notifications and updates"
+    config:
+      # Use environment variable: SLACK_WEBHOOK_URL
+      webhook_url_env: "SLACK_WEBHOOK_URL"
+      # Use environment variable: SLACK_BOT_TOKEN
+      bot_token_env: "SLACK_BOT_TOKEN"
+      default_channel: "#project-updates"
+      notification_types:
+        - project_status_change
+        - milestone_completed
+        - blocker_identified
+        - daily_summary
+    features:
+      - notifications
+      - status_updates
+      - interactive_messages
+    validation:
+      required_env_vars: ["SLACK_WEBHOOK_URL"]
+      test_endpoint: "/api/auth.test"
+
+  calendar:
+    enabled: false
+    type: "scheduling"
+    description: "Calendar integration for deadline and milestone tracking"
+    config:
+      provider: "google"  # Options: google, outlook, caldav
+      # Use environment variable: CALENDAR_API_KEY
+      api_key_env: "CALENDAR_API_KEY"
+      # Use environment variable: CALENDAR_ID
+      calendar_id_env: "CALENDAR_ID"
+      sync_frequency: "hourly"
+      event_types:
+        - project_milestones
+        - deadlines
+        - review_meetings
+    features:
+      - event_creation
+      - deadline_tracking
+      - reminder_notifications
+    validation:
+      required_env_vars: ["CALENDAR_API_KEY", "CALENDAR_ID"]
+
+  jira:
+    enabled: false
+    type: "project_management"
+    description: "Jira integration for issue and project tracking"
+    config:
+      # Use environment variable: JIRA_URL
+      instance_url_env: "JIRA_URL"
+      # Use environment variable: JIRA_EMAIL
+      email_env: "JIRA_EMAIL"
+      # Use environment variable: JIRA_API_TOKEN
+      api_token_env: "JIRA_API_TOKEN"
+      default_project: "PROJ"
+      issue_types:
+        - Epic
+        - Story
+        - Task
+        - Bug
+    features:
+      - issue_sync
+      - status_updates
+      - sprint_tracking
+    validation:
+      required_env_vars: ["JIRA_URL", "JIRA_EMAIL", "JIRA_API_TOKEN"]
+      test_endpoint: "/rest/api/3/myself"
+
+  confluence:
+    enabled: false
+    type: "documentation"
+    description: "Confluence integration for project documentation"
+    config:
+      # Use environment variable: CONFLUENCE_URL
+      instance_url_env: "CONFLUENCE_URL"
+      # Use environment variable: CONFLUENCE_EMAIL
+      email_env: "CONFLUENCE_EMAIL"
+      # Use environment variable: CONFLUENCE_API_TOKEN
+      api_token_env: "CONFLUENCE_API_TOKEN"
+      default_space: "PROJ"
+    features:
+      - page_creation
+      - documentation_sync
+      - template_management
+    validation:
+      required_env_vars: ["CONFLUENCE_URL", "CONFLUENCE_EMAIL", "CONFLUENCE_API_TOKEN"]
+      test_endpoint: "/rest/api/user/current"
+
+  email:
+    enabled: false
+    type: "communication"
+    description: "Email integration for notifications and reports"
+    config:
+      provider: "smtp"
+      # Use environment variable: SMTP_HOST
+      host_env: "SMTP_HOST"
+      # Use environment variable: SMTP_PORT
+      port_env: "SMTP_PORT"
+      # Use environment variable: SMTP_USER
+      user_env: "SMTP_USER"
+      # Use environment variable: SMTP_PASSWORD
+      password_env: "SMTP_PASSWORD"
+      from_address: "projects@company.com"
+      use_tls: true
+    features:
+      - status_reports
+      - milestone_notifications
+      - stakeholder_updates
+    validation:
+      required_env_vars: ["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD"]
+
+# Integration Categories
+categories:
+  version_control:
+    description: "Source code and version management systems"
+    examples: ["github", "gitlab", "bitbucket"]
+
+  communication:
+    description: "Team communication and notification platforms"
+    examples: ["slack", "teams", "discord", "email"]
+
+  project_management:
+    description: "Project and task management systems"
+    examples: ["jira", "asana", "trello", "monday"]
+
+  documentation:
+    description: "Documentation and knowledge management"
+    examples: ["confluence", "notion", "wiki"]
+
+  scheduling:
+    description: "Calendar and scheduling systems"
+    examples: ["google_calendar", "outlook", "caldav"]
+
+  ci_cd:
+    description: "Continuous integration and deployment"
+    examples: ["jenkins", "circleci", "github_actions"]
+
+# Security Configuration
+security:
+  credential_storage:
+    method: "environment_variables"  # Never store credentials in plain text
+    encryption: "recommended"        # Use encrypted credential stores when possible
+
+  api_key_rotation:
+    enabled: true
+    frequency_days: 90
+    notification_days_before: 7
+
+  access_control:
+    read_only_by_default: true
+    require_approval_for_write: true
+    audit_logging: true
+
+# Validation and Testing
+validation:
+  test_on_startup: true
+  retry_failed_connections: 3
+  timeout_seconds: 30
+  health_check_interval_minutes: 60
+
+  connection_test_sequence:
+    - validate_env_vars
+    - test_authentication
+    - verify_permissions
+    - check_rate_limits
