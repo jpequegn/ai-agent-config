@@ -521,6 +521,8 @@ class ProjectStatusAnalyzer:
 def main():
     """CLI interface for project status analysis"""
     import argparse
+    import io
+    import contextlib
 
     parser = argparse.ArgumentParser(description='Intelligent Project Status Analyzer')
     parser.add_argument('--project', type=str, help='Analyze specific project')
@@ -532,31 +534,49 @@ def main():
     analyzer = ProjectStatusAnalyzer()
 
     try:
-        if args.project:
-            insight = analyzer.analyze_project(args.project)
-            if insight:
-                if args.json:
-                    print(json.dumps(asdict(insight), indent=2, default=str))
+        # For JSON output, suppress warnings from data collector
+        if args.json:
+            # Capture stdout during analysis to suppress warnings
+            captured_output = io.StringIO()
+            with contextlib.redirect_stdout(captured_output):
+                if args.project:
+                    insight = analyzer.analyze_project(args.project)
+                    if insight:
+                        result = asdict(insight)
+                    else:
+                        print(f"Error: Project '{args.project}' not found", file=sys.stderr)
+                        return 1
                 else:
+                    portfolio = analyzer.analyze_portfolio()
+                    result = asdict(portfolio)
+
+            # Print clean JSON to stdout
+            print(json.dumps(result, indent=2, default=str))
+
+        else:
+            # Normal output with warnings visible
+            if args.project:
+                insight = analyzer.analyze_project(args.project)
+                if insight:
                     print(f"Project: {insight.project_name}")
                     print(f"Health Score: {insight.health_metrics.overall_score:.2f} ({insight.health_metrics.category})")
                     print(f"Blockers: {len(insight.blockers)}")
                     print(f"Recommendations: {len(insight.recommendations)}")
+                else:
+                    print(f"Project '{args.project}' not found")
+                    return 1
             else:
-                print(f"Project '{args.project}' not found")
-                return 1
-        else:
-            portfolio = analyzer.analyze_portfolio()
-            if args.json:
-                print(json.dumps(asdict(portfolio), indent=2, default=str))
-            else:
+                portfolio = analyzer.analyze_portfolio()
                 print(f"Portfolio Health: {portfolio.portfolio_health_score:.2f}")
                 print(f"Total Projects: {portfolio.total_projects}")
                 print(f"Health Distribution: {portfolio.health_distribution}")
                 print(f"Critical Actions Needed: {portfolio.critical_actions_needed}")
 
     except Exception as e:
-        print(f"Error: {e}")
+        if args.json:
+            print(f'{{"error": "{str(e)}"}}')
+        else:
+            print(f"Error: {e}")
         return 1
 
     return 0
