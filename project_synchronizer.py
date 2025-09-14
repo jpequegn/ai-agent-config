@@ -295,10 +295,8 @@ class ProjectSynchronizer:
         # Track resource allocations by person and time period
         resource_allocations = {}  # {person: {time_period: [projects]}}
 
-        for project_id, data in project_data.items():
-            if not data:
-                continue
-
+        # Use all projects from configuration, not just those with external data
+        for project_id in self.projects_config.get('projects', {}):
             project_config = self.projects_config.get('projects', {}).get(project_id, {})
             owner = project_config.get('owner')
             start_date = project_config.get('start_date')
@@ -320,7 +318,8 @@ class ProjectSynchronizer:
                         if month_key not in resource_allocations[owner]:
                             resource_allocations[owner][month_key] = []
 
-                        resource_allocations[owner][month_key].append(project_id)
+                        if project_id not in resource_allocations[owner][month_key]:
+                            resource_allocations[owner][month_key].append(project_id)
                         current += timedelta(days=30)
 
                 except Exception as e:
@@ -355,7 +354,8 @@ class ProjectSynchronizer:
         dependencies = {}  # {project: [dependencies]}
         project_status = {}
 
-        for project_id, _ in project_data.items():
+        # Use all projects from configuration, not just those with external data
+        for project_id in self.projects_config.get('projects', {}):
             project_config = self.projects_config.get('projects', {}).get(project_id, {})
             dependencies[project_id] = project_config.get('dependencies', [])
             project_status[project_id] = project_config.get('status', 'unknown')
@@ -378,7 +378,7 @@ class ProjectSynchronizer:
                     current_status = project_status.get(project_id, 'unknown')
 
                     # Check for problematic dependency states
-                    if dep_status in ['blocked', 'on_hold'] and current_status == 'active':
+                    if dep_status in ['blocked', 'on_hold'] and current_status in ['active', 'in_progress', 'planning']:
                         dependency_issues.append(DependencyIssue(
                             dependent_project=project_id,
                             blocking_project=dependent_project,
