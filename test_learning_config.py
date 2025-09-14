@@ -250,7 +250,11 @@ def validate_learning_commands():
         'learn-review.md',
         'learn-connect.md',
         'learn-goals.md',
-        'learn-sources.md'
+        'learn-sources.md',
+        'learn-book.md',
+        'learn-article.md',
+        'learn-meeting.md',
+        'learn-course.md'
     ]
 
     all_exist = True
