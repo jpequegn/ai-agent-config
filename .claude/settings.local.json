@@ -44,7 +44,9 @@
       "Bash(./notes:*)",
       "Bash(git rebase:*)",
       "Bash(git diff:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
