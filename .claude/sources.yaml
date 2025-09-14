@@ -1,0 +1,275 @@
+sources:
+  building-a-second-brain:
+    title: "Building a Second Brain"
+    author: "Tiago Forte"
+    type: "book"
+    category: "productivity"
+    status: "completed"
+    added_date: "2024-08-15"
+    completion_date: "2024-09-10"
+    rating: 5
+    tags:
+      - "para-method"
+      - "knowledge-management"
+      - "productivity"
+      - "note-taking"
+    url: "https://www.buildingasecondbrain.com/"
+    notes_location: "inbox/building-a-second-brain-notes.md"
+    key_concepts:
+      - "CODE Method (Capture, Organize, Distill, Express)"
+      - "Progressive Summarization"
+      - "PARA Method"
+      - "Just-in-time organization"
+      - "Intermediate Packets"
+    learning_goals:
+      - "para-method-mastery"
+    insights_captured: 15
+    applications_implemented: 8
+    review_frequency: "quarterly"
+    last_reviewed: "2024-09-01"
+
+  claude-code-documentation:
+    title: "Claude Code Official Documentation"
+    author: "Anthropic"
+    type: "documentation"
+    category: "technical"
+    status: "in_progress"
+    added_date: "2024-09-01"
+    rating: 4
+    tags:
+      - "claude-code"
+      - "ai-tools"
+      - "automation"
+      - "documentation"
+    url: "https://docs.anthropic.com/claude/code"
+    notes_location: "areas/ai-tools/claude-code-notes.md"
+    key_concepts:
+      - "Slash command system"
+      - "Persona activation"
+      - "MCP server integration"
+      - "Tool orchestration"
+      - "Workflow automation"
+    learning_goals:
+      - "claude-code-mastery"
+    insights_captured: 23
+    applications_implemented: 12
+    review_frequency: "monthly"
+    last_reviewed: "2024-09-10"
+
+  ai-agent-coordination-paper:
+    title: "Multi-Agent Coordination in Distributed Systems"
+    author: "Smith, J. et al."
+    type: "research-paper"
+    category: "technical"
+    status: "completed"
+    added_date: "2024-08-20"
+    completion_date: "2024-09-05"
+    rating: 5
+    tags:
+      - "ai-agents"
+      - "coordination"
+      - "distributed-systems"
+      - "architecture"
+    url: "https://arxiv.org/abs/2024.agent.coordination"
+    notes_location: "resources/research-papers/ai-agent-coordination.md"
+    key_concepts:
+      - "Consensus algorithms for agents"
+      - "Distributed task allocation"
+      - "Communication protocols"
+      - "Fault tolerance mechanisms"
+      - "Performance optimization strategies"
+    learning_goals:
+      - "ai-agent-architecture"
+    insights_captured: 8
+    applications_implemented: 3
+    review_frequency: "bi-annually"
+    last_reviewed: "2024-09-05"
+
+  mcp-server-specification:
+    title: "Model Context Protocol Server Specification"
+    author: "Anthropic"
+    type: "technical-specification"
+    category: "technical"
+    status: "active"
+    added_date: "2024-09-05"
+    rating: 4
+    tags:
+      - "mcp"
+      - "protocols"
+      - "integration"
+      - "apis"
+    url: "https://spec.modelcontextprotocol.org/"
+    notes_location: "areas/ai-tools/mcp-server-notes.md"
+    key_concepts:
+      - "Server-client architecture"
+      - "Resource management"
+      - "Tool integration patterns"
+      - "Authentication mechanisms"
+      - "Error handling protocols"
+    learning_goals:
+      - "claude-code-mastery"
+      - "ai-agent-architecture"
+    insights_captured: 12
+    applications_implemented: 5
+    review_frequency: "monthly"
+    last_reviewed: "2024-09-12"
+
+  productivity-automation-course:
+    title: "Advanced Automation for Knowledge Workers"
+    author: "ProductivityPro Academy"
+    type: "online-course"
+    category: "productivity"
+    status: "in_progress"
+    added_date: "2024-09-01"
+    progress_percentage: 65
+    rating: 4
+    tags:
+      - "automation"
+      - "workflows"
+      - "productivity"
+      - "tools"
+    url: "https://academy.productivitypro.com/automation-course"
+    notes_location: "areas/productivity/automation-course-notes.md"
+    key_concepts:
+      - "Workflow design principles"
+      - "Tool integration strategies"
+      - "Automation decision trees"
+      - "ROI measurement for automation"
+      - "Maintenance and updates"
+    learning_goals:
+      - "para-method-mastery"
+    insights_captured: 18
+    applications_implemented: 7
+    review_frequency: "weekly"
+    last_reviewed: "2024-09-12"
+
+types:
+  - "book"
+  - "article"
+  - "research-paper"
+  - "documentation"
+  - "video"
+  - "podcast"
+  - "online-course"
+  - "blog-post"
+  - "tutorial"
+  - "technical-specification"
+  - "conference-talk"
+  - "white-paper"
+
+categories:
+  - "technical"
+  - "productivity"
+  - "business"
+  - "creative"
+  - "personal"
+  - "research"
+  - "industry-trends"
+
+statuses:
+  - "planned"
+  - "active"
+  - "in_progress"
+  - "paused"
+  - "completed"
+  - "archived"
+  - "deprecated"
+
+rating_scale:
+  5: "Exceptional - Transformative impact"
+  4: "Excellent - High value and applicability"
+  3: "Good - Solid content with useful insights"
+  2: "Fair - Some value but limited applicability"
+  1: "Poor - Minimal value or relevance"
+
+review_frequencies:
+  - "weekly"
+  - "bi-weekly"
+  - "monthly"
+  - "quarterly"
+  - "bi-annually"
+  - "annually"
+
+validation:
+  required_fields:
+    - "title"
+    - "type"
+    - "category"
+    - "status"
+    - "added_date"
+  date_format: "YYYY-MM-DD"
+  rating_range: [1, 5]
+  progress_range: [0, 100]
+  valid_types:
+    - "book"
+    - "article"
+    - "research-paper"
+    - "documentation"
+    - "video"
+    - "podcast"
+    - "online-course"
+    - "blog-post"
+    - "tutorial"
+    - "technical-specification"
+    - "conference-talk"
+    - "white-paper"
+  valid_categories:
+    - "technical"
+    - "productivity"
+    - "business"
+    - "creative"
+    - "personal"
+    - "research"
+    - "industry-trends"
+  valid_statuses:
+    - "planned"
+    - "active"
+    - "in_progress"
+    - "paused"
+    - "completed"
+    - "archived"
+    - "deprecated"
+
+curation_rules:
+  automatic_archival:
+    enabled: true
+    criteria:
+      - "status: completed AND last_reviewed > 365 days"
+      - "rating < 3 AND last_reviewed > 180 days"
+      - "status: deprecated"
+  quality_filters:
+    minimum_rating: 2
+    require_notes_location: true
+    require_key_concepts: true
+  discovery_sources:
+    - "hacker-news"
+    - "arxiv"
+    - "medium"
+    - "youtube"
+    - "podcasts"
+    - "conference-proceedings"
+  tagging_automation:
+    enabled: true
+    ml_extraction: true
+    manual_override: true
+
+integration:
+  notes_system:
+    enabled: true
+    automatic_linking: true
+    sync_frequency: "daily"
+  learning_goals:
+    enabled: true
+    automatic_mapping: true
+    progress_tracking: true
+  project_system:
+    enabled: true
+    resource_allocation: true
+    milestone_integration: true
+
+analytics:
+  track_reading_time: true
+  measure_application_rate: true
+  calculate_roi: true
+  generate_insights: true
+  learning_velocity_metrics: true
