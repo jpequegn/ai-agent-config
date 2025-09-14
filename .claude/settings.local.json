@@ -41,7 +41,9 @@
       "Bash(./notes process-inbox --list)",
       "Bash(./notes process-inbox --interactive:*)",
       "Bash(./notes review-note:*)",
-      "Bash(./notes:*)"
+      "Bash(./notes:*)",
+      "Bash(git rebase:*)",
+      "Bash(git diff:*)"
     ],
     "deny": [],
     "ask": []

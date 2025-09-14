@@ -31,9 +31,9 @@ try:
     spec.loader.exec_module(para_processor_module)
 
     # Load para-templates.py
-    spec = importlib.util.spec_from_file_location("para_templates", "para-templates.py")
-    para_templates_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(para_templates_module)
+    spec_templates = importlib.util.spec_from_file_location("para_templates", "para-templates.py")
+    para_templates_module = importlib.util.module_from_spec(spec_templates)
+    spec_templates.loader.exec_module(para_templates_module)
 
     # Extract the classes we need
     ParaNoteProcessor = para_processor_module.ParaNoteProcessor
@@ -51,6 +51,7 @@ except Exception as e:
     ActionItem = None
     ParaCategory = None
     ParaTemplateEngine = None
+    print(f"Warning: Could not import para modules ({e}), using subprocess mode")
 
 @dataclass
 class CommandResult:
@@ -650,9 +651,16 @@ class NotesCommandInterface:
         return category_paths.get(category, category)
 
     def cmd_research(self, args) -> CommandResult:
-        """Research and analyze existing notes"""
+        """Enhanced research and analysis with web search and cross-referencing"""
         try:
-            if args.file:
+            if not args.file:
+                return self.format_error_result(
+                    'research',
+                    "No file specified for research",
+                    suggestions=["Use --file parameter to specify note to analyze"]
+                )
+
+            if not subprocess_mode and self.processor:
                 # Single file analysis
                 note = self.processor.parse_note(args.file, validate=not args.graceful)
 
@@ -668,30 +676,74 @@ class NotesCommandInterface:
                     'attendees': note.attendees
                 }
 
+                # Determine research query
+                research_query = args.query
+                if not research_query:
+                    # Auto-detect from file title, tags, or content
+                    if 'title' in note.frontmatter:
+                        research_query = note.frontmatter['title']
+                    elif note.tags:
+                        research_query = ' '.join(note.tags[:3])  # Use first 3 tags
+                    else:
+                        # Extract first meaningful sentence/phrase from content
+                        lines = note.content.split('\n')
+                        for line in lines:
+                            line = line.strip()
+                            if line and not line.startswith('#') and len(line) > 10:
+                                research_query = line[:100]  # First 100 chars
+                                break
+
                 # Topic expansion if requested
                 expanded_topics = []
                 if args.expand_topics:
-                    # Find related topics from tags and content
                     expanded_topics = self._find_related_topics(note)
+
+                # Web search enhancement if requested
+                web_research = {}
+                if args.web_search and research_query:
+                    web_research = self._perform_web_research(research_query)
+
+                # Cross-reference with existing notes if requested
+                related_notes = []
+                if args.cross_reference:
+                    related_notes = self._find_related_notes(note, args.limit)
+
+                # Build comprehensive response
+                response_data = {
+                    'analysis': research_data,
+                    'research_query': research_query,
+                    'expanded_topics': expanded_topics,
+                    'web_research': web_research,
+                    'related_notes': related_notes,
+                    'sources': self._collect_sources(web_research, related_notes)
+                }
+
+                suggestions = [
+                    f"Open file: code {args.file}"
+                ]
+
+                if related_notes:
+                    suggestions.append(f"Open related note: code {related_notes[0]['path']}")
+
+                if web_research:
+                    suggestions.append("Enhance note with research: /notes enhance --file " + args.file + " --web-search")
+
+                if not args.cross_reference:
+                    suggestions.append("Find connections: /notes connect --file " + args.file)
 
                 return self.format_success_result(
                     'research',
-                    f"Analyzed note: {Path(args.file).name}",
-                    {
-                        'analysis': research_data,
-                        'expanded_topics': expanded_topics
-                    },
-                    [
-                        f"Open file: code {args.file}",
-                        "Find related notes: /notes find --query \"" + ' '.join(note.tags[:3]) + "\""
-                    ]
+                    f"Researched note: {Path(args.file).name}" + (f" on topic '{research_query}'" if research_query else ""),
+                    response_data,
+                    suggestions
                 )
 
             else:
+                # Fallback for subprocess mode
                 return self.format_error_result(
                     'research',
-                    "No file specified for research",
-                    suggestions=["Use --file parameter to specify note to analyze"]
+                    "Enhanced research functionality requires native mode",
+                    suggestions=["Install required dependencies for native mode", "Use basic file analysis with para-processor.py"]
                 )
 
         except Exception as e:
@@ -700,6 +752,240 @@ class NotesCommandInterface:
                 f"Research failed: {str(e)}",
                 str(e),
                 ["Check file path exists", "Use --graceful for malformed notes"]
+            )
+
+    def cmd_enhance(self, args) -> CommandResult:
+        """Enhance notes with additional context while preserving original content"""
+        try:
+            if not Path(args.file).exists():
+                return self.format_error_result(
+                    'enhance',
+                    f"File '{args.file}' does not exist",
+                    suggestions=["Check file path", "Use /notes find to locate notes"]
+                )
+
+            # Parse the original note
+            note = self.processor.parse_note(args.file, validate=False)
+
+            # Determine enhancement topic
+            enhancement_topic = args.topic
+            if not enhancement_topic:
+                # Auto-detect from note content like in research
+                if 'title' in note.frontmatter:
+                    enhancement_topic = note.frontmatter['title']
+                elif note.tags:
+                    enhancement_topic = ' '.join(note.tags[:2])
+                else:
+                    # Extract from first meaningful line
+                    lines = note.content.split('\n')
+                    for line in lines:
+                        line = line.strip()
+                        if line and not line.startswith('#') and len(line) > 10:
+                            enhancement_topic = line[:50]  # First 50 chars
+                            break
+
+            # Collect enhancement data
+            enhancement_data = {
+                'original_file': args.file,
+                'enhancement_topic': enhancement_topic,
+                'original_content_preserved': True,
+                'enhancements_added': []
+            }
+
+            # Web search enhancement
+            if args.web_search and enhancement_topic:
+                web_enhancement = self._perform_web_research(enhancement_topic)
+                enhancement_data['enhancements_added'].append({
+                    'type': 'web_search',
+                    'topic': enhancement_topic,
+                    'data': web_enhancement
+                })
+
+            # Cross-reference enhancement
+            if args.cross_reference:
+                related_notes = self._find_related_notes(note, 5)
+                enhancement_data['enhancements_added'].append({
+                    'type': 'cross_reference',
+                    'related_notes_count': len(related_notes),
+                    'data': related_notes
+                })
+
+            # Create enhancement content structure
+            enhancement_content = self._create_enhanced_content(
+                note,
+                enhancement_data['enhancements_added'],
+                preserve_original=args.preserve_original
+            )
+
+            # Write enhanced content
+            output_file = args.output or args.file
+            if args.preserve_original:
+                # Create backup if overwriting original
+                if output_file == args.file:
+                    backup_path = f"{args.file}.backup-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
+                    Path(args.file).rename(backup_path)
+                    enhancement_data['backup_created'] = backup_path
+
+            # Write the enhanced content
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(enhancement_content)
+
+            enhancement_data['output_file'] = output_file
+            enhancement_data['enhancement_sections'] = len(enhancement_data['enhancements_added'])
+
+            return self.format_success_result(
+                'enhance',
+                f"Enhanced note: {Path(args.file).name}" + (f" with {len(enhancement_data['enhancements_added'])} enhancements" if enhancement_data['enhancements_added'] else ""),
+                enhancement_data,
+                [
+                    f"View enhanced note: code {output_file}",
+                    f"Compare with original: code {enhancement_data.get('backup_created', args.file)} {output_file}" if enhancement_data.get('backup_created') else None,
+                    "Research more topics: /notes research --file " + output_file + " --web-search --cross-reference"
+                ]
+            )
+
+        except Exception as e:
+            return self.format_error_result(
+                'enhance',
+                f"Enhancement failed: {str(e)}",
+                str(e),
+                ["Check file permissions", "Verify file format", "Try with --preserve-original"]
+            )
+
+    def cmd_connect(self, args) -> CommandResult:
+        """Find connections between notes based on content and themes"""
+        try:
+            connections = []
+            connection_query = args.query
+
+            if args.file:
+                # Find connections for a specific file
+                if not Path(args.file).exists():
+                    return self.format_error_result(
+                        'connect',
+                        f"File '{args.file}' does not exist",
+                        suggestions=["Check file path", "Use /notes find to locate notes"]
+                    )
+
+                note = self.processor.parse_note(args.file, validate=False)
+                related_notes = self._find_related_notes(note, args.limit)
+
+                # Convert to connection format
+                for related in related_notes:
+                    connections.append({
+                        'source_file': Path(args.file).name,
+                        'target_file': related['file'],
+                        'connection_strength': related['similarity_score'],
+                        'connection_type': 'content_similarity',
+                        'shared_elements': {
+                            'tag_overlap': related['tag_overlap'],
+                            'word_overlap': related['word_overlap']
+                        },
+                        'target_path': related['path'],
+                        'target_category': related['category']
+                    })
+
+                connection_summary = f"Found {len(connections)} connections for {Path(args.file).name}"
+
+            elif connection_query:
+                # Find connections around a theme/topic
+                all_notes = self.processor.batch_process_notes(args.directory, '*.md')
+                query_lower = connection_query.lower()
+                relevant_notes = []
+
+                # Find notes related to the query
+                for note in all_notes:
+                    relevance_score = 0
+
+                    # Check tags
+                    if any(query_lower in tag.lower() for tag in note.tags):
+                        relevance_score += 3.0
+
+                    # Check content
+                    if query_lower in note.content.lower():
+                        relevance_score += note.content.lower().count(query_lower) * 0.5
+
+                    if relevance_score >= args.similarity_threshold:
+                        relevant_notes.append({
+                            'note': note,
+                            'relevance': relevance_score
+                        })
+
+                # Create connections between relevant notes
+                for i, note_a in enumerate(relevant_notes):
+                    for note_b in relevant_notes[i+1:]:
+                        # Calculate connection strength between these two notes
+                        shared_tags = set(note_a['note'].tags) & set(note_b['note'].tags)
+                        connection_strength = len(shared_tags) * 2.0 + min(note_a['relevance'], note_b['relevance']) * 0.3
+
+                        if connection_strength >= args.similarity_threshold:
+                            connections.append({
+                                'source_file': Path(note_a['note'].file_path).name,
+                                'target_file': Path(note_b['note'].file_path).name,
+                                'connection_strength': round(connection_strength, 2),
+                                'connection_type': 'thematic_similarity',
+                                'shared_elements': {
+                                    'shared_tags': list(shared_tags),
+                                    'query_relevance': [note_a['relevance'], note_b['relevance']]
+                                },
+                                'source_path': note_a['note'].file_path,
+                                'target_path': note_b['note'].file_path
+                            })
+
+                # Sort by connection strength
+                connections.sort(key=lambda x: x['connection_strength'], reverse=True)
+                connections = connections[:args.limit]
+
+                connection_summary = f"Found {len(connections)} thematic connections for '{connection_query}'"
+
+            else:
+                return self.format_error_result(
+                    'connect',
+                    "Must specify either --file or --query parameter",
+                    suggestions=["Use --file to find connections for a specific note", "Use --query to find thematic connections"]
+                )
+
+            # Build response
+            response_data = {
+                'connection_query': connection_query,
+                'source_file': args.file,
+                'total_connections': len(connections),
+                'connections': connections,
+                'analysis': {
+                    'strongest_connection': max(connections, key=lambda x: x['connection_strength'])['connection_strength'] if connections else 0,
+                    'connection_types': list(set(c['connection_type'] for c in connections)),
+                    'unique_files': len(set([c['source_file'] for c in connections] + [c['target_file'] for c in connections]))
+                }
+            }
+
+            suggestions = []
+            if connections:
+                strongest = max(connections, key=lambda x: x['connection_strength'])
+                suggestions.extend([
+                    f"Explore connection: code {strongest.get('source_path', strongest['source_file'])}",
+                    f"View related note: code {strongest.get('target_path', strongest['target_file'])}"
+                ])
+                if args.file:
+                    suggestions.append(f"Research connections: /notes research --file {args.file} --cross-reference")
+            else:
+                suggestions.extend([
+                    "Try lowering --similarity-threshold",
+                    "Expand search with different query terms"
+                ])
+
+            return self.format_success_result(
+                'connect',
+                connection_summary,
+                response_data,
+                suggestions
+            )
+
+        except Exception as e:
+            return self.format_error_result(
+                'connect',
+                f"Connection analysis failed: {str(e)}",
+                str(e),
+                ["Check directory exists", "Verify file permissions", "Try with different parameters"]
             )
 
     def cmd_find(self, args) -> CommandResult:
@@ -1371,6 +1657,462 @@ class NotesCommandInterface:
 
         return preview
 
+    def _find_related_notes(self, note: 'ParsedNote', limit: int = 5) -> List[Dict[str, Any]]:
+        """Find notes related to the current note using content similarity"""
+        try:
+            # Use existing find functionality to locate related notes
+            all_notes = self.processor.batch_process_notes('.', '*.md')
+            related_notes = []
+
+            # Create search terms from the note
+            search_terms = set()
+            search_terms.update(note.tags)
+
+            # Extract key terms from content (simple approach)
+            content_words = note.content.lower().split()
+            # Remove common words and keep meaningful terms
+            meaningful_words = [w for w in content_words if len(w) > 4 and w.isalpha()]
+            search_terms.update(meaningful_words[:20])  # Top 20 meaningful words
+
+            # Score other notes for similarity
+            for other_note in all_notes:
+                if other_note.file_path == note.file_path:
+                    continue  # Skip the same note
+
+                # Calculate similarity score
+                other_words = set(other_note.content.lower().split())
+                other_tags = set(other_note.tags)
+
+                # Content similarity (word overlap)
+                word_overlap = len(search_terms & other_words)
+                tag_overlap = len(set(note.tags) & other_tags)
+
+                # Combined similarity score
+                similarity_score = (word_overlap * 0.7) + (tag_overlap * 3.0)  # Tags weighted higher
+
+                if similarity_score > 1.0:  # Minimum threshold
+                    related_notes.append({
+                        'file': Path(other_note.file_path).name,
+                        'path': other_note.file_path,
+                        'similarity_score': round(similarity_score, 2),
+                        'word_overlap': word_overlap,
+                        'tag_overlap': tag_overlap,
+                        'tags': other_note.tags[:5],  # Show first 5 tags
+                        'category': other_note.suggested_category.value,
+                        'word_count': other_note.word_count
+                    })
+
+            # Sort by similarity score and return top results
+            related_notes.sort(key=lambda x: x['similarity_score'], reverse=True)
+            return related_notes[:limit]
+
+        except Exception as e:
+            return []
+
+    def _collect_sources(self, web_research: Dict, related_notes: List) -> List[Dict[str, str]]:
+        """Collect and format source attribution information"""
+        sources = []
+
+        # Add web research sources
+        if web_research.get('search_performed'):
+            sources.append({
+                'type': 'web_search',
+                'query': web_research.get('query', ''),
+                'description': f"Web search results for: {web_research.get('query', '')}",
+                'attribution': 'Research conducted via web search'
+            })
+
+        # Add related notes as sources
+        for note in related_notes:
+            sources.append({
+                'type': 'note_reference',
+                'file': note['file'],
+                'path': note['path'],
+                'description': f"Related note: {note['file']} (similarity: {note['similarity_score']})",
+                'attribution': f"Cross-referenced from local note database"
+            })
+
+        return sources
+
+    def _create_enhanced_content(self, original_note: 'ParsedNote', enhancements: List[Dict], preserve_original: bool = True) -> str:
+        """Create enhanced content with clear separation between original and new content"""
+        enhanced_content = []
+
+        if preserve_original:
+            # Start with original content
+            enhanced_content.append("# Enhanced Note")
+            enhanced_content.append("")
+            enhanced_content.append("---")
+            enhanced_content.append("")
+            enhanced_content.append("## Original Content")
+            enhanced_content.append("")
+            enhanced_content.append(original_note.content)
+            enhanced_content.append("")
+            enhanced_content.append("---")
+            enhanced_content.append("")
+            enhanced_content.append("## Research Enhancements")
+            enhanced_content.append("")
+            enhanced_content.append(f"*The following content was added by Claude Code research on {datetime.date.today().strftime('%Y-%m-%d')}*")
+            enhanced_content.append("")
+        else:
+            # Integrate enhancements into original content
+            enhanced_content.append(original_note.content)
+            enhanced_content.append("")
+            enhanced_content.append("---")
+            enhanced_content.append("")
+            enhanced_content.append("## Additional Research")
+            enhanced_content.append("")
+
+        # Add each enhancement
+        for i, enhancement in enumerate(enhancements, 1):
+            if enhancement['type'] == 'web_search':
+                enhanced_content.append(f"### Research Enhancement #{i}: Web Search")
+                enhanced_content.append("")
+                data = enhancement['data']
+                enhanced_content.append(f"**Topic:** {data.get('query', 'N/A')}")
+                enhanced_content.append("")
+                enhanced_content.append(f"**Search Status:** {'Completed' if data.get('search_performed') else 'Pending'}")
+                enhanced_content.append("")
+                enhanced_content.append("**Claude Code Instructions:**")
+                enhanced_content.append(f"- {data.get('instruction', 'No instruction')}")
+                enhanced_content.append("")
+                if data.get('suggested_searches'):
+                    enhanced_content.append("**Suggested Search Queries:**")
+                    for search in data['suggested_searches']:
+                        enhanced_content.append(f"- {search}")
+                    enhanced_content.append("")
+
+            elif enhancement['type'] == 'cross_reference':
+                enhanced_content.append(f"### Research Enhancement #{i}: Related Notes")
+                enhanced_content.append("")
+                related_notes = enhancement['data']
+                enhanced_content.append(f"**Found {len(related_notes)} related notes in database:**")
+                enhanced_content.append("")
+                for note in related_notes:
+                    enhanced_content.append(f"- **{note['file']}** (similarity: {note['similarity_score']})")
+                    enhanced_content.append(f"  - Category: {note['category']}")
+                    if note['tags']:
+                        enhanced_content.append(f"  - Tags: {', '.join(note['tags'])}")
+                    enhanced_content.append(f"  - Word count: {note['word_count']}")
+                    enhanced_content.append("")
+
+        # Add source attribution
+        enhanced_content.append("---")
+        enhanced_content.append("")
+        enhanced_content.append("## Sources and Attribution")
+        enhanced_content.append("")
+        enhanced_content.append(f"**Enhanced by:** Claude Code Research System")
+        enhanced_content.append(f"**Enhancement Date:** {datetime.date.today().strftime('%Y-%m-%d')}")
+        enhanced_content.append("")
+        enhanced_content.append("**Enhancement Types Applied:**")
+        enhancement_types = [e['type'] for e in enhancements]
+        for etype in set(enhancement_types):
+            enhanced_content.append(f"- {etype.replace('_', ' ').title()}")
+        enhanced_content.append("")
+
+        return '\n'.join(enhanced_content)
+
+    def _apply_similarity_filter(self, notes: List['ParsedNote'], reference_file: str) -> tuple:
+        """Find notes similar to the reference file using content similarity"""
+        try:
+            # Parse the reference file
+            reference_note = self.processor.parse_note(reference_file)
+            reference_words = set(reference_note.content.lower().split())
+
+            # Remove common words for better similarity matching
+            common_words = {'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'this', 'that', 'these', 'those'}
+            reference_words -= common_words
+
+            similar_notes = []
+            for note in notes:
+                if note.file_path == reference_file:
+                    continue  # Skip the reference file itself
+
+                note_words = set(note.content.lower().split()) - common_words
+
+                # Calculate word overlap similarity (Jaccard index)
+                if len(reference_words) > 0 and len(note_words) > 0:
+                    intersection = len(reference_words & note_words)
+                    union = len(reference_words | note_words)
+                    similarity = intersection / union if union > 0 else 0
+
+                    # Also consider tag similarity
+                    ref_tags = set(reference_note.tags)
+                    note_tags = set(note.tags)
+                    if ref_tags and note_tags:
+                        tag_similarity = len(ref_tags & note_tags) / len(ref_tags | note_tags)
+                        similarity = (similarity * 0.8) + (tag_similarity * 0.2)  # Weight content higher
+
+                    if similarity > 0.05:  # Only include notes with some similarity
+                        similar_notes.append({
+                            'note': note,
+                            'similarity': similarity,
+                            'score': similarity * 100  # For sorting compatibility
+                        })
+
+            # Sort by similarity
+            similar_notes.sort(key=lambda x: x['similarity'], reverse=True)
+
+            similarity_info = {
+                'reference_file': reference_file,
+                'method': 'word_overlap_plus_tags',
+                'total_compared': len(notes) - 1
+            }
+
+            return similar_notes, similarity_info
+
+        except Exception as e:
+            # If reference file can't be read, return empty results
+            return [], {'error': str(e), 'reference_file': reference_file}
+
+    def _apply_query_filter(self, notes: List['ParsedNote'], query: str) -> List:
+        """Apply text query filter with enhanced relevance scoring"""
+        query_terms = query.lower().split()
+        filtered_notes = []
+
+        for note in notes:
+            # Create searchable text with different weights for different sections
+            content_text = note.content.lower()
+            tags_text = ' '.join(note.tags).lower()
+            frontmatter_text = json.dumps(note.frontmatter).lower()
+            title_text = note.frontmatter.get('title', '').lower()
+
+            # Calculate weighted relevance score
+            content_score = sum(content_text.count(term) for term in query_terms) * 1.0
+            title_score = sum(title_text.count(term) for term in query_terms) * 3.0  # Titles are very important
+            tags_score = sum(tags_text.count(term) for term in query_terms) * 2.0   # Tags are important
+            frontmatter_score = sum(frontmatter_text.count(term) for term in query_terms) * 0.5
+
+            total_score = content_score + title_score + tags_score + frontmatter_score
+
+            # Check if any terms are present
+            all_text = f"{content_text} {tags_text} {frontmatter_text} {title_text}"
+            if any(term in all_text for term in query_terms) and total_score > 0:
+                # Boost score for exact phrase matches
+                if len(query_terms) > 1 and query.lower() in all_text:
+                    total_score *= 1.5
+
+                filtered_notes.append({
+                    'note': note,
+                    'score': total_score
+                })
+
+        return filtered_notes
+
+    def _extract_note_and_score(self, item):
+        """Helper to extract note and score from either note object or dict format"""
+        if isinstance(item, dict) and 'note' in item:
+            return item['note'], item.get('score', 1.0)
+        else:
+            return item, 1.0
+
+    def _apply_tag_filter(self, notes: List, tags_filter: str) -> List:
+        """Filter notes by specific tags"""
+        required_tags = [tag.strip().lower() for tag in tags_filter.split(',')]
+        filtered_notes = []
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_tags = [tag.lower() for tag in note.tags]
+
+            # Check if note has all required tags (AND logic) or any required tags (OR logic)
+            # Using OR logic for more flexible searching
+            if any(req_tag in note_tags for req_tag in required_tags):
+                tag_score = len([tag for tag in required_tags if tag in note_tags]) * 2
+                filtered_notes.append({
+                    'note': note,
+                    'score': existing_score + tag_score  # Add to existing score
+                })
+
+        return filtered_notes
+
+    def _apply_attendee_filter(self, notes: List, attendees_filter: str) -> List:
+        """Filter notes by attendees"""
+        required_attendees = [attendee.strip().lower() for attendee in attendees_filter.split(',')]
+        filtered_notes = []
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_attendees = [attendee.lower() for attendee in note.attendees]
+
+            # Check if note has any of the required attendees
+            matches = []
+            for req_attendee in required_attendees:
+                # Support partial name matching
+                for note_attendee in note_attendees:
+                    if req_attendee in note_attendee or note_attendee in req_attendee:
+                        matches.append(req_attendee)
+                        break
+
+            if matches:
+                attendee_score = len(matches) * 3  # High score for attendee matches
+                filtered_notes.append({
+                    'note': note,
+                    'score': existing_score + attendee_score  # Add to existing score
+                })
+
+        return filtered_notes
+
+    def _apply_category_filter(self, notes: List, category_filter: str) -> List:
+        """Filter notes by PARA category"""
+        # Map category names to category values
+        category_mapping = {
+            'projects': ['1-projects', '1_projects'],
+            'areas': ['2-areas', '2_areas'],
+            'resources': ['3-resources', '3_resources'],
+            'archive': ['4-archive', '4_archive'],
+            'inbox': ['inbox']
+        }
+
+        target_categories = category_mapping.get(category_filter.lower(), [category_filter])
+        filtered_notes = []
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_category = note.suggested_category.value if hasattr(note.suggested_category, 'value') else str(note.suggested_category)
+
+            if any(target_cat in note_category.lower() for target_cat in target_categories):
+                filtered_notes.append({
+                    'note': note,
+                    'score': existing_score + 1  # Add to existing score for category match
+                })
+
+        return filtered_notes
+
+    def _apply_custom_date_filter(self, notes: List, date_from: str, date_to: str) -> List:
+        """Filter notes by custom date range"""
+        filtered_notes = []
+
+        # Parse date boundaries
+        try:
+            from_date = datetime.datetime.strptime(date_from, '%Y-%m-%d').date() if date_from else None
+            to_date = datetime.datetime.strptime(date_to, '%Y-%m-%d').date() if date_to else None
+        except ValueError:
+            # Return all notes with preserved scores if invalid date format
+            return [{'note': self._extract_note_and_score(item)[0], 'score': self._extract_note_and_score(item)[1]} for item in notes]
+
+        for item in notes:
+            note, existing_score = self._extract_note_and_score(item)
+            note_dates = []
+
+            # Extract dates from note content and metadata
+            if note.dates:
+                for date_str in note.dates:
+                    try:
+                        if len(date_str.split()) > 1:  # Handle datetime strings
+                            note_date = datetime.datetime.strptime(date_str.split()[0], '%Y-%m-%d').date()
+                        else:
+                            note_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+                        note_dates.append(note_date)
+                    except ValueError:
+                        continue
+
+            # Also check file modification time as fallback
+            try:
+                file_date = datetime.date.fromtimestamp(Path(note.file_path).stat().st_mtime)
+                note_dates.append(file_date)
+            except:
+                pass
+
+            # Check if any date falls within range
+            if note_dates:
+                for note_date in note_dates:
+                    within_range = True
+                    if from_date and note_date < from_date:
+                        within_range = False
+                    if to_date and note_date > to_date:
+                        within_range = False
+
+                    if within_range:
+                        filtered_notes.append({
+                            'note': note,
+                            'score': existing_score + 1  # Add to existing score for date match
+                        })
+                        break
+
+        return filtered_notes
+
+    def _sort_search_results(self, notes: List, query: str = None, similar_file: str = None) -> List:
+        """Sort search results by relevance and recency"""
+        if not notes:
+            return notes
+
+        # If notes are already scored (from filters), maintain that
+        if isinstance(notes[0], dict) and 'score' in notes[0]:
+            # Sort by score primarily, then by recency
+            def sort_key(note_data):
+                note = note_data['note']
+                score = note_data.get('score', 0)
+
+                # Add recency bonus - more recent files get slight boost
+                try:
+                    file_age_days = (datetime.datetime.now() - datetime.datetime.fromtimestamp(
+                        Path(note.file_path).stat().st_mtime)).days
+                    recency_bonus = max(0, (30 - file_age_days) / 30 * 0.2)  # Up to 0.2 bonus for recent files
+                except:
+                    recency_bonus = 0
+
+                return score + recency_bonus
+
+            notes.sort(key=sort_key, reverse=True)
+        else:
+            # For unscored notes, sort by file modification time
+            def sort_key(note):
+                try:
+                    return Path(note.file_path).stat().st_mtime
+                except:
+                    return 0
+
+            notes.sort(key=sort_key, reverse=True)
+            # Convert to scored format for consistency
+            notes = [{'note': note, 'score': 0} for note in notes]
+
+        return notes
+
+    def _extract_content_preview(self, note: 'ParsedNote', query: str = None) -> str:
+        """Extract relevant content preview, highlighting search terms if query provided"""
+        content = note.content
+        preview_length = 200
+
+        if query and query.strip():
+            # Find the first occurrence of any query term for context
+            query_terms = query.lower().split()
+            content_lower = content.lower()
+
+            best_position = 0
+            for term in query_terms:
+                position = content_lower.find(term)
+                if position != -1:
+                    # Start preview a bit before the term for context
+                    best_position = max(0, position - 50)
+                    break
+
+            # Extract preview around the found term
+            start = best_position
+            end = min(len(content), start + preview_length)
+            preview = content[start:end]
+
+            # Clean up the preview
+            if start > 0:
+                preview = '...' + preview
+            if end < len(content):
+                preview = preview + '...'
+
+        else:
+            # Just take the beginning of the content
+            preview = content[:preview_length]
+            if len(content) > preview_length:
+                preview += '...'
+
+        # Clean up markdown formatting for readability
+        preview = re.sub(r'#{1,6}\s+', '', preview)  # Remove headers
+        preview = re.sub(r'\*\*(.+?)\*\*', r'\1', preview)  # Remove bold
+        preview = re.sub(r'\*(.+?)\*', r'\1', preview)  # Remove italic
+        preview = re.sub(r'\n+', ' ', preview)  # Replace newlines with spaces
+        preview = re.sub(r'\s+', ' ', preview).strip()  # Normalize whitespace
+
+        return preview
+
     def _filter_by_date_range(self, notes: List, date_range: str) -> List:
         """Filter notes by date range"""
         if date_range == 'today':
@@ -1456,7 +2198,28 @@ Natural language support:
     research_parser = subparsers.add_parser('research', help='Research and analyze notes')
     research_parser.add_argument('--file', help='Note file to analyze')
     research_parser.add_argument('--expand-topics', action='store_true', help='Find related topics')
+    research_parser.add_argument('--web-search', action='store_true', help='Enhance with web search results')
+    research_parser.add_argument('--cross-reference', action='store_true', help='Find related notes in database')
+    research_parser.add_argument('--query', help='Specific topic to research (overrides auto-detection)')
+    research_parser.add_argument('--limit', type=int, default=5, help='Maximum related notes to find')
     research_parser.add_argument('--graceful', action='store_true', help='Handle malformed notes gracefully')
+
+    # Enhance command
+    enhance_parser = subparsers.add_parser('enhance', help='Add context and background to notes')
+    enhance_parser.add_argument('--file', required=True, help='Note file to enhance')
+    enhance_parser.add_argument('--topic', help='Specific topic to enhance (overrides auto-detection)')
+    enhance_parser.add_argument('--web-search', action='store_true', help='Add web search context')
+    enhance_parser.add_argument('--cross-reference', action='store_true', help='Add related notes context')
+    enhance_parser.add_argument('--preserve-original', action='store_true', default=True, help='Preserve original content clearly separated')
+    enhance_parser.add_argument('--output', help='Output file path (default: updates original)')
+
+    # Connect command
+    connect_parser = subparsers.add_parser('connect', help='Find connections between notes')
+    connect_parser.add_argument('--file', help='Note file to find connections for')
+    connect_parser.add_argument('--query', help='Topic or theme to find connections about')
+    connect_parser.add_argument('--directory', default='.', help='Directory to search for connections')
+    connect_parser.add_argument('--similarity-threshold', type=float, default=0.1, help='Minimum similarity score')
+    connect_parser.add_argument('--limit', type=int, default=10, help='Maximum connections to find')
 
     # Find command
     find_parser = subparsers.add_parser('find', help='Search for notes')
@@ -1504,6 +2267,8 @@ Natural language support:
             'process-inbox': interface.cmd_process_inbox,
             'review-note': interface.cmd_review_note,
             'research': interface.cmd_research,
+            'enhance': interface.cmd_enhance,
+            'connect': interface.cmd_connect,
             'find': interface.cmd_find,
             'follow-up': interface.cmd_follow_up,
             'prep': interface.cmd_prep,
