@@ -256,7 +256,10 @@ def validate_learning_commands():
         'learn-meeting.md',
         'learn-course.md',
         'learn-insights.md',
-        'learn-map.md'
+        'learn-map.md',
+        'learn-quiz.md',
+        'learn-progress.md',
+        'learn-gaps.md'
     ]
 
     all_exist = True
@@ -280,7 +283,11 @@ def validate_cache_structure():
         'learning_connections.json',
         'learning_reviews.json',
         'insights_reports.json',
-        'knowledge_maps.json'
+        'knowledge_maps.json',
+        'quiz_sessions.json',
+        'progress_tracking.json',
+        'knowledge_gaps.json',
+        'spaced_repetition.json'
     ]
 
     warnings = []
@@ -306,6 +313,14 @@ def validate_cache_structure():
                     warnings.append(f"  ⚠️  {filename}: Missing 'reports' array")
                 elif filename == 'knowledge_maps.json' and 'maps' not in data:
                     warnings.append(f"  ⚠️  {filename}: Missing 'maps' array")
+                elif filename == 'quiz_sessions.json' and 'sessions' not in data:
+                    warnings.append(f"  ⚠️  {filename}: Missing 'sessions' array")
+                elif filename == 'progress_tracking.json' and 'tracking' not in data:
+                    warnings.append(f"  ⚠️  {filename}: Missing 'tracking' array")
+                elif filename == 'knowledge_gaps.json' and 'reports' not in data:
+                    warnings.append(f"  ⚠️  {filename}: Missing 'reports' array")
+                elif filename == 'spaced_repetition.json' and 'reviews' not in data:
+                    warnings.append(f"  ⚠️  {filename}: Missing 'reviews' array")
         else:
             print(f"  ℹ️  {filename} will be created on first use")
 
