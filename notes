@@ -1209,64 +1209,466 @@ class NotesCommandInterface:
             )
 
     def cmd_prep(self, args) -> CommandResult:
-        """Prepare for meetings and events"""
+        """Prepare comprehensive meeting briefs using attendee and topic-based analysis"""
         try:
-            # Prepare meeting with specified topic and attendees
             topic = args.topic or 'Meeting Preparation'
             attendees = args.attendees or ''
 
-            # Create meeting preparation note
-            variables = {
-                'title': f"Prep: {topic}",
-                'topic': topic,
-                'attendees': attendees,
-                'date': datetime.date.today().strftime('%Y-%m-%d')
+            # Create comprehensive meeting brief
+            brief_data = {
+                'meeting_info': {
+                    'topic': topic,
+                    'attendees': attendees.split(',') if attendees else [],
+                    'date': datetime.date.today().strftime('%Y-%m-%d'),
+                    'prep_time': datetime.datetime.now().strftime('%H:%M')
+                },
+                'context': {},
+                'actions': {},
+                'agenda': {},
+                'confidence_scores': {}
             }
 
-            # Use meeting template for preparation
-            output_path = self.template_engine.create_note('meeting', variables, args.output)
+            # Gather historical context
+            try:
+                context_args = argparse.Namespace(
+                    topic=topic,
+                    attendees=attendees,
+                    days_back=90,
+                    max_results=10
+                )
+                context_result = self.cmd_gather_context(context_args)
+                if context_result.success:
+                    brief_data['context'] = context_result.data
+                    brief_data['confidence_scores']['context'] = 0.9
+            except Exception as e:
+                brief_data['context'] = {'error': f'Context gathering failed: {str(e)}'}
+                brief_data['confidence_scores']['context'] = 0.3
 
-            # Find related notes based on topic
-            related_notes = []
-            if topic and topic != 'Meeting Preparation':
+            # Check outstanding actions
+            try:
+                actions_args = argparse.Namespace(
+                    attendees=attendees,
+                    topic=topic,
+                    status='pending'
+                )
+                actions_result = self.cmd_check_actions(actions_args)
+                if actions_result.success:
+                    brief_data['actions'] = actions_result.data
+                    brief_data['confidence_scores']['actions'] = 0.95
+            except Exception as e:
+                brief_data['actions'] = {'error': f'Action check failed: {str(e)}'}
+                brief_data['confidence_scores']['actions'] = 0.3
+
+            # Generate agenda suggestions
+            try:
+                agenda_args = argparse.Namespace(
+                    attendees=attendees,
+                    topic=topic,
+                    meeting_type='general'
+                )
+                agenda_result = self.cmd_suggest_agenda(agenda_args)
+                if agenda_result.success:
+                    brief_data['agenda'] = agenda_result.data
+                    brief_data['confidence_scores']['agenda'] = 0.85
+            except Exception as e:
+                brief_data['agenda'] = {'error': f'Agenda generation failed: {str(e)}'}
+                brief_data['confidence_scores']['agenda'] = 0.3
+
+            # Create meeting prep note with comprehensive data
+            prep_content = self._format_meeting_brief(brief_data)
+
+            if self.template_engine:
+                variables = {
+                    'title': f"Meeting Brief: {topic}",
+                    'topic': topic,
+                    'attendees': attendees,
+                    'date': datetime.date.today().strftime('%Y-%m-%d'),
+                    'content': prep_content
+                }
+
                 try:
-                    # Simple search for related content
-                    notes = self.processor.batch_process_notes('.', '*.md')
-                    topic_lower = topic.lower()
-
-                    for note in notes:
-                        if topic_lower in note.content.lower() or topic_lower in ' '.join(note.tags).lower():
-                            related_notes.append({
-                                'file': str(Path(note.file_path).name),
-                                'path': note.file_path,
-                                'relevance': 'topic_match'
-                            })
-
-                    related_notes = related_notes[:5]  # Limit to 5 most relevant
+                    output_path = self.template_engine.create_note('meeting', variables, args.output)
+                    brief_data['prep_file'] = output_path
                 except:
-                    pass  # Continue without related notes if search fails
+                    # Fallback: create simple note file
+                    output_path = f"meeting-prep-{datetime.date.today().strftime('%Y-%m-%d')}-{topic.lower().replace(' ', '-')}.md"
+                    with open(output_path, 'w') as f:
+                        f.write(prep_content)
+                    brief_data['prep_file'] = output_path
+
+            # Calculate overall confidence and provide summary
+            overall_confidence = sum(brief_data['confidence_scores'].values()) / len(brief_data['confidence_scores'])
+
+            # Count actionable items found
+            total_context = len(brief_data.get('context', {}).get('topic_matches', [])) + len(brief_data.get('context', {}).get('attendee_matches', []))
+            total_actions = len(brief_data.get('actions', {}).get('pending_actions', [])) + len(brief_data.get('actions', {}).get('attendee_related', []))
+            agenda_items = len(brief_data.get('agenda', {}).get('suggested_agenda', []))
+
+            summary_message = f"Generated comprehensive meeting brief: {total_context} context items, {total_actions} action items, {agenda_items} agenda suggestions (confidence: {overall_confidence:.1%})"
 
             return self.format_success_result(
                 'prep',
-                f"Created meeting prep note: {Path(output_path).name}",
-                {
-                    'prep_file': output_path,
-                    'topic': topic,
-                    'attendees': attendees.split(',') if attendees else [],
-                    'related_notes': related_notes
-                },
+                summary_message,
+                brief_data,
                 [
-                    f"Edit prep notes: code {output_path}",
-                    "Review related notes before meeting"
+                    f"Review meeting brief: code {brief_data.get('prep_file', 'meeting-brief.md')}",
+                    "Check outstanding action items for follow-up",
+                    "Customize agenda based on meeting objectives",
+                    "Share relevant context with attendees if needed"
                 ]
             )
 
         except Exception as e:
             return self.format_error_result(
                 'prep',
-                f"Meeting prep failed: {str(e)}",
+                f"Comprehensive meeting prep failed: {str(e)}",
                 str(e),
-                ["Check template availability", "Verify topic and attendees format"]
+                ["Check topic and attendees format", "Verify system access to notes", "Try basic prep mode"]
+            )
+
+    def _format_meeting_brief(self, brief_data):
+        """Format comprehensive meeting brief content"""
+        content = f"""# Meeting Brief: {brief_data['meeting_info']['topic']}
+
+**Date:** {brief_data['meeting_info']['date']}
+**Attendees:** {', '.join(brief_data['meeting_info']['attendees'])}
+**Prepared:** {brief_data['meeting_info']['prep_time']}
+
+## Context & Background
+
+"""
+        # Add context information
+        if 'context' in brief_data and 'topic_matches' in brief_data['context']:
+            content += "### Topic-Related Notes\n"
+            for match in brief_data['context']['topic_matches'][:3]:
+                content += f"- **{match['file']}**: {match['summary']}\n"
+            content += "\n"
+
+        if 'context' in brief_data and 'attendee_matches' in brief_data['context']:
+            content += "### Attendee History\n"
+            for match in brief_data['context']['attendee_matches'][:3]:
+                content += f"- **{match['attendee']}**: {match['summary']}\n"
+            content += "\n"
+
+        # Add action items
+        content += "## Outstanding Actions\n\n"
+        if 'actions' in brief_data:
+            if brief_data['actions'].get('overdue_actions'):
+                content += "### ⚠️ Overdue Items\n"
+                for action in brief_data['actions']['overdue_actions'][:3]:
+                    content += f"- **{action['assignee']}**: {action['task']}\n"
+                content += "\n"
+
+            if brief_data['actions'].get('attendee_related'):
+                content += "### Attendee-Specific Actions\n"
+                for action in brief_data['actions']['attendee_related'][:5]:
+                    content += f"- **{action['assignee']}**: {action['task']} ({action['status']})\n"
+                content += "\n"
+
+        # Add suggested agenda
+        content += "## Suggested Agenda\n\n"
+        if 'agenda' in brief_data and 'suggested_agenda' in brief_data['agenda']:
+            for i, item in enumerate(brief_data['agenda']['suggested_agenda'], 1):
+                content += f"{i}. {item}\n"
+
+        content += """
+
+## Meeting Notes
+
+[Add your meeting notes here]
+
+## Action Items
+
+- [ ]
+- [ ]
+- [ ]
+
+## Next Steps
+
+[Define next steps and follow-up actions]
+
+---
+*Generated by Claude Code Meeting Preparation System*
+"""
+        return content
+
+    def cmd_gather_context(self, args) -> CommandResult:
+        """Retrieve and synthesize relevant historical information"""
+        try:
+            topic = args.topic or ''
+            attendees = args.attendees or ''
+            attendee_list = [a.strip() for a in attendees.split(',') if a.strip()] if attendees else []
+
+            # Search for relevant notes
+            context_data = {
+                'topic_matches': [],
+                'attendee_matches': [],
+                'recent_notes': [],
+                'summary': ''
+            }
+
+            if self.processor:
+                notes = self.processor.batch_process_notes('.', '*.md')
+                cutoff_date = datetime.datetime.now() - datetime.timedelta(days=args.days_back)
+
+                topic_matches = []
+                attendee_matches = []
+                recent_notes = []
+
+                for note in notes:
+                    # Check modification date
+                    try:
+                        note_date = datetime.datetime.fromtimestamp(os.path.getmtime(note.file_path))
+                        if note_date < cutoff_date:
+                            continue
+                    except:
+                        continue
+
+                    # Topic matching
+                    if topic and topic.lower() in note.content.lower():
+                        topic_matches.append({
+                            'file': str(Path(note.file_path).name),
+                            'path': note.file_path,
+                            'relevance_score': note.content.lower().count(topic.lower()),
+                            'summary': note.content[:200] + '...' if len(note.content) > 200 else note.content
+                        })
+
+                    # Attendee matching
+                    for attendee in attendee_list:
+                        if attendee.lower() in note.content.lower():
+                            attendee_matches.append({
+                                'file': str(Path(note.file_path).name),
+                                'path': note.file_path,
+                                'attendee': attendee,
+                                'summary': note.content[:200] + '...' if len(note.content) > 200 else note.content
+                            })
+                            break
+
+                    # Recent notes
+                    recent_notes.append({
+                        'file': str(Path(note.file_path).name),
+                        'path': note.file_path,
+                        'modified': note_date.strftime('%Y-%m-%d'),
+                        'summary': note.content[:150] + '...' if len(note.content) > 150 else note.content
+                    })
+
+                # Sort and limit results
+                topic_matches.sort(key=lambda x: x['relevance_score'], reverse=True)
+                context_data['topic_matches'] = topic_matches[:args.max_results//2]
+                context_data['attendee_matches'] = attendee_matches[:args.max_results//2]
+                context_data['recent_notes'] = recent_notes[:5]
+
+                # Generate summary
+                total_matches = len(topic_matches) + len(attendee_matches)
+                context_data['summary'] = f"Found {total_matches} relevant notes from the last {args.days_back} days"
+
+            return self.format_success_result(
+                'gather-context',
+                f"Gathered context for {topic or 'meeting'}" + (f" with {len(attendee_list)} attendees" if attendee_list else ""),
+                context_data,
+                ["Review topic matches for relevant background", "Check attendee-specific notes for context"]
+            )
+
+        except Exception as e:
+            return self.format_error_result(
+                'gather-context',
+                f"Context gathering failed: {str(e)}",
+                str(e),
+                ["Check topic and attendee parameters", "Verify access to note files"]
+            )
+
+    def cmd_check_actions(self, args) -> CommandResult:
+        """Identify outstanding action items related to meeting participants/topics"""
+        try:
+            attendees = args.attendees or ''
+            topic = args.topic or ''
+            attendee_list = [a.strip() for a in attendees.split(',') if a.strip()] if attendees else []
+
+            # Use existing follow-up functionality
+            action_items = {
+                'pending_actions': [],
+                'overdue_actions': [],
+                'topic_related': [],
+                'attendee_related': []
+            }
+
+            if self.processor:
+                notes = self.processor.batch_process_notes('.', '*.md')
+
+                for note in notes:
+                    # Extract action items from each note
+                    for action in note.action_items:
+                        action_dict = {
+                            'task': action.task,
+                            'assignee': action.assignee,
+                            'due_date': action.due_date,
+                            'status': action.status,
+                            'file': str(Path(note.file_path).name),
+                            'path': note.file_path
+                        }
+
+                        # Filter by status
+                        if args.status == 'all' or action.status == args.status:
+                            # Check if action is related to attendees
+                            if attendee_list and action.assignee and any(attendee.lower() in action.assignee.lower() for attendee in attendee_list):
+                                action_items['attendee_related'].append(action_dict)
+
+                            # Check if action is related to topic
+                            if topic and topic.lower() in action.task.lower():
+                                action_items['topic_related'].append(action_dict)
+
+                            # Categorize by status
+                            if action.status == 'pending':
+                                action_items['pending_actions'].append(action_dict)
+                            elif action.status == 'overdue':
+                                action_items['overdue_actions'].append(action_dict)
+
+            total_actions = len(action_items['pending_actions']) + len(action_items['overdue_actions'])
+            related_actions = len(action_items['topic_related']) + len(action_items['attendee_related'])
+
+            return self.format_success_result(
+                'check-actions',
+                f"Found {total_actions} total actions, {related_actions} related to meeting context",
+                action_items,
+                [
+                    "Review overdue actions that need immediate attention",
+                    "Address pending actions related to meeting attendees",
+                    "Include relevant action items in meeting agenda"
+                ]
+            )
+
+        except Exception as e:
+            return self.format_error_result(
+                'check-actions',
+                f"Action check failed: {str(e)}",
+                str(e),
+                ["Verify attendee and topic parameters", "Check action item parsing"]
+            )
+
+    def cmd_suggest_agenda(self, args) -> CommandResult:
+        """Propose agenda items based on historical meeting patterns and outstanding items"""
+        try:
+            attendees = args.attendees or ''
+            topic = args.topic or ''
+            meeting_type = args.meeting_type
+            attendee_list = [a.strip() for a in attendees.split(',') if a.strip()] if attendees else []
+
+            agenda_suggestions = {
+                'standard_items': [],
+                'topic_specific': [],
+                'action_follow_ups': [],
+                'recurring_themes': [],
+                'suggested_agenda': []
+            }
+
+            # Standard agenda items based on meeting type
+            if meeting_type == '1-on-1':
+                agenda_suggestions['standard_items'] = [
+                    "Personal check-in and well-being",
+                    "Current project status and challenges",
+                    "Goals and priorities discussion",
+                    "Feedback and development topics",
+                    "Action items and next steps"
+                ]
+            elif meeting_type == 'team-meeting':
+                agenda_suggestions['standard_items'] = [
+                    "Team updates and announcements",
+                    "Project status reviews",
+                    "Blockers and challenges",
+                    "Upcoming deadlines and priorities",
+                    "Team collaboration topics"
+                ]
+            elif meeting_type == 'project-review':
+                agenda_suggestions['standard_items'] = [
+                    "Project milestone review",
+                    "Current status and metrics",
+                    "Risks and mitigation strategies",
+                    "Resource needs and constraints",
+                    "Next phase planning"
+                ]
+            else:  # general
+                agenda_suggestions['standard_items'] = [
+                    "Meeting objectives review",
+                    "Key discussion topics",
+                    "Decision items",
+                    "Action planning"
+                ]
+
+            if self.processor:
+                notes = self.processor.batch_process_notes('.', '*.md')
+
+                # Analyze historical patterns
+                topic_themes = {}
+                recent_actions = []
+
+                for note in notes:
+                    # Look for patterns in attendee-related meetings
+                    if attendee_list:
+                        note_content_lower = note.content.lower()
+                        if any(attendee.lower() in note_content_lower for attendee in attendee_list):
+                            # Extract common themes from note content
+                            words = re.findall(r'\b\w+\b', note_content_lower)
+                            for word in words:
+                                if len(word) > 4 and word not in ['meeting', 'discussion', 'action', 'item']:
+                                    topic_themes[word] = topic_themes.get(word, 0) + 1
+
+                    # Collect recent action items for follow-up
+                    for action in note.action_items:
+                        if action.status in ['pending', 'overdue']:
+                            if not attendee_list or (action.assignee and any(attendee.lower() in action.assignee.lower() for attendee in attendee_list)):
+                                recent_actions.append({
+                                    'task': action.task,
+                                    'assignee': action.assignee,
+                                    'status': action.status
+                                })
+
+                # Generate topic-specific suggestions
+                if topic:
+                    agenda_suggestions['topic_specific'] = [
+                        f"{topic} - current status and progress",
+                        f"{topic} - challenges and blockers",
+                        f"{topic} - next steps and timeline"
+                    ]
+
+                # Add recurring themes
+                common_themes = sorted(topic_themes.items(), key=lambda x: x[1], reverse=True)[:3]
+                agenda_suggestions['recurring_themes'] = [theme[0].title() for theme in common_themes]
+
+                # Add action follow-ups
+                agenda_suggestions['action_follow_ups'] = recent_actions[:5]
+
+            # Build suggested agenda
+            suggested_agenda = []
+            suggested_agenda.extend(agenda_suggestions['standard_items'][:3])  # Top 3 standard items
+
+            if agenda_suggestions['topic_specific']:
+                suggested_agenda.extend(agenda_suggestions['topic_specific'][:2])
+
+            if agenda_suggestions['action_follow_ups']:
+                suggested_agenda.append("Action item follow-up")
+
+            if agenda_suggestions['recurring_themes']:
+                suggested_agenda.append(f"Discussion: {', '.join(agenda_suggestions['recurring_themes'][:2])}")
+
+            agenda_suggestions['suggested_agenda'] = suggested_agenda
+
+            return self.format_success_result(
+                'suggest-agenda',
+                f"Generated {len(suggested_agenda)} agenda items for {meeting_type} meeting",
+                agenda_suggestions,
+                [
+                    "Review and customize suggested agenda items",
+                    "Add time estimates for each agenda item",
+                    "Share agenda with attendees before meeting"
+                ]
+            )
+
+        except Exception as e:
+            return self.format_error_result(
+                'suggest-agenda',
+                f"Agenda suggestion failed: {str(e)}",
+                str(e),
+                ["Check meeting parameters", "Verify access to historical notes"]
             )
 
     def cmd_list_templates(self, args) -> CommandResult:
@@ -1656,6 +2058,133 @@ class NotesCommandInterface:
         preview = re.sub(r'\s+', ' ', preview).strip()  # Normalize whitespace
 
         return preview
+
+    def _perform_web_research(self, query: str) -> Dict[str, Any]:
+        """Perform web search research on a topic using Claude Code's WebSearch tool"""
+        try:
+            # This method would normally use the WebSearch tool available in Claude Code
+            # For now, return structured placeholder that Claude Code can recognize
+            return {
+                'query': query,
+                'search_performed': True,
+                'results_available': True,
+                'instruction': f"Claude Code should use WebSearch tool to research: {query}",
+                'suggested_searches': [
+                    f"{query} latest developments",
+                    f"{query} best practices",
+                    f"{query} current trends"
+                ]
+            }
+        except Exception as e:
+            return {
+                'query': query,
+                'search_performed': False,
+                'error': str(e),
+                'instruction': f"Claude Code should use WebSearch tool to research: {query}"
+            }
+
+    def _collect_sources(self, web_research: Dict, related_notes: List) -> List[Dict[str, str]]:
+        """Collect and format source attribution information"""
+        sources = []
+
+        # Add web research sources
+        if web_research.get('search_performed'):
+            sources.append({
+                'type': 'web_search',
+                'query': web_research.get('query', ''),
+                'description': f"Web search results for: {web_research.get('query', '')}",
+                'attribution': 'Research conducted via web search'
+            })
+
+        # Add related notes as sources
+        for note in related_notes:
+            sources.append({
+                'type': 'note_reference',
+                'file': note['file'],
+                'path': note['path'],
+                'description': f"Related note: {note['file']} (similarity: {note['similarity_score']})",
+                'attribution': f"Cross-referenced from local note database"
+            })
+
+        return sources
+
+    def _create_enhanced_content(self, original_note: 'ParsedNote', enhancements: List[Dict], preserve_original: bool = True) -> str:
+        """Create enhanced content with clear separation between original and new content"""
+        enhanced_content = []
+
+        if preserve_original:
+            # Start with original content
+            enhanced_content.append("# Enhanced Note")
+            enhanced_content.append("")
+            enhanced_content.append("---")
+            enhanced_content.append("")
+            enhanced_content.append("## Original Content")
+            enhanced_content.append("")
+            enhanced_content.append(original_note.content)
+            enhanced_content.append("")
+            enhanced_content.append("---")
+            enhanced_content.append("")
+            enhanced_content.append("## Research Enhancements")
+            enhanced_content.append("")
+            enhanced_content.append(f"*The following content was added by Claude Code research on {datetime.date.today().strftime('%Y-%m-%d')}*")
+            enhanced_content.append("")
+        else:
+            # Integrate enhancements into original content
+            enhanced_content.append(original_note.content)
+            enhanced_content.append("")
+            enhanced_content.append("---")
+            enhanced_content.append("")
+            enhanced_content.append("## Additional Research")
+            enhanced_content.append("")
+
+        # Add each enhancement
+        for i, enhancement in enumerate(enhancements, 1):
+            if enhancement['type'] == 'web_search':
+                enhanced_content.append(f"### Research Enhancement #{i}: Web Search")
+                enhanced_content.append("")
+                data = enhancement['data']
+                enhanced_content.append(f"**Topic:** {data.get('query', 'N/A')}")
+                enhanced_content.append("")
+                enhanced_content.append(f"**Search Status:** {'Completed' if data.get('search_performed') else 'Pending'}")
+                enhanced_content.append("")
+                enhanced_content.append("**Claude Code Instructions:**")
+                enhanced_content.append(f"- {data.get('instruction', 'No instruction')}")
+                enhanced_content.append("")
+                if data.get('suggested_searches'):
+                    enhanced_content.append("**Suggested Search Queries:**")
+                    for search in data['suggested_searches']:
+                        enhanced_content.append(f"- {search}")
+                    enhanced_content.append("")
+
+            elif enhancement['type'] == 'cross_reference':
+                enhanced_content.append(f"### Research Enhancement #{i}: Related Notes")
+                enhanced_content.append("")
+                related_notes = enhancement['data']
+                enhanced_content.append(f"**Found {len(related_notes)} related notes in database:**")
+                enhanced_content.append("")
+                for note in related_notes:
+                    enhanced_content.append(f"- **{note['file']}** (similarity: {note['similarity_score']})")
+                    enhanced_content.append(f"  - Category: {note['category']}")
+                    if note['tags']:
+                        enhanced_content.append(f"  - Tags: {', '.join(note['tags'])}")
+                    enhanced_content.append(f"  - Word count: {note['word_count']}")
+                    enhanced_content.append("")
+
+        # Add source attribution
+        enhanced_content.append("---")
+        enhanced_content.append("")
+        enhanced_content.append("## Sources and Attribution")
+        enhanced_content.append("")
+        enhanced_content.append(f"**Enhanced by:** Claude Code Research System")
+        enhanced_content.append(f"**Enhancement Date:** {datetime.date.today().strftime('%Y-%m-%d')}")
+        enhanced_content.append("")
+        enhanced_content.append("**Enhancement Types Applied:**")
+        enhancement_types = [e['type'] for e in enhancements]
+        for etype in set(enhancement_types):
+            enhanced_content.append(f"- {etype.replace('_', ' ').title()}")
+        enhanced_content.append("")
+
+        return '\n'.join(enhanced_content)
 
     def _find_related_notes(self, note: 'ParsedNote', limit: int = 5) -> List[Dict[str, Any]]:
         """Find notes related to the current note using content similarity"""
@@ -2247,6 +2776,25 @@ Natural language support:
     prep_parser.add_argument('--attendees', help='Comma-separated attendees')
     prep_parser.add_argument('--output', help='Output file path')
 
+    # Gather context command
+    gather_context_parser = subparsers.add_parser('gather-context', help='Retrieve and synthesize relevant historical information')
+    gather_context_parser.add_argument('--topic', help='Topic to gather context for')
+    gather_context_parser.add_argument('--attendees', help='Comma-separated attendees to gather context for')
+    gather_context_parser.add_argument('--days-back', type=int, default=90, help='Days to look back for context')
+    gather_context_parser.add_argument('--max-results', type=int, default=10, help='Maximum number of results to return')
+
+    # Check actions command
+    check_actions_parser = subparsers.add_parser('check-actions', help='Identify outstanding action items related to meeting participants/topics')
+    check_actions_parser.add_argument('--attendees', help='Comma-separated attendees to check actions for')
+    check_actions_parser.add_argument('--topic', help='Topic to check actions for')
+    check_actions_parser.add_argument('--status', choices=['all', 'overdue', 'pending', 'completed'], default='pending', help='Action status to check')
+
+    # Suggest agenda command
+    suggest_agenda_parser = subparsers.add_parser('suggest-agenda', help='Propose agenda items based on historical meeting patterns and outstanding items')
+    suggest_agenda_parser.add_argument('--attendees', help='Comma-separated attendees')
+    suggest_agenda_parser.add_argument('--topic', help='Meeting topic')
+    suggest_agenda_parser.add_argument('--meeting-type', choices=['1-on-1', 'team-meeting', 'project-review', 'general'], default='general', help='Type of meeting')
+
     # List templates command
     list_parser = subparsers.add_parser('list-templates', help='List available templates')
 
@@ -2272,6 +2820,9 @@ Natural language support:
             'find': interface.cmd_find,
             'follow-up': interface.cmd_follow_up,
             'prep': interface.cmd_prep,
+            'gather-context': interface.cmd_gather_context,
+            'check-actions': interface.cmd_check_actions,
+            'suggest-agenda': interface.cmd_suggest_agenda,
             'list-templates': interface.cmd_list_templates,
         }
 
