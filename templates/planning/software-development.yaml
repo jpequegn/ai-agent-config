@@ -1,0 +1,193 @@
+# Software Development Project Template
+# Standard template for software development projects with discovery, development, and launch phases
+
+name: "Software Development"
+description: "Standard template for software development projects with comprehensive planning phases"
+category: "development"
+duration_estimate_weeks: 14
+
+phases:
+  - name: "Discovery & Planning"
+    duration_weeks: 4
+    description: "Requirements gathering, technical planning, and project setup"
+    activities:
+      - name: "Requirements analysis"
+        duration_days: 5
+        description: "Gather and analyze functional and non-functional requirements"
+        deliverables: ["Requirements document", "User stories", "Acceptance criteria"]
+        dependencies: []
+
+      - name: "Technical architecture"
+        duration_days: 7
+        description: "Design system architecture, technology stack, and technical approach"
+        deliverables: ["Architecture document", "Technology stack decision", "Database schema"]
+        dependencies: ["Requirements analysis"]
+
+      - name: "Resource planning"
+        duration_days: 3
+        description: "Team assignment, timeline planning, and resource allocation"
+        deliverables: ["Project timeline", "Resource allocation plan", "Risk assessment"]
+        dependencies: ["Technical architecture"]
+
+      - name: "Development environment setup"
+        duration_days: 5
+        description: "Set up development, staging, and CI/CD infrastructure"
+        deliverables: ["Development environment", "CI/CD pipeline", "Deployment strategy"]
+        dependencies: ["Technical architecture"]
+
+  - name: "Development"
+    duration_weeks: 8
+    description: "Core development phase with iterative development and testing"
+    activities:
+      - name: "Core functionality"
+        duration_days: 25
+        description: "Implement core business logic and primary features"
+        deliverables: ["Core features", "API endpoints", "Database implementation"]
+        dependencies: ["Development environment setup"]
+
+      - name: "User interface development"
+        duration_days: 15
+        description: "Implement user interface and user experience features"
+        deliverables: ["UI components", "User workflows", "Responsive design"]
+        dependencies: ["Core functionality"]
+
+      - name: "Integration & testing"
+        duration_days: 10
+        description: "Integration testing, API testing, and system testing"
+        deliverables: ["Test suite", "Integration tests", "Performance tests"]
+        dependencies: ["User interface development"]
+
+      - name: "Documentation"
+        duration_days: 5
+        description: "Technical documentation, user guides, and API documentation"
+        deliverables: ["Technical docs", "User guides", "API documentation"]
+        dependencies: ["Integration & testing"]
+
+  - name: "Launch"
+    duration_weeks: 2
+    description: "Final testing, deployment, and post-launch activities"
+    activities:
+      - name: "Final testing & bug fixes"
+        duration_days: 4
+        description: "Final round of testing and critical bug fixes"
+        deliverables: ["Bug fixes", "Performance optimization", "Security review"]
+        dependencies: ["Documentation"]
+
+      - name: "Deployment"
+        duration_days: 2
+        description: "Production deployment and system configuration"
+        deliverables: ["Production deployment", "System configuration", "DNS setup"]
+        dependencies: ["Final testing & bug fixes"]
+
+      - name: "Monitoring setup"
+        duration_days: 2
+        description: "Set up monitoring, alerting, and logging systems"
+        deliverables: ["Monitoring dashboards", "Alert configuration", "Log analysis"]
+        dependencies: ["Deployment"]
+
+      - name: "Post-launch review"
+        duration_days: 2
+        description: "Review launch success, gather feedback, and plan improvements"
+        deliverables: ["Launch review", "Feedback analysis", "Improvement plan"]
+        dependencies: ["Monitoring setup"]
+
+# Critical path activities (longest dependency chain)
+critical_path:
+  - "Requirements analysis"
+  - "Technical architecture"
+  - "Development environment setup"
+  - "Core functionality"
+  - "User interface development"
+  - "Integration & testing"
+  - "Final testing & bug fixes"
+  - "Deployment"
+
+# Resource requirements
+resources:
+  roles:
+    - name: "Project Manager"
+      allocation_percentage: 30
+      critical_phases: ["Discovery & Planning", "Launch"]
+
+    - name: "Software Architect"
+      allocation_percentage: 50
+      critical_phases: ["Discovery & Planning"]
+
+    - name: "Backend Developer"
+      allocation_percentage: 80
+      critical_phases: ["Development"]
+
+    - name: "Frontend Developer"
+      allocation_percentage: 80
+      critical_phases: ["Development"]
+
+    - name: "QA Engineer"
+      allocation_percentage: 60
+      critical_phases: ["Development", "Launch"]
+
+    - name: "DevOps Engineer"
+      allocation_percentage: 40
+      critical_phases: ["Discovery & Planning", "Launch"]
+
+  tools:
+    - "Version control system (Git)"
+    - "Project management tool"
+    - "CI/CD platform"
+    - "Testing frameworks"
+    - "Monitoring and logging tools"
+
+# Risk factors and mitigation strategies
+risks:
+  - name: "Requirements changes"
+    probability: "medium"
+    impact: "high"
+    mitigation: "Implement change control process and buffer time"
+
+  - name: "Technical complexity underestimation"
+    probability: "high"
+    impact: "medium"
+    mitigation: "Regular architecture reviews and proof of concepts"
+
+  - name: "Resource availability"
+    probability: "medium"
+    impact: "medium"
+    mitigation: "Cross-training and backup resource identification"
+
+  - name: "Integration issues"
+    probability: "medium"
+    impact: "high"
+    mitigation: "Early integration testing and API contract validation"
+
+# Success criteria and KPIs
+success_criteria:
+  - "All requirements implemented and tested"
+  - "Performance meets specified benchmarks"
+  - "Security requirements satisfied"
+  - "Documentation complete and approved"
+  - "Successful production deployment"
+  - "User acceptance criteria met"
+
+# Customization variables
+variables:
+  - name: "project_complexity"
+    type: "select"
+    options: ["simple", "medium", "complex"]
+    default: "medium"
+    impact: "Adjusts duration estimates by 20% up/down"
+
+  - name: "team_size"
+    type: "number"
+    default: 5
+    min: 2
+    max: 15
+    impact: "Affects resource allocation and communication overhead"
+
+  - name: "regulatory_requirements"
+    type: "boolean"
+    default: false
+    impact: "Adds compliance activities and documentation"
+
+  - name: "legacy_integration"
+    type: "boolean"
+    default: false
+    impact: "Adds integration complexity and testing requirements"

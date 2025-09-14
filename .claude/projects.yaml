@@ -1,106 +1,141 @@
-# Project Configuration System
-# Core infrastructure for managing project definitions and orchestration
-
 projects:
   q4-marketing-campaign:
-    name: "Q4 Marketing Campaign"
-    status: "in_progress"
-    priority: "high"
-    owner: "sarah@company.com"
-    start_date: "2024-09-01"
-    target_date: "2024-12-31"
-    github_repos: ["marketing-site", "analytics-dashboard"]
-    dependencies: ["budget-approval"]
-    tags: ["marketing", "revenue"]
+    name: Q4 Marketing Campaign
+    status: in_progress
+    priority: high
+    owner: sarah@company.com
+    start_date: '2024-09-01'
+    target_date: '2024-12-31'
+    github_repos:
+    - marketing-site
+    - analytics-dashboard
+    dependencies:
+    - budget-approval
+    tags:
+    - marketing
+    - revenue
     milestones:
-      - name: "Campaign Strategy Approval"
-        date: "2024-09-15"
-        status: "completed"
-      - name: "Content Creation"
-        date: "2024-10-31"
-        status: "in_progress"
-      - name: "Launch Campaign"
-        date: "2024-11-15"
-        status: "planned"
-      - name: "Q4 Results Analysis"
-        date: "2024-12-31"
-        status: "planned"
-
+    - name: Campaign Strategy Approval
+      date: '2024-09-15'
+      status: completed
+    - name: Content Creation
+      date: '2024-10-31'
+      status: in_progress
+    - name: Launch Campaign
+      date: '2024-11-15'
+      status: planned
+    - name: Q4 Results Analysis
+      date: '2024-12-31'
+      status: planned
   mobile-app-v2:
-    name: "Mobile App V2 Redesign"
-    status: "planning"
-    priority: "medium"
-    owner: "john@company.com"
-    start_date: "2024-10-01"
-    target_date: "2025-03-01"
-    github_repos: ["mobile-app"]
-    dependencies: ["user-research-completion", "design-system-update"]
-    tags: ["mobile", "product", "ux"]
+    name: Mobile App V2 Redesign
+    status: planning
+    priority: medium
+    owner: john@company.com
+    start_date: '2024-10-01'
+    target_date: '2025-03-01'
+    github_repos:
+    - mobile-app
+    dependencies:
+    - user-research-completion
+    - design-system-update
+    tags:
+    - mobile
+    - product
+    - ux
     milestones:
-      - name: "User Research Complete"
-        date: "2024-10-31"
-        status: "in_progress"
-      - name: "Design Mockups"
-        date: "2024-11-30"
-        status: "planned"
-      - name: "Development Sprint 1"
-        date: "2025-01-15"
-        status: "planned"
-      - name: "Beta Release"
-        date: "2025-02-15"
-        status: "planned"
-      - name: "Production Release"
-        date: "2025-03-01"
-        status: "planned"
-
+    - name: User Research Complete
+      date: '2024-10-31'
+      status: in_progress
+    - name: Design Mockups
+      date: '2024-11-30'
+      status: planned
+    - name: Development Sprint 1
+      date: '2025-01-15'
+      status: planned
+    - name: Beta Release
+      date: '2025-02-15'
+      status: planned
+    - name: Production Release
+      date: '2025-03-01'
+      status: planned
   infrastructure-upgrade:
-    name: "Cloud Infrastructure Upgrade"
-    status: "active"
-    priority: "critical"
-    owner: "devops@company.com"
-    start_date: "2024-09-10"
-    target_date: "2024-10-15"
-    github_repos: ["infrastructure", "terraform-configs"]
+    name: Cloud Infrastructure Upgrade
+    status: active
+    priority: critical
+    owner: devops@company.com
+    start_date: '2024-09-10'
+    target_date: '2024-10-15'
+    github_repos:
+    - infrastructure
+    - terraform-configs
     dependencies: []
-    tags: ["infrastructure", "devops", "security"]
+    tags:
+    - infrastructure
+    - devops
+    - security
     milestones:
-      - name: "Security Audit"
-        date: "2024-09-20"
-        status: "completed"
-      - name: "Staging Migration"
-        date: "2024-09-30"
-        status: "in_progress"
-      - name: "Production Migration"
-        date: "2024-10-15"
-        status: "planned"
-
-# Project Status Definitions
+    - name: Security Audit
+      date: '2024-09-20'
+      status: completed
+    - name: Staging Migration
+      date: '2024-09-30'
+      status: in_progress
+    - name: Production Migration
+      date: '2024-10-15'
+      status: planned
+  integration-test:
+    name: integration-test
+    status: planning
+    priority: medium
+    owner: unassigned@company.com
+    start_date: '2025-09-14'
+    target_date: '2025-12-05'
+    template_used: software-development
+    milestones:
+    - name: Discovery & Planning
+      date: '2025-10-01'
+      status: planned
+    - name: Development
+      date: '2025-11-25'
+      status: planned
+    - name: Launch
+      date: '2025-12-05'
+      status: planned
 statuses:
-  - planning      # Project is being defined and scoped
-  - approved      # Project has been approved but not started
-  - active        # Project is actively being worked on
-  - in_progress   # Project work is underway
-  - blocked       # Project is blocked by dependencies or issues
-  - on_hold       # Project is temporarily paused
-  - completed     # Project has been successfully completed
-  - cancelled     # Project has been cancelled
-
-# Priority Levels
+- planning
+- approved
+- active
+- in_progress
+- blocked
+- on_hold
+- completed
+- cancelled
 priorities:
-  - critical      # Must be completed ASAP, blocking other work
-  - high          # Important project with near-term deadline
-  - medium        # Standard priority project
-  - low           # Nice to have, can be deferred
-
-# Validation Rules
+- critical
+- high
+- medium
+- low
 validation:
   required_fields:
-    - name
-    - status
-    - priority
-    - owner
-    - target_date
-  date_format: "YYYY-MM-DD"
-  email_pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
-  status_values: ["planning", "approved", "active", "in_progress", "blocked", "on_hold", "completed", "cancelled"]
-  priority_values: ["critical", "high", "medium", "low"]
+  - name
+  - status
+  - priority
+  - owner
+  - target_date
+  date_format: YYYY-MM-DD
+  email_pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+  status_values:
+  - planning
+  - approved
+  - active
+  - in_progress
+  - blocked
+  - on_hold
+  - completed
+  - cancelled
+  priority_values:
+  - critical
+  - high
+  - medium
+  - low
