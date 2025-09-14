@@ -1,0 +1,108 @@
+# Simple Web Application Project Template
+# Streamlined template for basic web applications
+
+name: "Simple Web Application"
+description: "Streamlined template for basic web applications with minimal phases"
+category: "web"
+duration_estimate_weeks: 6
+
+phases:
+  - name: "Setup & Design"
+    duration_weeks: 2
+    description: "Initial setup and basic design"
+    activities:
+      - name: "Project setup"
+        duration_days: 3
+        description: "Initialize project structure and basic configuration"
+        deliverables: ["Project structure", "Configuration files", "Basic README"]
+        dependencies: []
+
+      - name: "UI design"
+        duration_days: 5
+        description: "Create basic UI layouts and styling"
+        deliverables: ["Wireframes", "Basic CSS", "Component structure"]
+        dependencies: ["Project setup"]
+
+  - name: "Development"
+    duration_weeks: 3
+    description: "Core development phase"
+    activities:
+      - name: "Frontend development"
+        duration_days: 10
+        description: "Implement main application features"
+        deliverables: ["Main pages", "Interactive components", "API integration"]
+        dependencies: ["UI design"]
+
+      - name: "Testing"
+        duration_days: 5
+        description: "Basic testing and bug fixes"
+        deliverables: ["Test coverage", "Bug fixes", "Performance check"]
+        dependencies: ["Frontend development"]
+
+  - name: "Deployment"
+    duration_weeks: 1
+    description: "Deploy and launch"
+    activities:
+      - name: "Production deployment"
+        duration_days: 3
+        description: "Deploy to production environment"
+        deliverables: ["Live deployment", "Domain setup", "Basic monitoring"]
+        dependencies: ["Testing"]
+
+      - name: "Launch review"
+        duration_days: 2
+        description: "Review launch and document lessons learned"
+        deliverables: ["Launch report", "Documentation", "Next steps"]
+        dependencies: ["Production deployment"]
+
+# Critical path (simplified)
+critical_path:
+  - "Project setup"
+  - "UI design"
+  - "Frontend development"
+  - "Testing"
+  - "Production deployment"
+
+# Simplified resource requirements
+resources:
+  roles:
+    - name: "Developer"
+      allocation_percentage: 90
+      critical_phases: ["Development"]
+
+    - name: "Designer"
+      allocation_percentage: 60
+      critical_phases: ["Setup & Design"]
+
+# Basic risks
+risks:
+  - name: "Scope creep"
+    probability: "medium"
+    impact: "medium"
+    mitigation: "Define clear requirements upfront"
+
+  - name: "Technical issues"
+    probability: "low"
+    impact: "medium"
+    mitigation: "Use proven technologies and frameworks"
+
+# Success criteria
+success_criteria:
+  - "Application deployed and accessible"
+  - "Core functionality working"
+  - "Basic performance acceptable"
+
+# Customization variables
+variables:
+  - name: "project_complexity"
+    type: "select"
+    options: ["simple", "medium", "complex"]
+    default: "simple"
+    impact: "Adjusts duration estimates by 15% up/down"
+
+  - name: "team_size"
+    type: "number"
+    default: 2
+    min: 1
+    max: 5
+    impact: "Affects parallel work capability"
