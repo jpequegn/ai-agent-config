@@ -1,0 +1,214 @@
+learning_goals:
+  ai-agent-architecture:
+    name: "AI Agent Architecture & Orchestration"
+    description: "Master advanced AI agent coordination, multi-agent systems, and intelligent orchestration patterns"
+    category: "technical"
+    priority: "high"
+    status: "active"
+    created_date: "2024-09-14"
+    target_completion: "2025-01-15"
+    progress: 45
+    skills:
+      - "Multi-agent coordination"
+      - "Agent orchestration patterns"
+      - "System architecture design"
+      - "Performance optimization"
+      - "Integration patterns"
+    learning_outcomes:
+      - "Design scalable agent architectures"
+      - "Implement efficient coordination mechanisms"
+      - "Optimize agent performance and resource usage"
+      - "Create robust integration patterns"
+    resources:
+      - "ai-agent-coordination-paper"
+      - "claude-code-documentation"
+      - "mcp-server-specification"
+    milestones:
+      - name: "Coordination Patterns Mastery"
+        date: "2024-10-15"
+        status: "completed"
+        completion_criteria: "Implement 5 different coordination patterns"
+      - name: "Performance Optimization"
+        date: "2024-11-30"
+        status: "in_progress"
+        completion_criteria: "Achieve 50% performance improvement in test scenarios"
+      - name: "Production Implementation"
+        date: "2025-01-15"
+        status: "planned"
+        completion_criteria: "Deploy agent architecture in production environment"
+    tags:
+      - "ai"
+      - "architecture"
+      - "systems"
+      - "orchestration"
+
+  para-method-mastery:
+    name: "PARA Method Advanced Implementation"
+    description: "Master advanced PARA Method techniques for knowledge management and personal productivity"
+    category: "productivity"
+    priority: "high"
+    status: "active"
+    created_date: "2024-09-01"
+    target_completion: "2024-12-31"
+    progress: 75
+    skills:
+      - "Information architecture"
+      - "Knowledge graph construction"
+      - "Workflow automation"
+      - "Digital organization"
+      - "Cross-system integration"
+    learning_outcomes:
+      - "Implement automated PARA workflows"
+      - "Create seamless cross-system integration"
+      - "Optimize information retrieval and storage"
+      - "Build sustainable knowledge management practices"
+    resources:
+      - "building-a-second-brain"
+      - "productivity-automation-course"
+    milestones:
+      - name: "Basic PARA Implementation"
+        date: "2024-09-15"
+        status: "completed"
+        completion_criteria: "Set up complete PARA folder structure"
+      - name: "Automation Integration"
+        date: "2024-10-31"
+        status: "in_progress"
+        completion_criteria: "Implement automated note processing"
+      - name: "Advanced Workflows"
+        date: "2024-12-31"
+        status: "planned"
+        completion_criteria: "Create 10 advanced automation workflows"
+    tags:
+      - "para"
+      - "productivity"
+      - "knowledge-management"
+      - "automation"
+
+  claude-code-mastery:
+    name: "Claude Code Advanced Techniques"
+    description: "Master advanced Claude Code patterns, persona system, and framework integration"
+    category: "technical"
+    priority: "medium"
+    status: "active"
+    created_date: "2024-09-10"
+    target_completion: "2024-11-30"
+    progress: 60
+    skills:
+      - "Slash command development"
+      - "Persona system utilization"
+      - "MCP server integration"
+      - "Workflow orchestration"
+      - "Framework customization"
+    learning_outcomes:
+      - "Create custom slash commands"
+      - "Implement persona-aware workflows"
+      - "Integrate with MCP servers effectively"
+      - "Build sophisticated automation patterns"
+    resources:
+      - "claude-code-documentation"
+      - "mcp-server-specification"
+    milestones:
+      - name: "Basic Command Creation"
+        date: "2024-09-30"
+        status: "completed"
+        completion_criteria: "Create 5 custom slash commands"
+      - name: "Advanced Integration"
+        date: "2024-10-31"
+        status: "in_progress"
+        completion_criteria: "Implement MCP server integration patterns"
+      - name: "Framework Mastery"
+        date: "2024-11-30"
+        status: "planned"
+        completion_criteria: "Build comprehensive custom framework"
+    tags:
+      - "claude-code"
+      - "ai-tools"
+      - "automation"
+      - "frameworks"
+
+categories:
+  - "technical"
+  - "productivity"
+  - "business"
+  - "creative"
+  - "personal"
+
+priorities:
+  - "critical"
+  - "high"
+  - "medium"
+  - "low"
+
+statuses:
+  - "planning"
+  - "active"
+  - "paused"
+  - "completed"
+  - "cancelled"
+
+milestone_statuses:
+  - "planned"
+  - "in_progress"
+  - "completed"
+  - "cancelled"
+
+validation:
+  required_fields:
+    - "name"
+    - "description"
+    - "category"
+    - "priority"
+    - "status"
+    - "created_date"
+    - "target_completion"
+  date_format: "YYYY-MM-DD"
+  progress_range: [0, 100]
+  valid_categories:
+    - "technical"
+    - "productivity"
+    - "business"
+    - "creative"
+    - "personal"
+  valid_priorities:
+    - "critical"
+    - "high"
+    - "medium"
+    - "low"
+  valid_statuses:
+    - "planning"
+    - "active"
+    - "paused"
+    - "completed"
+    - "cancelled"
+
+learning_pathways:
+  ai_engineer:
+    name: "AI Engineering Mastery"
+    description: "Complete pathway to become an AI engineering expert"
+    goals:
+      - "ai-agent-architecture"
+      - "claude-code-mastery"
+    estimated_duration: "6 months"
+    difficulty: "advanced"
+
+  knowledge_architect:
+    name: "Knowledge Architecture Specialist"
+    description: "Master personal knowledge management and productivity systems"
+    goals:
+      - "para-method-mastery"
+      - "claude-code-mastery"
+    estimated_duration: "4 months"
+    difficulty: "intermediate"
+
+settings:
+  review_frequency: "weekly"
+  progress_update_frequency: "bi-weekly"
+  milestone_check_frequency: "monthly"
+  automatic_archival: true
+  archival_delay_days: 90
+  default_review_questions:
+    - "What progress was made this period?"
+    - "What obstacles were encountered?"
+    - "What resources proved most valuable?"
+    - "What adjustments need to be made?"
+    - "What's the next priority action?"
