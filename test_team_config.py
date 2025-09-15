@@ -225,6 +225,18 @@ def validate_review_templates():
 
     return False
 
+def load_json_file(filepath):
+    """Load and parse JSON file"""
+    try:
+        with open(filepath, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"  ℹ️  {filepath} will be created on first use")
+        return None
+    except json.JSONDecodeError as e:
+        print(f"❌ JSON parsing error in {filepath}: {e}")
+        return None
+
 def validate_team_commands():
     """Test that team command files exist"""
     print("\n📁 Checking team command files...")
@@ -234,7 +246,8 @@ def validate_team_commands():
         'team-roster.md',
         'team-review.md',
         'team-performance.md',
-        'team-sync.md'
+        'team-sync.md',
+        'team-1on1.md'
     ]
 
     all_exist = True
@@ -343,6 +356,54 @@ def validate_team_data_consistency():
 
     return len(warnings) == 0
 
+def validate_1on1_cache():
+    """Validate 1:1 notes cache structure"""
+    print("\n💬 Validating 1:1 notes cache...")
+
+    cache_file = '.claude/cache/1on1_notes.json'
+    data = load_json_file(cache_file)
+
+    if data is None:
+        # File doesn't exist yet, which is okay for initial setup
+        return True
+
+    errors = []
+    warnings = []
+
+    # Check required top-level keys
+    required_keys = ['meetings', 'templates', 'recurring_themes', 'analytics', 'metadata']
+    for key in required_keys:
+        if key not in data:
+            errors.append(f"  ❌ Missing required key '{key}'")
+
+    # Validate meetings structure
+    if 'meetings' in data:
+        for meeting in data['meetings']:
+            if 'member_email' in meeting and not validate_email(meeting['member_email']):
+                warnings.append(f"  ⚠️  Invalid email in meeting: {meeting.get('id', 'unknown')}")
+            if 'date' in meeting and not validate_date(meeting['date']):
+                errors.append(f"  ❌ Invalid date format in meeting: {meeting.get('id', 'unknown')}")
+            if 'action_items' in meeting:
+                for item in meeting['action_items']:
+                    if 'due_date' in item and item['due_date'] and not validate_date(item['due_date']):
+                        warnings.append(f"  ⚠️  Invalid due date in action item")
+
+    if errors:
+        print("\n❌ Errors found:")
+        for error in errors:
+            print(error)
+
+    if warnings:
+        print("\n⚠️  Warnings:")
+        for warning in warnings:
+            print(warning)
+
+    if not errors:
+        print("\n  ✅ 1:1 notes cache structure valid")
+        return True
+
+    return False
+
 def main():
     """Run all validation tests"""
     print("=" * 60)
@@ -359,6 +420,9 @@ def main():
 
     # Test command files
     results.append(("Team command files", validate_team_commands()))
+
+    # Test 1:1 cache structure
+    results.append(("1:1 notes cache", validate_1on1_cache()))
 
     # Test system integration
     results.append(("Team system integration", validate_team_integration()))
