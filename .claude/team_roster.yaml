@@ -1,0 +1,207 @@
+team_members:
+  sarah@company.com:
+    name: "Sarah Johnson"
+    role: "Senior Developer"
+    start_date: "2023-03-15"
+    current_projects:
+      - "q4-marketing-campaign"
+      - "mobile-app-v2"
+    goals_2024:
+      - "Technical leadership in mobile development"
+      - "Mentor junior developers"
+      - "Complete React Native certification"
+    strengths:
+      - "React/React Native"
+      - "system architecture"
+      - "mentoring"
+      - "problem solving"
+    development_areas:
+      - "public speaking"
+      - "project management"
+      - "stakeholder communication"
+    last_review: "2024-06-15"
+    next_review: "2024-12-15"
+    status: "active"
+    timezone: "PST"
+    location: "San Francisco, CA"
+    manager: "john@company.com"
+
+  john@company.com:
+    name: "John Smith"
+    role: "Engineering Manager"
+    start_date: "2022-01-10"
+    current_projects:
+      - "mobile-app-v2"
+      - "infrastructure-upgrade"
+    goals_2024:
+      - "Scale engineering team to 15 members"
+      - "Implement DevOps best practices"
+      - "Improve team velocity by 25%"
+    strengths:
+      - "team leadership"
+      - "strategic planning"
+      - "technical architecture"
+      - "process optimization"
+    development_areas:
+      - "data analysis"
+      - "product strategy"
+      - "vendor management"
+    last_review: "2024-07-01"
+    next_review: "2024-12-30"
+    status: "active"
+    timezone: "EST"
+    location: "New York, NY"
+    manager: "ceo@company.com"
+
+  devops@company.com:
+    name: "Alex Chen"
+    role: "DevOps Engineer"
+    start_date: "2023-08-01"
+    current_projects:
+      - "infrastructure-upgrade"
+    goals_2024:
+      - "Complete AWS certification"
+      - "Implement CI/CD for all projects"
+      - "Reduce deployment time by 50%"
+    strengths:
+      - "cloud infrastructure"
+      - "automation"
+      - "security"
+      - "monitoring"
+    development_areas:
+      - "cost optimization"
+      - "team collaboration"
+      - "documentation"
+    last_review: "2024-08-01"
+    next_review: "2025-02-01"
+    status: "active"
+    timezone: "PST"
+    location: "Seattle, WA"
+    manager: "john@company.com"
+
+performance_data:
+  - member: "sarah@company.com"
+    metric: "project_velocity"
+    value: 0.85
+    trend: "stable"
+    date: "2024-09-01"
+    notes: "Consistent delivery, strong code quality"
+
+  - member: "sarah@company.com"
+    metric: "code_quality_score"
+    value: 0.92
+    trend: "improving"
+    date: "2024-09-01"
+    notes: "Excellent test coverage and documentation"
+
+  - member: "sarah@company.com"
+    metric: "mentoring_effectiveness"
+    value: 0.88
+    trend: "stable"
+    date: "2024-09-01"
+    notes: "Junior developers show strong progress under guidance"
+
+  - member: "john@company.com"
+    metric: "team_satisfaction"
+    value: 0.91
+    trend: "improving"
+    date: "2024-09-01"
+    notes: "High team engagement and morale"
+
+  - member: "john@company.com"
+    metric: "delivery_predictability"
+    value: 0.87
+    trend: "stable"
+    date: "2024-09-01"
+    notes: "Consistent milestone achievement"
+
+  - member: "devops@company.com"
+    metric: "system_reliability"
+    value: 0.95
+    trend: "improving"
+    date: "2024-09-01"
+    notes: "Significant reduction in downtime incidents"
+
+  - member: "devops@company.com"
+    metric: "deployment_frequency"
+    value: 0.89
+    trend: "improving"
+    date: "2024-09-01"
+    notes: "Streamlined deployment process showing results"
+
+roles:
+  - "Senior Developer"
+  - "Engineering Manager"
+  - "DevOps Engineer"
+  - "Product Manager"
+  - "Designer"
+  - "QA Engineer"
+  - "Junior Developer"
+  - "Intern"
+
+statuses:
+  - "active"
+  - "on_leave"
+  - "notice_period"
+  - "alumni"
+
+metrics:
+  - "project_velocity"
+  - "code_quality_score"
+  - "mentoring_effectiveness"
+  - "team_satisfaction"
+  - "delivery_predictability"
+  - "system_reliability"
+  - "deployment_frequency"
+  - "learning_progress"
+  - "collaboration_score"
+  - "innovation_index"
+
+trends:
+  - "improving"
+  - "stable"
+  - "declining"
+  - "volatile"
+
+validation:
+  required_fields:
+    - "name"
+    - "role"
+    - "start_date"
+    - "status"
+    - "manager"
+  date_format: "YYYY-MM-DD"
+  email_pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+  role_values:
+    - "Senior Developer"
+    - "Engineering Manager"
+    - "DevOps Engineer"
+    - "Product Manager"
+    - "Designer"
+    - "QA Engineer"
+    - "Junior Developer"
+    - "Intern"
+  status_values:
+    - "active"
+    - "on_leave"
+    - "notice_period"
+    - "alumni"
+  metric_values:
+    - "project_velocity"
+    - "code_quality_score"
+    - "mentoring_effectiveness"
+    - "team_satisfaction"
+    - "delivery_predictability"
+    - "system_reliability"
+    - "deployment_frequency"
+    - "learning_progress"
+    - "collaboration_score"
+    - "innovation_index"
+  trend_values:
+    - "improving"
+    - "stable"
+    - "declining"
+    - "volatile"
+  performance_value_range:
+    min: 0.0
+    max: 1.0

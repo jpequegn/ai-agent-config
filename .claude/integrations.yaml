@@ -139,6 +139,34 @@ integrations:
     validation:
       required_env_vars: ["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD"]
 
+  team_management:
+    enabled: true
+    type: "team_management"
+    description: "Internal team management system for roster, reviews, and performance tracking"
+    config:
+      roster_file: ".claude/team_roster.yaml"
+      review_templates_file: ".claude/review_templates.yaml"
+      sync_frequency: "daily"
+      auto_sync_projects: true
+      auto_sync_meetings: true
+      notification_settings:
+        review_reminders: true
+        overdue_reviews: true
+        performance_alerts: true
+        team_changes: true
+    features:
+      - team_roster_management
+      - performance_reviews
+      - performance_tracking
+      - project_integration
+      - meeting_integration
+      - goal_tracking
+      - skills_matrix
+      - organizational_health
+    validation:
+      required_files: [".claude/team_roster.yaml", ".claude/review_templates.yaml"]
+      sync_dependencies: ["projects", "meetings"]
+
 # Integration Categories
 categories:
   version_control:
@@ -164,6 +192,10 @@ categories:
   ci_cd:
     description: "Continuous integration and deployment"
     examples: ["jenkins", "circleci", "github_actions"]
+
+  team_management:
+    description: "Team roster, performance, and organizational management"
+    examples: ["internal_team_system", "bamboohr", "workday", "successfactors"]
 
 # Security Configuration
 security:
