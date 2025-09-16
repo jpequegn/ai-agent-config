@@ -247,7 +247,8 @@ def validate_team_commands():
         'team-review.md',
         'team-performance.md',
         'team-sync.md',
-        'team-1on1.md'
+        'team-1on1.md',
+        'team-analysis.md'
     ]
 
     all_exist = True
@@ -404,6 +405,62 @@ def validate_1on1_cache():
 
     return False
 
+def validate_team_analysis_cache():
+    """Validate team analysis cache structure"""
+    print("\n📊 Validating team analysis cache...")
+
+    cache_file = '.claude/cache/team_analysis.json'
+    data = load_json_file(cache_file)
+
+    if data is None:
+        # File doesn't exist yet, which is okay for initial setup
+        return True
+
+    errors = []
+    warnings = []
+
+    # Check required top-level keys
+    required_keys = ['performance_analysis', 'bottleneck_analysis', 'growth_analysis', 'recommendations', 'metadata']
+    for key in required_keys:
+        if key not in data:
+            errors.append(f"  ❌ Missing required key '{key}'")
+
+    # Validate performance analysis structure
+    if 'performance_analysis' in data:
+        perf_data = data['performance_analysis']
+        if 'individual_performance' in perf_data:
+            for member_email, perf in perf_data['individual_performance'].items():
+                if not validate_email(member_email):
+                    warnings.append(f"  ⚠️  Invalid email in performance data: {member_email}")
+                if 'performance_index' in perf:
+                    index = perf['performance_index']
+                    if not isinstance(index, (int, float)) or index < 0 or index > 1:
+                        errors.append(f"  ❌ Invalid performance index for {member_email}: {index}")
+
+    # Validate bottleneck analysis
+    if 'bottleneck_analysis' in data:
+        bottleneck_data = data['bottleneck_analysis']
+        if 'critical_bottlenecks' in bottleneck_data:
+            for bottleneck in bottleneck_data['critical_bottlenecks']:
+                if 'impact_level' in bottleneck and bottleneck['impact_level'] not in ['critical', 'high', 'medium', 'low']:
+                    warnings.append(f"  ⚠️  Invalid impact level: {bottleneck.get('impact_level')}")
+
+    if errors:
+        print("\n❌ Errors found:")
+        for error in errors:
+            print(error)
+
+    if warnings:
+        print("\n⚠️  Warnings:")
+        for warning in warnings:
+            print(warning)
+
+    if not errors:
+        print("\n  ✅ Team analysis cache structure valid")
+        return True
+
+    return False
+
 def main():
     """Run all validation tests"""
     print("=" * 60)
@@ -423,6 +480,9 @@ def main():
 
     # Test 1:1 cache structure
     results.append(("1:1 notes cache", validate_1on1_cache()))
+
+    # Test team analysis cache
+    results.append(("Team analysis cache", validate_team_analysis_cache()))
 
     # Test system integration
     results.append(("Team system integration", validate_team_integration()))
