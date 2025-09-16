@@ -167,6 +167,43 @@ integrations:
       required_files: [".claude/team_roster.yaml", ".claude/review_templates.yaml"]
       sync_dependencies: ["projects", "meetings"]
 
+  decision_intelligence:
+    enabled: true
+    type: "decision_intelligence"
+    description: "Decision intelligence core system for structured decision-making and stakeholder management"
+    config:
+      frameworks_file: ".claude/decision_frameworks.yaml"
+      stakeholders_file: ".claude/stakeholder_contexts.yaml"
+      commands_directory: ".claude/commands/decide"
+      sync_frequency: "real_time"
+      auto_sync_stakeholders: true
+      auto_sync_projects: true
+      auto_sync_team: true
+      notification_settings:
+        decision_deadlines: true
+        stakeholder_updates: true
+        consensus_alerts: true
+        outcome_tracking: true
+      analytics:
+        framework_performance: true
+        stakeholder_effectiveness: true
+        decision_quality_tracking: true
+        learning_capture: true
+    features:
+      - framework_application
+      - stakeholder_analysis
+      - decision_tracking
+      - consensus_building
+      - outcome_analysis
+      - team_integration
+      - project_integration
+      - pattern_recognition
+      - learning_system
+    validation:
+      required_files: [".claude/decision_frameworks.yaml", ".claude/stakeholder_contexts.yaml"]
+      required_directories: [".claude/commands/decide"]
+      sync_dependencies: ["team_management", "projects", "notes"]
+
 # Integration Categories
 categories:
   version_control:
@@ -196,6 +233,10 @@ categories:
   team_management:
     description: "Team roster, performance, and organizational management"
     examples: ["internal_team_system", "bamboohr", "workday", "successfactors"]
+
+  decision_intelligence:
+    description: "Decision-making frameworks, stakeholder analysis, and outcome tracking"
+    examples: ["internal_decision_system", "decision_frameworks", "stakeholder_management"]
 
 # Security Configuration
 security:
