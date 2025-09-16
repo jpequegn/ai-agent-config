@@ -46,7 +46,8 @@
       "Bash(git diff:*)",
       "Bash(gh issue list:*)",
       "Bash(gh pr view:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
