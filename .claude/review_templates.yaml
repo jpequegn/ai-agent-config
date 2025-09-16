@@ -1,0 +1,311 @@
+review_templates:
+  quarterly_individual:
+    name: "Quarterly Individual Review"
+    frequency: "quarterly"
+    duration: "60 minutes"
+    participants: ["manager", "team_member"]
+    sections:
+      goal_progress:
+        weight: 0.3
+        questions:
+          - "What progress have you made on your quarterly goals?"
+          - "Which goals are you most proud of achieving?"
+          - "What obstacles did you encounter and how did you address them?"
+          - "How would you rate your overall goal achievement (1-5)?"
+        metrics:
+          - "goal_completion_rate"
+          - "milestone_adherence"
+          - "quality_of_outcomes"
+
+      technical_performance:
+        weight: 0.25
+        questions:
+          - "Describe your most significant technical contributions this quarter"
+          - "What new skills or technologies have you learned?"
+          - "How has your code quality and efficiency improved?"
+          - "What technical challenges did you overcome?"
+        metrics:
+          - "code_quality_score"
+          - "project_velocity"
+          - "technical_innovation"
+          - "problem_solving_effectiveness"
+
+      collaboration_leadership:
+        weight: 0.25
+        questions:
+          - "How effectively did you collaborate with team members?"
+          - "Describe any mentoring or knowledge sharing you provided"
+          - "How did you contribute to team culture and morale?"
+          - "What feedback have you received from colleagues?"
+        metrics:
+          - "collaboration_score"
+          - "mentoring_effectiveness"
+          - "team_satisfaction"
+          - "communication_quality"
+
+      professional_development:
+        weight: 0.2
+        questions:
+          - "What areas would you like to develop further?"
+          - "What learning opportunities interest you most?"
+          - "How can we better support your career growth?"
+          - "What skills do you want to build next quarter?"
+        metrics:
+          - "learning_progress"
+          - "skill_development_rate"
+          - "career_advancement_readiness"
+
+  annual_comprehensive:
+    name: "Annual Comprehensive Review"
+    frequency: "annual"
+    duration: "90 minutes"
+    participants: ["manager", "team_member", "hr_representative"]
+    sections:
+      annual_achievements:
+        weight: 0.25
+        questions:
+          - "What are your top 3 achievements this year?"
+          - "How did you exceed expectations in your role?"
+          - "What major challenges did you overcome?"
+          - "How did your contributions impact company goals?"
+        metrics:
+          - "annual_goal_achievement"
+          - "impact_score"
+          - "innovation_index"
+
+      role_competencies:
+        weight: 0.25
+        questions:
+          - "How well do you perform core responsibilities?"
+          - "What technical competencies have you strengthened?"
+          - "Where do you see opportunities for improvement?"
+          - "How do you compare to role expectations?"
+        metrics:
+          - "competency_ratings"
+          - "role_mastery_level"
+          - "performance_consistency"
+
+      leadership_growth:
+        weight: 0.25
+        questions:
+          - "How have you demonstrated leadership this year?"
+          - "What influence have you had on team dynamics?"
+          - "How do you handle conflict and difficult situations?"
+          - "What leadership skills would you like to develop?"
+        metrics:
+          - "leadership_effectiveness"
+          - "influence_rating"
+          - "conflict_resolution_skill"
+
+      career_planning:
+        weight: 0.25
+        questions:
+          - "What are your career aspirations for next year?"
+          - "What role or responsibilities interest you most?"
+          - "What support do you need to achieve your goals?"
+          - "How do your goals align with company direction?"
+        metrics:
+          - "career_clarity_score"
+          - "goal_alignment_rating"
+          - "development_readiness"
+
+  360_feedback:
+    name: "360-Degree Feedback Review"
+    frequency: "bi_annual"
+    duration: "45 minutes"
+    participants: ["manager", "team_member", "peers", "direct_reports"]
+    sections:
+      peer_feedback:
+        weight: 0.35
+        questions:
+          - "How effectively does this person collaborate?"
+          - "What are their greatest strengths as a colleague?"
+          - "What areas could they improve for better teamwork?"
+          - "How reliable and trustworthy are they?"
+        metrics:
+          - "peer_collaboration_rating"
+          - "trustworthiness_score"
+          - "reliability_rating"
+
+      management_feedback:
+        weight: 0.35
+        questions:
+          - "How well do they communicate with leadership?"
+          - "How do they handle feedback and direction?"
+          - "What is their contribution to team goals?"
+          - "How proactive are they in problem-solving?"
+        metrics:
+          - "manager_satisfaction"
+          - "receptiveness_to_feedback"
+          - "proactivity_score"
+
+      direct_report_feedback:
+        weight: 0.3
+        questions:
+          - "How effective is their leadership style?"
+          - "How well do they support your development?"
+          - "How clear is their communication?"
+          - "How fair and consistent are they?"
+        metrics:
+          - "leadership_effectiveness"
+          - "mentoring_quality"
+          - "communication_clarity"
+          - "fairness_rating"
+
+  probation_review:
+    name: "Probation Period Review"
+    frequency: "monthly"
+    duration: "30 minutes"
+    participants: ["manager", "team_member", "hr_representative"]
+    sections:
+      onboarding_progress:
+        weight: 0.4
+        questions:
+          - "How well are you adapting to the role?"
+          - "What aspects of the job are you mastering?"
+          - "What areas need more support or training?"
+          - "How comfortable are you with team dynamics?"
+        metrics:
+          - "onboarding_completion_rate"
+          - "role_adaptation_score"
+          - "team_integration_level"
+
+      performance_baseline:
+        weight: 0.4
+        questions:
+          - "How is your work quality meeting expectations?"
+          - "Are you meeting productivity targets?"
+          - "How effectively are you using feedback?"
+          - "What challenges are you facing?"
+        metrics:
+          - "work_quality_rating"
+          - "productivity_level"
+          - "feedback_application"
+
+      probation_outcome:
+        weight: 0.2
+        questions:
+          - "Are you on track to pass probation?"
+          - "What additional support do you need?"
+          - "How confident are you in your role?"
+          - "What are your immediate improvement priorities?"
+        metrics:
+          - "probation_success_likelihood"
+          - "confidence_level"
+          - "improvement_rate"
+
+  exit_interview:
+    name: "Exit Interview"
+    frequency: "as_needed"
+    duration: "60 minutes"
+    participants: ["hr_representative", "team_member", "manager"]
+    sections:
+      departure_reasons:
+        weight: 0.3
+        questions:
+          - "What is your primary reason for leaving?"
+          - "What could we have done to retain you?"
+          - "How satisfied were you with your role?"
+          - "Would you recommend working here to others?"
+        metrics:
+          - "satisfaction_rating"
+          - "retention_factors"
+          - "recommendation_likelihood"
+
+      management_feedback:
+        weight: 0.3
+        questions:
+          - "How effective was your manager's leadership?"
+          - "Did you receive adequate support and guidance?"
+          - "How well were conflicts and issues resolved?"
+          - "What management improvements would you suggest?"
+        metrics:
+          - "management_effectiveness"
+          - "support_adequacy"
+          - "issue_resolution_quality"
+
+      organizational_feedback:
+        weight: 0.4
+        questions:
+          - "How would you describe the company culture?"
+          - "What policies or practices need improvement?"
+          - "How well did we support your career development?"
+          - "What are our biggest organizational strengths/weaknesses?"
+        metrics:
+          - "culture_rating"
+          - "policy_satisfaction"
+          - "development_support_rating"
+          - "organizational_health_score"
+
+frameworks:
+  performance_scales:
+    five_point:
+      - value: 1
+        label: "Below Expectations"
+        description: "Performance consistently falls short of role requirements"
+      - value: 2
+        label: "Approaching Expectations"
+        description: "Performance occasionally meets role requirements"
+      - value: 3
+        label: "Meets Expectations"
+        description: "Performance consistently meets role requirements"
+      - value: 4
+        label: "Exceeds Expectations"
+        description: "Performance frequently exceeds role requirements"
+      - value: 5
+        label: "Outstanding"
+        description: "Performance consistently exceeds expectations and sets example"
+
+    competency_levels:
+      - value: 1
+        label: "Developing"
+        description: "Learning fundamental skills with significant guidance needed"
+      - value: 2
+        label: "Proficient"
+        description: "Demonstrates competency with occasional guidance"
+      - value: 3
+        label: "Advanced"
+        description: "Demonstrates strong competency independently"
+      - value: 4
+        label: "Expert"
+        description: "Demonstrates exceptional competency and mentors others"
+
+  review_cycles:
+    quarterly:
+      schedule: [3, 6, 9, 12]
+      focus: "goal_progress_and_development"
+
+    annual:
+      schedule: [12]
+      focus: "comprehensive_performance_and_planning"
+
+    bi_annual:
+      schedule: [6, 12]
+      focus: "360_feedback_and_calibration"
+
+validation:
+  required_fields:
+    - "name"
+    - "frequency"
+    - "duration"
+    - "participants"
+    - "sections"
+
+  frequency_values:
+    - "monthly"
+    - "quarterly"
+    - "bi_annual"
+    - "annual"
+    - "as_needed"
+
+  participant_values:
+    - "manager"
+    - "team_member"
+    - "hr_representative"
+    - "peers"
+    - "direct_reports"
+
+  weight_validation:
+    total_must_equal: 1.0
+    minimum_weight: 0.1
+    maximum_weight: 0.5

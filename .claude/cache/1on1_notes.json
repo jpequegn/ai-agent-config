@@ -1,0 +1,181 @@
+{
+  "meetings": [
+    {
+      "id": "1on1_sarah_2024_08_15",
+      "member_email": "sarah@company.com",
+      "manager_email": "john@company.com",
+      "date": "2024-08-15",
+      "duration_minutes": 60,
+      "type": "regular",
+      "discussion_summary": {
+        "career_development": [
+          "Expressed interest in public speaking opportunities",
+          "Discussed attending React Native conference in Q4",
+          "Planning to complete certification by end of September"
+        ],
+        "projects": [
+          "Mobile app v2 architecture review going well",
+          "Some concerns about accelerated timeline",
+          "Leading technical debt reduction initiative"
+        ],
+        "team": [
+          "Mentoring two junior developers successfully",
+          "Team morale is high after recent wins",
+          "Would like more cross-team collaboration"
+        ],
+        "feedback": {
+          "recognition": "Excellent leadership on architecture review",
+          "constructive": "Consider delegating more to grow team members",
+          "received": "Would like more strategic involvement in planning"
+        }
+      },
+      "action_items": [
+        {
+          "description": "Complete React Native certification",
+          "owner": "sarah@company.com",
+          "due_date": "2024-09-30",
+          "status": "completed",
+          "completed_date": "2024-09-25"
+        },
+        {
+          "description": "Lead architecture review session",
+          "owner": "sarah@company.com",
+          "due_date": "2024-08-30",
+          "status": "completed",
+          "completed_date": "2024-08-28"
+        },
+        {
+          "description": "Find speaking opportunity for Sarah",
+          "owner": "john@company.com",
+          "due_date": "2024-09-15",
+          "status": "in_progress",
+          "notes": "Researching conference options"
+        }
+      ],
+      "follow_up_topics": [
+        "Public speaking opportunities",
+        "Mentoring program progress",
+        "Mobile app timeline concerns"
+      ],
+      "sentiment": "positive",
+      "engagement_level": "high",
+      "key_themes": ["career_growth", "leadership", "mentoring"]
+    },
+    {
+      "id": "1on1_devops_2024_09_01",
+      "member_email": "devops@company.com",
+      "manager_email": "john@company.com",
+      "date": "2024-09-01",
+      "duration_minutes": 45,
+      "type": "regular",
+      "discussion_summary": {
+        "career_development": [
+          "Working on AWS certification",
+          "Interested in learning Kubernetes",
+          "Would like to present at team tech talks"
+        ],
+        "projects": [
+          "Infrastructure upgrade on track",
+          "CI/CD implementation showing great results",
+          "Some challenges with legacy system migration"
+        ],
+        "team": [
+          "Good collaboration with development teams",
+          "Would benefit from more DevOps team members",
+          "Documenting processes for knowledge sharing"
+        ],
+        "feedback": {
+          "recognition": "Excellent work on deployment automation",
+          "constructive": "Focus on documentation for team scaling",
+          "received": "Appreciates autonomy and trust"
+        }
+      },
+      "action_items": [
+        {
+          "description": "Complete AWS certification",
+          "owner": "devops@company.com",
+          "due_date": "2024-10-31",
+          "status": "in_progress",
+          "notes": "Studying 2 hours daily"
+        },
+        {
+          "description": "Document CI/CD setup",
+          "owner": "devops@company.com",
+          "due_date": "2024-09-15",
+          "status": "in_progress",
+          "notes": "50% complete"
+        },
+        {
+          "description": "Schedule tech talk on deployment automation",
+          "owner": "john@company.com",
+          "due_date": "2024-09-10",
+          "status": "pending"
+        }
+      ],
+      "follow_up_topics": [
+        "AWS certification progress",
+        "Team scaling plans",
+        "Documentation status"
+      ],
+      "sentiment": "positive",
+      "engagement_level": "high",
+      "key_themes": ["learning", "automation", "scaling"]
+    }
+  ],
+  "templates": {
+    "regular": {
+      "sections": ["career_development", "projects", "team", "feedback"],
+      "default_duration": 60
+    },
+    "career_focused": {
+      "sections": ["career_goals", "skill_development", "growth_opportunities", "feedback"],
+      "default_duration": 90
+    },
+    "performance_review_prep": {
+      "sections": ["goals_review", "achievements", "challenges", "development_plan"],
+      "default_duration": 90
+    },
+    "project_focused": {
+      "sections": ["project_status", "blockers", "resources", "timeline"],
+      "default_duration": 45
+    }
+  },
+  "recurring_themes": {
+    "sarah@company.com": {
+      "top_themes": ["leadership", "mentoring", "public_speaking", "architecture"],
+      "sentiment_trend": "positive_stable",
+      "engagement_trend": "high_increasing"
+    },
+    "devops@company.com": {
+      "top_themes": ["automation", "learning", "documentation", "scaling"],
+      "sentiment_trend": "positive_improving",
+      "engagement_trend": "high_stable"
+    },
+    "john@company.com": {
+      "manager_themes": ["team_growth", "strategic_planning", "process_improvement"],
+      "coaching_focus": ["delegation", "strategic_thinking", "communication"]
+    }
+  },
+  "analytics": {
+    "average_duration": 55,
+    "completion_rate": 0.78,
+    "common_action_items": [
+      "certification_completion",
+      "documentation",
+      "mentoring",
+      "process_improvement"
+    ],
+    "seasonal_patterns": {
+      "Q1": "goal_setting",
+      "Q2": "progress_check",
+      "Q3": "mid_year_review",
+      "Q4": "planning_next_year"
+    }
+  },
+  "metadata": {
+    "last_updated": "2024-09-15",
+    "version": "1.0",
+    "total_meetings": 47,
+    "active_members": 3
+  }
+}

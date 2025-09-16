@@ -1,0 +1,423 @@
+# Stakeholder Contexts for Decision Intelligence
+# Defines stakeholder profiles, preferences, and decision-making patterns
+# Integrates with team_roster.yaml for comprehensive stakeholder data
+
+stakeholder_profiles:
+  sarah@company.com:
+    # Basic info synchronized with team_roster.yaml
+    name: "Sarah Johnson"
+    role: "Senior Developer"
+    department: "Engineering"
+    decision_authority_level: "technical_implementation"
+
+    # Decision-making context
+    decision_preferences:
+      communication_style: "data_driven"
+      detail_level: "high"
+      preferred_formats: ["technical_analysis", "comparative_matrix"]
+      decision_speed: "deliberate"
+      risk_tolerance: "medium"
+
+    # Areas of expertise and influence
+    expertise_areas:
+      - "mobile_development"
+      - "react_native"
+      - "system_architecture"
+      - "team_mentoring"
+
+    # Decision-making patterns
+    influence_factors:
+      technical_feasibility: 0.4
+      team_impact: 0.3
+      learning_opportunities: 0.2
+      timeline_constraints: 0.1
+
+    # Historical decision patterns
+    typical_concerns:
+      - "Technical debt implications"
+      - "Team skill development"
+      - "Maintainability and scalability"
+      - "Implementation complexity"
+
+    # Communication preferences for decisions
+    notification_preferences:
+      decision_updates: "email"
+      urgent_decisions: "slack"
+      meeting_preferences: "technical_deep_dives"
+
+    # Past decision involvement
+    decision_history:
+      frameworks_used:
+        - "technical_decision"
+        - "process_decision"
+      typical_roles:
+        - "technical_lead"
+        - "implementation"
+        - "advisor"
+      success_rate: 0.87
+      average_decision_time: "3 days"
+
+  john@company.com:
+    name: "John Smith"
+    role: "Engineering Manager"
+    department: "Engineering"
+    decision_authority_level: "final_decision_maker"
+
+    decision_preferences:
+      communication_style: "executive_summary"
+      detail_level: "medium"
+      preferred_formats: ["executive_brief", "risk_analysis"]
+      decision_speed: "fast"
+      risk_tolerance: "medium_high"
+
+    expertise_areas:
+      - "team_leadership"
+      - "strategic_planning"
+      - "technical_architecture"
+      - "process_optimization"
+      - "resource_allocation"
+
+    influence_factors:
+      business_impact: 0.35
+      resource_efficiency: 0.25
+      strategic_alignment: 0.25
+      risk_management: 0.15
+
+    typical_concerns:
+      - "Resource allocation optimization"
+      - "Team capacity and growth"
+      - "Strategic alignment"
+      - "Budget and timeline constraints"
+
+    notification_preferences:
+      decision_updates: "slack"
+      urgent_decisions: "phone"
+      meeting_preferences: "executive_summaries"
+
+    decision_history:
+      frameworks_used:
+        - "business_decision"
+        - "hiring_decision"
+        - "technical_decision"
+        - "process_decision"
+      typical_roles:
+        - "decision_maker"
+        - "final_approver"
+      success_rate: 0.82
+      average_decision_time: "2 days"
+
+  devops@company.com:
+    name: "DevOps Team"
+    role: "DevOps Engineer"
+    department: "Engineering"
+    decision_authority_level: "technical_specialist"
+
+    decision_preferences:
+      communication_style: "technical_detailed"
+      detail_level: "high"
+      preferred_formats: ["technical_specification", "implementation_plan"]
+      decision_speed: "thorough"
+      risk_tolerance: "low"
+
+    expertise_areas:
+      - "infrastructure"
+      - "automation"
+      - "security"
+      - "deployment_pipelines"
+      - "monitoring"
+
+    influence_factors:
+      operational_impact: 0.4
+      security_implications: 0.3
+      maintenance_complexity: 0.2
+      automation_potential: 0.1
+
+    typical_concerns:
+      - "Infrastructure stability"
+      - "Security implications"
+      - "Operational complexity"
+      - "Monitoring and alerting"
+
+    notification_preferences:
+      decision_updates: "email"
+      urgent_decisions: "slack"
+      meeting_preferences: "technical_workshops"
+
+    decision_history:
+      frameworks_used:
+        - "technical_decision"
+        - "process_decision"
+      typical_roles:
+        - "implementation"
+        - "technical_advisor"
+        - "security_reviewer"
+      success_rate: 0.79
+      average_decision_time: "5 days"
+
+# External stakeholder profiles
+external_stakeholders:
+  ceo@company.com:
+    name: "CEO"
+    role: "Chief Executive Officer"
+    department: "Executive"
+    decision_authority_level: "final_decision_maker"
+
+    decision_preferences:
+      communication_style: "executive_summary"
+      detail_level: "low"
+      preferred_formats: ["one_page_summary", "financial_impact"]
+      decision_speed: "fast"
+      risk_tolerance: "high"
+
+    influence_factors:
+      financial_impact: 0.4
+      strategic_alignment: 0.3
+      competitive_advantage: 0.2
+      brand_impact: 0.1
+
+    typical_concerns:
+      - "Financial performance"
+      - "Strategic positioning"
+      - "Competitive advantage"
+      - "Brand and reputation"
+
+  product_lead@company.com:
+    name: "Product Lead"
+    role: "Product Manager"
+    department: "Product"
+    decision_authority_level: "domain_expert"
+
+    decision_preferences:
+      communication_style: "user_focused"
+      detail_level: "medium"
+      preferred_formats: ["user_impact_analysis", "market_research"]
+      decision_speed: "medium"
+      risk_tolerance: "medium"
+
+    expertise_areas:
+      - "user_experience"
+      - "market_analysis"
+      - "product_strategy"
+      - "feature_prioritization"
+
+    influence_factors:
+      user_value: 0.35
+      market_opportunity: 0.25
+      competitive_positioning: 0.25
+      development_complexity: 0.15
+
+# Decision-making groups and committees
+decision_groups:
+  engineering_leadership:
+    name: "Engineering Leadership Team"
+    members:
+      - "john@company.com"
+      - "sarah@company.com"
+    decision_scope:
+      - "technical_architecture"
+      - "team_structure"
+      - "engineering_processes"
+    meeting_frequency: "weekly"
+    decision_threshold: "consensus"
+
+  executive_team:
+    name: "Executive Leadership Team"
+    members:
+      - "ceo@company.com"
+      - "john@company.com"
+    decision_scope:
+      - "strategic_direction"
+      - "major_investments"
+      - "organizational_changes"
+    meeting_frequency: "monthly"
+    decision_threshold: "majority"
+
+  technical_review_board:
+    name: "Technical Review Board"
+    members:
+      - "sarah@company.com"
+      - "devops@company.com"
+      - "john@company.com"
+    decision_scope:
+      - "architecture_changes"
+      - "technology_adoption"
+      - "security_policies"
+    meeting_frequency: "bi_weekly"
+    decision_threshold: "technical_consensus"
+
+# Communication templates for different stakeholder types
+communication_templates:
+  executive_summary:
+    format: "one_page_brief"
+    sections:
+      - "decision_overview"
+      - "financial_impact"
+      - "strategic_implications"
+      - "recommendation"
+      - "next_steps"
+    max_length: "1 page"
+
+  technical_analysis:
+    format: "detailed_report"
+    sections:
+      - "technical_requirements"
+      - "implementation_approach"
+      - "risk_assessment"
+      - "alternatives_considered"
+      - "recommendation_details"
+    max_length: "5 pages"
+
+  stakeholder_update:
+    format: "structured_update"
+    sections:
+      - "decision_status"
+      - "key_changes"
+      - "impact_on_stakeholder"
+      - "required_actions"
+      - "timeline_updates"
+    max_length: "2 pages"
+
+# Decision workflow configurations
+decision_workflows:
+  standard_business:
+    steps:
+      - "stakeholder_identification"
+      - "requirements_gathering"
+      - "option_analysis"
+      - "stakeholder_consultation"
+      - "decision_documentation"
+      - "communication"
+      - "implementation_planning"
+    required_approvals:
+      - "decision_maker"
+    optional_reviews:
+      - "affected_parties"
+      - "technical_experts"
+
+  technical_architecture:
+    steps:
+      - "technical_requirements"
+      - "architecture_analysis"
+      - "prototype_development"
+      - "technical_review"
+      - "security_review"
+      - "decision_documentation"
+      - "implementation_roadmap"
+    required_approvals:
+      - "technical_lead"
+      - "engineering_manager"
+    optional_reviews:
+      - "devops_team"
+      - "security_team"
+
+  high_impact:
+    steps:
+      - "impact_assessment"
+      - "stakeholder_mapping"
+      - "detailed_analysis"
+      - "risk_evaluation"
+      - "multiple_reviews"
+      - "executive_approval"
+      - "communication_plan"
+      - "monitoring_setup"
+    required_approvals:
+      - "decision_maker"
+      - "executive_sponsor"
+    optional_reviews:
+      - "all_affected_parties"
+      - "external_advisors"
+
+# Integration mappings
+integration:
+  team_roster_sync:
+    enabled: true
+    sync_fields:
+      - "name"
+      - "role"
+      - "manager"
+      - "current_projects"
+    sync_frequency: "daily"
+
+  project_integration:
+    enabled: true
+    project_stakeholder_mapping: true
+    auto_notify_project_owners: true
+
+  notification_channels:
+    slack:
+      enabled: true
+      channels:
+        - "#engineering-decisions"
+        - "#product-updates"
+    email:
+      enabled: true
+      templates: "custom"
+
+# Analytics and insights
+stakeholder_analytics:
+  decision_participation:
+    john@company.com: 89
+    sarah@company.com: 67
+    devops@company.com: 43
+
+  influence_effectiveness:
+    john@company.com: 0.91
+    sarah@company.com: 0.85
+    devops@company.com: 0.82
+
+  communication_preferences:
+    email: 45
+    slack: 38
+    meetings: 17
+
+  framework_preferences:
+    technical_decision: 52
+    business_decision: 28
+    product_decision: 20
+
+# Validation rules
+validation:
+  required_fields:
+    - "name"
+    - "role"
+    - "decision_authority_level"
+    - "decision_preferences"
+  authority_levels:
+    - "observer"
+    - "contributor"
+    - "technical_specialist"
+    - "domain_expert"
+    - "technical_implementation"
+    - "final_decision_maker"
+  communication_styles:
+    - "data_driven"
+    - "executive_summary"
+    - "technical_detailed"
+    - "user_focused"
+    - "visual_presentation"
+  detail_levels:
+    - "low"
+    - "medium"
+    - "high"
+  decision_speeds:
+    - "fast"
+    - "medium"
+    - "deliberate"
+    - "thorough"
+  risk_tolerance_levels:
+    - "low"
+    - "medium"
+    - "medium_high"
+    - "high"
+
+# Metadata
+metadata:
+  version: "1.0"
+  last_updated: "2024-09-15"
+  maintained_by: "john@company.com"
+  review_frequency: "monthly"
+  next_review: "2024-10-15"
+  data_sources:
+    - "team_roster.yaml"
+    - "decision_frameworks.yaml"
+    - "historical_decision_data"

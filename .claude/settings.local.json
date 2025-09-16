@@ -47,6 +47,7 @@
       "Bash(gh issue list:*)",
       "Bash(gh pr view:*)",
       "Bash(git fetch:*)",
+      "Bash(git restore:*)",
       "Bash(git pull:*)"
     ],
     "deny": [],
