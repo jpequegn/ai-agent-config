@@ -39,6 +39,12 @@ Multi-criteria decision analysis (MCDA) system with structured frameworks, stake
 - `/decide alignment "Database migration"` - Assess stakeholder alignment and identify conflicts
 - `/decide communication --template executive "Budget planning"` - Generate stakeholder-specific communication plans
 
+### Timeline & Risk Management
+- `/decide timeline "Mobile app architecture"` - Create decision timeline with critical path analysis
+- `/decide risk "API redesign"` - Assess decision risks and delay impact analysis
+- `/decide deadline --decision "Database migration"` - Manage deadlines and project dependencies
+- `/decide track --timeline "Budget planning"` - Monitor decision progress with enhanced timeline tracking
+
 ## Intelligence Layers
 
 ### Framework Integration
