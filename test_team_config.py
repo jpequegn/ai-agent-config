@@ -473,6 +473,16 @@ def validate_decide_commands():
     """Test that decide command files exist"""
     print("\n🎯 Checking decide command files...")
 
+    # Check main decide command file
+    main_command_file = '.claude/commands/decide.md'
+    if os.path.exists(main_command_file):
+        print(f"  ✅ decide.md (main command) exists")
+        main_exists = True
+    else:
+        print(f"  ❌ decide.md (main command) missing")
+        main_exists = False
+
+    # Check subdirectory command files
     command_dir = '.claude/commands/decide'
     expected_files = [
         'decide-framework.md',
@@ -480,16 +490,69 @@ def validate_decide_commands():
         'decide-stakeholder.md'
     ]
 
-    all_exist = True
+    all_sub_exist = True
     for filename in expected_files:
         filepath = os.path.join(command_dir, filename)
         if os.path.exists(filepath):
             print(f"  ✅ {filename} exists")
         else:
             print(f"  ❌ {filename} missing")
-            all_exist = False
+            all_sub_exist = False
 
-    return all_exist
+    return main_exists and all_sub_exist
+
+def validate_decide_command_structure():
+    """Validate the structure and content of decide command files"""
+    print("\n📋 Validating decide command structure...")
+
+    warnings = []
+    errors = []
+
+    # Validate main decide.md file structure
+    main_file = '.claude/commands/decide.md'
+    if os.path.exists(main_file):
+        with open(main_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # Check for required sub-commands
+        required_commands = [
+            '/decide framework',
+            '/decide compare',
+            '/decide criteria',
+            '/decide score'
+        ]
+
+        for cmd in required_commands:
+            if cmd in content:
+                print(f"  ✅ {cmd} command documented")
+            else:
+                errors.append(f"  ❌ {cmd} command missing from main file")
+
+        # Check for MCDA implementation
+        mcda_keywords = ['multi-criteria', 'MCDA', 'weighted scoring', 'criteria weighting']
+        mcda_found = any(keyword.lower() in content.lower() for keyword in mcda_keywords)
+        if mcda_found:
+            print("  ✅ MCDA (Multi-criteria decision analysis) implementation present")
+        else:
+            warnings.append("  ⚠️  MCDA implementation not clearly documented")
+
+        # Check for integration mentions
+        integration_files = ['decision_frameworks.yaml', 'stakeholder_contexts.yaml']
+        for int_file in integration_files:
+            if int_file in content:
+                print(f"  ✅ Integration with {int_file} documented")
+            else:
+                warnings.append(f"  ⚠️  Integration with {int_file} not mentioned")
+    else:
+        errors.append("  ❌ Main decide.md file not found")
+
+    # Print warnings and errors
+    for warning in warnings:
+        print(warning)
+    for error in errors:
+        print(error)
+
+    return len(errors) == 0
 
 def validate_decision_integration():
     """Validate integration between decision system and existing systems"""
@@ -786,6 +849,7 @@ def main():
     results.append(("decision_frameworks.yaml validation", validate_decision_frameworks()))
     results.append(("stakeholder_contexts.yaml validation", validate_stakeholder_contexts()))
     results.append(("Decide command files", validate_decide_commands()))
+    results.append(("Decide command structure", validate_decide_command_structure()))
     results.append(("Decision system integration", validate_decision_integration()))
     results.append(("Decision data consistency", validate_decision_data_consistency()))
 
