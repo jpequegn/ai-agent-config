@@ -33,6 +33,12 @@ Multi-criteria decision analysis (MCDA) system with structured frameworks, stake
 - `/decide score --rationale --detailed` - Include detailed scoring rationale
 - `/decide score --stakeholder-scores` - Include stakeholder-specific scoring
 
+### Stakeholder Analysis & Alignment
+- `/decide stakeholders "Mobile app architecture"` - Identify and analyze decision stakeholders
+- `/decide influence --decision "API redesign"` - Map stakeholder influence and interest levels
+- `/decide alignment "Database migration"` - Assess stakeholder alignment and identify conflicts
+- `/decide communication --template executive "Budget planning"` - Generate stakeholder-specific communication plans
+
 ## Intelligence Layers
 
 ### Framework Integration
@@ -259,6 +265,311 @@ Multi-criteria decision analysis (MCDA) system with structured frameworks, stake
 ## Weighted Total: 7.3/10
 **Confidence Level**: 83%
 **Recommendation**: Strong candidate for current requirements
+```
+
+### `/decide stakeholders` - Stakeholder Identification Engine
+
+**Purpose**: Identify and analyze all relevant stakeholders for a specific decision with influence mapping and engagement strategies.
+
+**Core Functionality**:
+1. **Automatic Stakeholder Discovery**
+   - Load stakeholder profiles from `stakeholder_contexts.yaml`
+   - Identify stakeholders based on decision scope and organizational impact
+   - Map direct and indirect stakeholder relationships
+   - Include external stakeholders and decision groups
+
+2. **Stakeholder Categorization**
+   - Classify stakeholders by influence level and decision authority
+   - Group by department, role, and decision involvement type
+   - Identify decision makers, implementers, and affected parties
+   - Flag key champions and potential resistors
+
+3. **Impact and Interest Analysis**
+   - Assess decision impact on each stakeholder group
+   - Evaluate stakeholder interest levels and priorities
+   - Map stakeholder concerns and typical decision patterns
+   - Generate stakeholder engagement priority matrix
+
+4. **Integration with Team Data**
+   - Pull from team roster for current organizational structure
+   - Consider current project assignments and workloads
+   - Include historical decision participation data
+   - Factor in recent 1:1 notes and team feedback
+
+**Example Usage**:
+```markdown
+# 👥 Stakeholder Analysis: Mobile App Architecture Decision
+
+## Identified Stakeholders (8 total)
+
+### Primary Decision Makers
+- **John Smith** (Engineering Manager) - Final decision authority
+  - **Authority Level**: Final decision maker
+  - **Key Concerns**: Resource allocation, team capacity, timeline
+  - **Communication Style**: Executive summary preferred
+
+### Technical Implementation Team
+- **Sarah Johnson** (Senior Developer) - High technical influence
+  - **Authority Level**: Technical implementation lead
+  - **Expertise**: React Native, mobile development, system architecture
+  - **Key Concerns**: Technical debt, maintainability, team skills
+
+### Affected Stakeholders
+- **Product Manager** - User experience requirements
+- **Design Team Lead** - UI/UX implementation complexity
+- **QA Lead** - Testing strategy requirements
+- **DevOps Team** - Deployment and infrastructure impact
+
+### External Stakeholders
+- **CTO** - Strategic oversight and budget approval
+- **Customer Support** - Post-launch maintenance burden
+
+## Engagement Priority Matrix
+**High Priority**: John, Sarah, Product Manager
+**Medium Priority**: Design Lead, QA Lead, CTO
+**Low Priority**: DevOps Team, Customer Support
+```
+
+### `/decide influence` - Influence Mapping Engine
+
+**Purpose**: Map stakeholder influence levels, decision-making power, and interest in specific decisions.
+
+**Core Functionality**:
+1. **Power-Interest Grid Analysis**
+   - Plot stakeholders on power vs. interest matrix
+   - Identify high-power, high-interest key players
+   - Flag low-power, high-interest supporters
+   - Analyze high-power, low-interest stakeholders requiring attention
+
+2. **Decision Authority Mapping**
+   - Map formal decision-making authority chains
+   - Identify informal influence networks and relationships
+   - Assess veto power and approval requirements
+   - Track coalition formation opportunities
+
+3. **Influence Effectiveness Tracking**
+   - Analyze historical influence patterns from stakeholder data
+   - Track success rates of different influence approaches
+   - Measure stakeholder engagement effectiveness over time
+   - Identify optimal influence timing and methods
+
+4. **Dynamic Influence Assessment**
+   - Consider context-specific influence variations
+   - Factor in current organizational dynamics
+   - Account for recent stakeholder relationship changes
+   - Assess influence evolution throughout decision process
+
+**Example Output**:
+```markdown
+# 🎯 Influence Mapping: API Redesign Decision
+
+## Power-Interest Grid
+
+### High Power, High Interest (Key Players)
+- **John Smith** (Engineering Manager)
+  - **Power Score**: 9/10 - Budget authority, team leadership
+  - **Interest Score**: 8/10 - Affects team productivity directly
+  - **Strategy**: Collaborate and involve in decision-making
+
+- **Sarah Johnson** (Senior Developer)
+  - **Power Score**: 7/10 - Technical expertise, implementation lead
+  - **Interest Score**: 9/10 - Direct impact on daily work
+  - **Strategy**: Technical partnership and detailed consultation
+
+### High Power, Low Interest (Context Setters)
+- **CTO**
+  - **Power Score**: 10/10 - Ultimate technical authority
+  - **Interest Score**: 4/10 - Focused on higher-level strategy
+  - **Strategy**: Keep informed with executive summaries
+
+### Low Power, High Interest (Supporters)
+- **Junior Developers**
+  - **Power Score**: 3/10 - Limited formal authority
+  - **Interest Score**: 8/10 - Daily usage impact
+  - **Strategy**: Keep informed, gather feedback
+
+## Coalition Opportunities
+**Technical Alliance**: Sarah + DevOps + QA Lead
+**Leadership Support**: John + CTO for resource approval
+**User Perspective**: Product Manager + Junior Developers
+```
+
+### `/decide alignment` - Alignment Assessment Engine
+
+**Purpose**: Assess stakeholder alignment with potential decisions and identify areas of conflict or resistance.
+
+**Core Functionality**:
+1. **Position Assessment**
+   - Analyze likely stakeholder positions based on historical patterns
+   - Consider stakeholder priorities and influence factors
+   - Factor in current organizational context and pressures
+   - Predict stakeholder support levels for different options
+
+2. **Conflict Identification**
+   - Identify areas of stakeholder disagreement
+   - Map competing priorities and interests
+   - Analyze resource allocation conflicts
+   - Assess timeline and implementation preference conflicts
+
+3. **Resistance Analysis**
+   - Predict sources and intensity of potential resistance
+   - Analyze root causes of stakeholder concerns
+   - Assess resistance impact on decision implementation
+   - Identify resistance mitigation strategies
+
+4. **Consensus Opportunity Mapping**
+   - Identify areas of natural stakeholder alignment
+   - Map win-win opportunity scenarios
+   - Assess compromise and trade-off possibilities
+   - Generate consensus-building strategies
+
+**Example Output**:
+```markdown
+# ⚖️ Alignment Assessment: Database Migration Strategy
+
+## Stakeholder Position Analysis
+
+### Aligned Stakeholders (Supporting)
+- **DevOps Team** - Supports cloud-native solution
+  - **Position**: Strongly favors modern infrastructure
+  - **Rationale**: Aligns with automation and scalability goals
+  - **Confidence**: 90% support likelihood
+
+- **Engineering Manager** - Supports gradual migration
+  - **Position**: Favors phased approach to minimize risk
+  - **Rationale**: Reduces team disruption and timeline pressure
+  - **Confidence**: 80% support likelihood
+
+### Neutral Stakeholders (Undecided)
+- **Product Manager** - Focused on minimal user impact
+  - **Key Concern**: Feature delivery timeline disruption
+  - **Decision Factor**: Migration timeline and rollback plan
+  - **Influence Strategy**: Demonstrate minimal user-facing impact
+
+### Potential Resistance
+- **Senior Developer (Database Specialist)** - May resist new technology
+  - **Concern**: Learning curve and expertise transfer
+  - **Resistance Level**: Medium (6/10)
+  - **Mitigation**: Training plan and knowledge transfer sessions
+
+## Conflict Analysis
+**Primary Conflict**: Speed vs. Stability
+- **Speed Advocates**: Product Manager, CTO (market pressure)
+- **Stability Advocates**: DevOps, Database Specialist (risk aversion)
+- **Resolution Approach**: Phased migration with early wins
+
+**Resource Conflict**: Training vs. Delivery
+- **Training Needs**: Database Specialist, Junior Developers
+- **Delivery Pressure**: Product Manager, Engineering Manager
+- **Resolution Approach**: Parallel training during low-impact phases
+
+## Consensus Building Opportunities
+**Shared Priority**: System reliability and performance
+**Common Ground**: Everyone values minimal business disruption
+**Win-Win Scenario**: Phased approach with performance improvements at each stage
+```
+
+### `/decide communication` - Communication Strategy Engine
+
+**Purpose**: Generate stakeholder-specific communication plans tailored to preferences, roles, and decision involvement.
+
+**Core Functionality**:
+1. **Stakeholder Communication Profiling**
+   - Load communication preferences from stakeholder contexts
+   - Adapt message content to stakeholder roles and expertise
+   - Consider decision authority levels and information needs
+   - Factor in preferred communication channels and timing
+
+2. **Message Customization**
+   - Generate stakeholder-specific message content and framing
+   - Adapt technical depth and business focus by audience
+   - Include relevant concerns and value propositions
+   - Provide clear action items and next steps
+
+3. **Communication Template Generation**
+   - Create executive summaries for leadership stakeholders
+   - Generate technical analyses for implementation teams
+   - Develop user impact communications for affected parties
+   - Provide scripts and talking points for conversations
+
+4. **Multi-Channel Strategy**
+   - Recommend optimal communication channels per stakeholder
+   - Sequence communications for maximum effectiveness
+   - Plan feedback collection and response strategies
+   - Schedule follow-up communications and checkpoints
+
+**Example Output**:
+```markdown
+# 💬 Communication Strategy: Budget Planning Decision
+
+## Stakeholder Communication Plan
+
+### Executive Leadership (CTO, Engineering Manager)
+**Communication Template**: Executive Summary
+**Channel**: Email + brief meeting
+**Timing**: Before team communications
+**Key Messages**:
+- **Financial Impact**: $200K investment, 15% efficiency gain
+- **Strategic Value**: Positions team for 2024 growth targets
+- **Risk Assessment**: Low risk, proven technology adoption
+- **Decision Timeline**: Approval needed by Friday for Q4 implementation
+
+**Sample Message**:
+"Subject: Q4 Budget Allocation: Engineering Infrastructure Investment
+
+Executive Summary:
+- Requesting $200K for infrastructure modernization
+- Expected 15% productivity improvement and $300K annual savings
+- Low-risk implementation using proven technologies
+- Decision needed by Oct 15 for Q4 execution
+
+Business Case: [Detailed financial analysis attached]
+Implementation Plan: [Phased approach with milestones]
+Your Action: Review attached analysis, approve budget allocation"
+
+### Technical Team (Developers, DevOps)
+**Communication Template**: Technical Analysis
+**Channel**: Team meeting + technical documentation
+**Timing**: After leadership approval
+**Key Messages**:
+- **Technical Benefits**: Improved CI/CD, automated deployment
+- **Implementation Plan**: 3-phase rollout with training
+- **Resource Requirements**: 2 weeks team time, external consulting
+- **Skills Development**: New tools training and certification opportunities
+
+**Sample Message**:
+"Team Infrastructure Modernization: Technical Overview
+
+Technical Scope:
+- Migration to containerized deployment (Docker + Kubernetes)
+- CI/CD pipeline automation (GitHub Actions)
+- Infrastructure as Code (Terraform)
+- Monitoring and observability (Datadog integration)
+
+Implementation Phases:
+Phase 1: CI/CD pipeline setup (Weeks 1-2)
+Phase 2: Containerization (Weeks 3-4)
+Phase 3: Production deployment (Weeks 5-6)
+
+Training Plan: [Detailed skill development roadmap]
+Your Role: Active participation in planning sessions, skills development"
+
+### Affected Users (Product, Support, QA)
+**Communication Template**: Impact Assessment
+**Channel**: All-hands meeting + FAQ document
+**Timing**: During implementation phases
+**Key Messages**:
+- **Benefit Summary**: Faster releases, more reliable deployments
+- **Timeline Impact**: No disruption to feature delivery schedule
+- **Support Changes**: New deployment notification system
+- **Feedback Channels**: Weekly check-ins, dedicated Slack channel
+
+## Communication Schedule
+**Week 1**: Executive approvals and leadership alignment
+**Week 2**: Technical team planning and skills assessment
+**Week 3**: All-hands announcement and Q&A session
+**Week 4**: Implementation kickoff with regular updates
+**Weekly**: Progress updates and feedback collection
 ```
 
 ## Integration Points
