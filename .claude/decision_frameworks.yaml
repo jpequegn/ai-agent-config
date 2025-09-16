@@ -1,0 +1,392 @@
+# Decision Intelligence Core - Frameworks and Decision Data Model
+# Defines reusable decision frameworks and tracks decision outcomes
+
+frameworks:
+  business_decision:
+    name: "Business Decision Framework"
+    description: "Comprehensive framework for business and strategic decisions"
+    use_cases: ["product strategy", "market expansion", "investment decisions", "partnerships"]
+    criteria:
+      - name: "Financial Impact"
+        weight: 0.3
+        scale: "1-10"
+        description: "Direct financial impact including revenue, cost, and ROI"
+        measurement: "quantitative"
+      - name: "Strategic Alignment"
+        weight: 0.25
+        scale: "1-10"
+        description: "Alignment with organizational strategy and long-term goals"
+        measurement: "qualitative"
+      - name: "Risk Level"
+        weight: 0.2
+        scale: "1-10"
+        description: "Overall risk assessment including market, operational, and financial risks"
+        measurement: "mixed"
+      - name: "Implementation Effort"
+        weight: 0.15
+        scale: "1-10"
+        description: "Complexity and resource requirements for implementation"
+        measurement: "quantitative"
+      - name: "Team Impact"
+        weight: 0.1
+        scale: "1-10"
+        description: "Impact on team morale, capacity, and organizational culture"
+        measurement: "qualitative"
+
+  technical_decision:
+    name: "Technical Architecture Decision"
+    description: "Framework for technology stack, architecture, and implementation decisions"
+    use_cases: ["technology selection", "architecture design", "tool adoption", "infrastructure changes"]
+    criteria:
+      - name: "Scalability"
+        weight: 0.25
+        scale: "1-10"
+        description: "Ability to handle growth in users, data, and complexity"
+        measurement: "quantitative"
+      - name: "Maintainability"
+        weight: 0.25
+        scale: "1-10"
+        description: "Code quality, documentation, and ease of maintenance"
+        measurement: "qualitative"
+      - name: "Security"
+        weight: 0.2
+        scale: "1-10"
+        description: "Security posture, compliance, and vulnerability management"
+        measurement: "quantitative"
+      - name: "Development Speed"
+        weight: 0.15
+        scale: "1-10"
+        description: "Impact on development velocity and time-to-market"
+        measurement: "quantitative"
+      - name: "Cost"
+        weight: 0.15
+        scale: "1-10"
+        description: "Total cost of ownership including licensing, infrastructure, and maintenance"
+        measurement: "quantitative"
+
+  product_decision:
+    name: "Product Development Framework"
+    description: "Framework for product features, roadmap, and user experience decisions"
+    use_cases: ["feature prioritization", "user experience design", "product roadmap", "customer requests"]
+    criteria:
+      - name: "User Value"
+        weight: 0.3
+        scale: "1-10"
+        description: "Direct value and benefit to end users"
+        measurement: "qualitative"
+      - name: "Business Impact"
+        weight: 0.25
+        scale: "1-10"
+        description: "Impact on key business metrics and objectives"
+        measurement: "quantitative"
+      - name: "Technical Feasibility"
+        weight: 0.2
+        scale: "1-10"
+        description: "Technical complexity and implementation feasibility"
+        measurement: "quantitative"
+      - name: "Market Demand"
+        weight: 0.15
+        scale: "1-10"
+        description: "Market demand and competitive landscape considerations"
+        measurement: "qualitative"
+      - name: "Resource Requirements"
+        weight: 0.1
+        scale: "1-10"
+        description: "Required resources including development time and expertise"
+        measurement: "quantitative"
+
+  hiring_decision:
+    name: "Hiring and Team Building Framework"
+    description: "Framework for recruitment, role definition, and team structure decisions"
+    use_cases: ["candidate evaluation", "role creation", "team expansion", "contractor vs employee"]
+    criteria:
+      - name: "Technical Fit"
+        weight: 0.3
+        scale: "1-10"
+        description: "Technical skills match for role requirements"
+        measurement: "quantitative"
+      - name: "Cultural Fit"
+        weight: 0.25
+        scale: "1-10"
+        description: "Alignment with team culture and company values"
+        measurement: "qualitative"
+      - name: "Growth Potential"
+        weight: 0.2
+        scale: "1-10"
+        description: "Potential for professional growth and long-term contribution"
+        measurement: "qualitative"
+      - name: "Experience Level"
+        weight: 0.15
+        scale: "1-10"
+        description: "Relevant experience and industry background"
+        measurement: "quantitative"
+      - name: "Compensation Fit"
+        weight: 0.1
+        scale: "1-10"
+        description: "Compensation expectations vs budget and market rates"
+        measurement: "quantitative"
+
+  process_decision:
+    name: "Process and Workflow Framework"
+    description: "Framework for operational processes, tools, and workflow decisions"
+    use_cases: ["process improvement", "tool selection", "workflow design", "operational changes"]
+    criteria:
+      - name: "Efficiency Gain"
+        weight: 0.3
+        scale: "1-10"
+        description: "Improvement in process efficiency and time savings"
+        measurement: "quantitative"
+      - name: "Quality Impact"
+        weight: 0.25
+        scale: "1-10"
+        description: "Impact on output quality and error reduction"
+        measurement: "qualitative"
+      - name: "Adoption Ease"
+        weight: 0.2
+        scale: "1-10"
+        description: "Ease of team adoption and change management"
+        measurement: "qualitative"
+      - name: "Cost Benefit"
+        weight: 0.15
+        scale: "1-10"
+        description: "Cost savings vs implementation and maintenance costs"
+        measurement: "quantitative"
+      - name: "Standardization"
+        weight: 0.1
+        scale: "1-10"
+        description: "Contribution to process standardization and consistency"
+        measurement: "qualitative"
+
+# Decision Tracking Data Model
+decisions:
+  - id: "mobile-app-architecture-2024-09"
+    title: "Mobile App Architecture: React Native vs Native"
+    framework: "technical_decision"
+    status: "in_progress"
+    priority: "high"
+    deadline: "2024-10-15"
+    created_date: "2024-09-01"
+    decision_maker: "john@company.com"
+    stakeholders:
+      - email: "sarah@company.com"
+        role: "technical_lead"
+        influence: "high"
+      - email: "john@company.com"
+        role: "decision_maker"
+        influence: "final"
+      - email: "devops@company.com"
+        role: "implementation"
+        influence: "medium"
+    context: "Need to decide mobile app tech stack for V2 redesign to support iOS and Android with limited development resources"
+    constraints:
+      - "6-month development timeline"
+      - "2 mobile developers available"
+      - "Must support offline functionality"
+      - "Integration with existing React web app"
+    success_criteria:
+      - "Delivered on time within 6 months"
+      - "Maintains performance standards"
+      - "Team can maintain and extend"
+      - "Supports planned features"
+    options:
+      - name: "React Native"
+        description: "Cross-platform development with React Native"
+        scores:
+          scalability: 7
+          maintainability: 8
+          security: 7
+          development_speed: 9
+          cost: 8
+        pros:
+          - "Faster development with code reuse"
+          - "Team already knows React"
+          - "Large community and ecosystem"
+          - "Hot reload and debugging tools"
+        cons:
+          - "Platform-specific limitations"
+          - "Performance concerns for complex animations"
+          - "Third-party library dependency"
+        estimated_cost: 150000
+        estimated_timeline: "5 months"
+        risk_level: "medium"
+      - name: "Native iOS/Android"
+        description: "Separate native applications for iOS and Android"
+        scores:
+          scalability: 9
+          maintainability: 6
+          security: 9
+          development_speed: 5
+          cost: 4
+        pros:
+          - "Maximum performance and platform features"
+          - "No framework dependencies"
+          - "Platform-optimized user experience"
+          - "Full access to native APIs"
+        cons:
+          - "Longer development time"
+          - "Need iOS and Android expertise"
+          - "Duplicate code and maintenance"
+          - "Higher long-term costs"
+        estimated_cost: 300000
+        estimated_timeline: "8 months"
+        risk_level: "high"
+      - name: "Progressive Web App (PWA)"
+        description: "Enhanced web application with mobile capabilities"
+        scores:
+          scalability: 8
+          maintainability: 9
+          security: 8
+          development_speed: 10
+          cost: 9
+        pros:
+          - "Leverages existing web app"
+          - "Single codebase maintenance"
+          - "Instant updates without app store"
+          - "Lower development cost"
+        cons:
+          - "Limited native features"
+          - "App store distribution challenges"
+          - "Performance limitations"
+          - "iOS PWA limitations"
+        estimated_cost: 75000
+        estimated_timeline: "3 months"
+        risk_level: "low"
+    analysis:
+      weighted_scores:
+        react_native: 7.7
+        native: 6.9
+        pwa: 8.8
+      recommendation: "react_native"
+      rationale: "Best balance of development speed, cost, and technical requirements given team expertise and timeline constraints"
+      confidence_level: 0.8
+    next_steps:
+      - "Prototype key features in React Native"
+      - "Performance testing with target devices"
+      - "Final stakeholder approval by 2024-09-15"
+    outcome:
+      final_decision: null
+      actual_results: null
+      lessons_learned: null
+      decision_quality_score: null
+
+  - id: "q4-marketing-budget-allocation-2024-09"
+    title: "Q4 Marketing Budget Allocation: Digital vs Traditional"
+    framework: "business_decision"
+    status: "completed"
+    priority: "high"
+    deadline: "2024-09-30"
+    created_date: "2024-09-10"
+    decision_maker: "john@company.com"
+    stakeholders:
+      - email: "sarah@company.com"
+        role: "product_lead"
+        influence: "medium"
+    context: "Allocate $100K Q4 marketing budget between digital and traditional channels for product launch"
+    options:
+      - name: "80% Digital, 20% Traditional"
+        scores:
+          financial_impact: 8
+          strategic_alignment: 9
+          risk_level: 7
+          implementation_effort: 8
+          team_impact: 7
+      - name: "60% Digital, 40% Traditional"
+        scores:
+          financial_impact: 7
+          strategic_alignment: 8
+          risk_level: 8
+          implementation_effort: 7
+          team_impact: 8
+      - name: "100% Digital"
+        scores:
+          financial_impact: 9
+          strategic_alignment: 9
+          risk_level: 6
+          implementation_effort: 9
+          team_impact: 6
+    analysis:
+      weighted_scores:
+        "80_20_split": 7.9
+        "60_40_split": 7.6
+        "100_digital": 8.1
+      recommendation: "100_digital"
+      confidence_level: 0.9
+    outcome:
+      final_decision: "100_digital"
+      actual_results: "15% increase in lead generation vs previous quarter"
+      lessons_learned: "Digital channels provided better ROI and tracking capabilities"
+      decision_quality_score: 9
+
+# Validation Rules
+validation:
+  required_fields:
+    - "id"
+    - "title"
+    - "framework"
+    - "status"
+    - "stakeholders"
+    - "context"
+    - "options"
+  status_values:
+    - "draft"
+    - "in_progress"
+    - "under_review"
+    - "decided"
+    - "completed"
+    - "archived"
+  priority_values:
+    - "low"
+    - "medium"
+    - "high"
+    - "critical"
+  influence_levels:
+    - "low"
+    - "medium"
+    - "high"
+    - "final"
+  score_range:
+    min: 1
+    max: 10
+  confidence_range:
+    min: 0.0
+    max: 1.0
+
+# Decision Analytics
+analytics:
+  framework_usage:
+    business_decision: 35
+    technical_decision: 28
+    product_decision: 20
+    hiring_decision: 10
+    process_decision: 7
+  average_decision_time:
+    business_decision: "14 days"
+    technical_decision: "21 days"
+    product_decision: "10 days"
+    hiring_decision: "18 days"
+    process_decision: "7 days"
+  success_rates:
+    business_decision: 0.82
+    technical_decision: 0.75
+    product_decision: 0.88
+    hiring_decision: 0.71
+    process_decision: 0.91
+  common_stakeholder_roles:
+    - "decision_maker"
+    - "technical_lead"
+    - "product_lead"
+    - "implementation"
+    - "advisor"
+    - "affected_party"
+
+# Framework Metadata
+metadata:
+  version: "1.0"
+  last_updated: "2024-09-15"
+  maintained_by: "john@company.com"
+  review_frequency: "quarterly"
+  next_review: "2024-12-15"
+  integration_points:
+    - "team_roster.yaml"
+    - "projects.yaml"
+    - "integrations.yaml"
