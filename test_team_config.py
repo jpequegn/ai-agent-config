@@ -248,7 +248,8 @@ def validate_team_commands():
         'team-performance.md',
         'team-sync.md',
         'team-1on1.md',
-        'team-analysis.md'
+        'team-analysis.md',
+        'team-feedback.md'
     ]
 
     all_exist = True
