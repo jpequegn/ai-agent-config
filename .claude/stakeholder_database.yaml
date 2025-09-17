@@ -1,0 +1,348 @@
+# Stakeholder Database - Comprehensive stakeholder management and relationship tracking
+# Integrates with team_roster.yaml, stakeholder_contexts.yaml, and meeting notes
+# Provides foundation for stakeholder relationship management and influence analysis
+
+stakeholders:
+  # Executive Leadership
+  - id: "ceo-jane-smith"
+    name: "Jane Smith"
+    role: "CEO"
+    email: "jane@company.com"
+    department: "Executive"
+    influence_level: "very_high"
+    interest_areas: ["revenue", "strategic_direction", "team_growth", "market_expansion"]
+    communication_style: "data_driven"
+    decision_factors: ["roi", "strategic_alignment", "risk_assessment", "competitive_advantage"]
+    last_interaction: "2024-09-10"
+    relationship_strength: "strong"
+    key_concerns: ["Q4_revenue_targets", "market_expansion", "team_scalability"]
+    preferred_meeting_format: "executive_dashboard"
+    response_time_expectation: "within_4_hours"
+    authority_scope: ["budget_approval", "strategic_decisions", "hiring_approval"]
+
+  - id: "cto-mike-johnson"
+    name: "Mike Johnson"
+    role: "CTO"
+    email: "mike@company.com"
+    department: "Engineering"
+    influence_level: "high"
+    interest_areas: ["technical_architecture", "team_capability", "innovation", "scalability"]
+    communication_style: "technical_deep_dive"
+    decision_factors: ["scalability", "maintainability", "team_development", "technical_debt"]
+    last_interaction: "2024-09-12"
+    relationship_strength: "collaborative"
+    key_concerns: ["system_scalability", "team_technical_growth", "architecture_decisions"]
+    preferred_meeting_format: "technical_review"
+    response_time_expectation: "within_24_hours"
+    authority_scope: ["technical_decisions", "architecture_approval", "team_structure"]
+
+  # Product & Design Leadership
+  - id: "vp-product-lisa-chen"
+    name: "Lisa Chen"
+    role: "VP of Product"
+    email: "lisa@company.com"
+    department: "Product"
+    influence_level: "high"
+    interest_areas: ["user_experience", "product_roadmap", "market_research", "feature_prioritization"]
+    communication_style: "user_focused"
+    decision_factors: ["user_impact", "market_opportunity", "development_cost", "timeline"]
+    last_interaction: "2024-09-08"
+    relationship_strength: "strong"
+    key_concerns: ["user_adoption", "product_market_fit", "feature_delivery"]
+    preferred_meeting_format: "product_review"
+    response_time_expectation: "within_8_hours"
+    authority_scope: ["product_decisions", "feature_prioritization", "user_research"]
+
+  # External Stakeholders
+  - id: "board-chair-robert-davis"
+    name: "Robert Davis"
+    role: "Board Chair"
+    email: "robert.davis@boardemail.com"
+    department: "Board"
+    influence_level: "very_high"
+    interest_areas: ["financial_performance", "strategic_oversight", "risk_management"]
+    communication_style: "high_level_summary"
+    decision_factors: ["financial_impact", "strategic_alignment", "risk_mitigation"]
+    last_interaction: "2024-08-15"
+    relationship_strength: "formal"
+    key_concerns: ["quarterly_performance", "strategic_direction", "compliance"]
+    preferred_meeting_format: "board_presentation"
+    response_time_expectation: "within_72_hours"
+    authority_scope: ["strategic_oversight", "ceo_guidance", "major_decisions"]
+
+  - id: "lead-investor-sarah-kim"
+    name: "Sarah Kim"
+    role: "Lead Investor"
+    email: "sarah.kim@vcfirm.com"
+    department: "Investors"
+    influence_level: "high"
+    interest_areas: ["growth_metrics", "market_expansion", "revenue_scaling"]
+    communication_style: "metrics_focused"
+    decision_factors: ["growth_potential", "market_size", "competitive_position"]
+    last_interaction: "2024-09-01"
+    relationship_strength: "professional"
+    key_concerns: ["growth_trajectory", "market_positioning", "funding_efficiency"]
+    preferred_meeting_format: "investor_update"
+    response_time_expectation: "within_48_hours"
+    authority_scope: ["investment_decisions", "strategic_input", "board_influence"]
+
+  # Key Customers/Partners
+  - id: "enterprise-client-alex-wilson"
+    name: "Alex Wilson"
+    role: "Enterprise Client - Director of IT"
+    email: "alex.wilson@enterprise.com"
+    department: "External"
+    influence_level: "medium_high"
+    interest_areas: ["platform_reliability", "integration_capabilities", "support_quality"]
+    communication_style: "technical_requirements"
+    decision_factors: ["reliability", "integration_ease", "cost_effectiveness"]
+    last_interaction: "2024-09-05"
+    relationship_strength: "strong"
+    key_concerns: ["system_uptime", "feature_requests", "contract_renewal"]
+    preferred_meeting_format: "technical_discussion"
+    response_time_expectation: "within_24_hours"
+    authority_scope: ["vendor_evaluation", "technical_requirements"]
+
+# Stakeholder Relationships and Influence Mapping
+relationships:
+  - stakeholder_1: "ceo-jane-smith"
+    stakeholder_2: "cto-mike-johnson"
+    relationship_type: "collaborative"
+    influence_on_each_other: "high"
+    communication_frequency: "daily"
+    potential_conflicts: ["speed_vs_quality", "innovation_vs_stability"]
+    alignment_areas: ["team_growth", "strategic_direction"]
+
+  - stakeholder_1: "ceo-jane-smith"
+    stakeholder_2: "vp-product-lisa-chen"
+    relationship_type: "directive"
+    influence_on_each_other: "high"
+    communication_frequency: "weekly"
+    potential_conflicts: ["feature_scope", "timeline_pressure"]
+    alignment_areas: ["market_expansion", "user_growth"]
+
+  - stakeholder_1: "cto-mike-johnson"
+    stakeholder_2: "vp-product-lisa-chen"
+    relationship_type: "collaborative"
+    influence_on_each_other: "medium"
+    communication_frequency: "bi-weekly"
+    potential_conflicts: ["technical_debt_vs_features", "resource_allocation"]
+    alignment_areas: ["user_experience", "system_performance"]
+
+  - stakeholder_1: "board-chair-robert-davis"
+    stakeholder_2: "ceo-jane-smith"
+    relationship_type: "oversight"
+    influence_on_each_other: "very_high"
+    communication_frequency: "monthly"
+    potential_conflicts: ["growth_pace", "risk_tolerance"]
+    alignment_areas: ["strategic_direction", "financial_performance"]
+
+  - stakeholder_1: "lead-investor-sarah-kim"
+    stakeholder_2: "ceo-jane-smith"
+    relationship_type: "advisory"
+    influence_on_each_other: "high"
+    communication_frequency: "monthly"
+    potential_conflicts: ["growth_strategy", "resource_allocation"]
+    alignment_areas: ["market_expansion", "revenue_growth"]
+
+  - stakeholder_1: "enterprise-client-alex-wilson"
+    stakeholder_2: "vp-product-lisa-chen"
+    relationship_type: "customer_vendor"
+    influence_on_each_other: "medium"
+    communication_frequency: "monthly"
+    potential_conflicts: ["feature_priorities", "timeline_expectations"]
+    alignment_areas: ["product_reliability", "user_experience"]
+
+# Stakeholder Interaction History and Engagement Tracking
+interaction_history:
+  # Executive Interactions
+  - stakeholder_id: "ceo-jane-smith"
+    date: "2024-09-10"
+    type: "quarterly_review"
+    topics: ["Q3_performance", "Q4_planning", "team_expansion"]
+    outcomes: ["approved_mobile_app_project", "requested_timeline_acceleration", "budget_increase_approved"]
+    sentiment: "positive"
+    follow_ups: ["weekly_progress_updates", "team_hiring_plan"]
+    participants: ["cto-mike-johnson", "vp-product-lisa-chen"]
+    meeting_duration: "90_minutes"
+    action_items:
+      - "Provide weekly mobile app progress updates"
+      - "Submit Q4 hiring plan by Sept 20"
+      - "Review technical architecture decisions"
+
+  - stakeholder_id: "ceo-jane-smith"
+    date: "2024-08-15"
+    type: "strategic_planning"
+    topics: ["market_expansion", "competitive_analysis", "investment_priorities"]
+    outcomes: ["approved_eu_expansion", "increased_marketing_budget", "competitive_research_initiated"]
+    sentiment: "enthusiastic"
+    follow_ups: ["monthly_market_updates", "competitive_analysis_report"]
+    participants: ["vp-product-lisa-chen", "head-marketing"]
+    meeting_duration: "120_minutes"
+
+  - stakeholder_id: "cto-mike-johnson"
+    date: "2024-09-12"
+    type: "technical_review"
+    topics: ["system_architecture", "scalability_planning", "team_development"]
+    outcomes: ["microservices_migration_approved", "team_training_budget", "performance_monitoring_upgrade"]
+    sentiment: "collaborative"
+    follow_ups: ["architecture_documentation", "team_skill_assessment"]
+    participants: ["senior_engineers", "devops_team"]
+    meeting_duration: "60_minutes"
+    action_items:
+      - "Complete microservices migration plan by Oct 1"
+      - "Conduct team skill assessment"
+      - "Implement performance monitoring"
+
+  # Product & Customer Interactions
+  - stakeholder_id: "vp-product-lisa-chen"
+    date: "2024-09-08"
+    type: "product_review"
+    topics: ["user_feedback_analysis", "feature_prioritization", "Q4_roadmap"]
+    outcomes: ["dashboard_redesign_approved", "mobile_features_prioritized", "user_research_expanded"]
+    sentiment: "focused"
+    follow_ups: ["user_research_results", "prototype_reviews"]
+    participants: ["design_team", "user_research"]
+    meeting_duration: "75_minutes"
+
+  - stakeholder_id: "enterprise-client-alex-wilson"
+    date: "2024-09-05"
+    type: "client_check_in"
+    topics: ["system_performance", "new_feature_requests", "integration_updates"]
+    outcomes: ["performance_improvements_requested", "api_enhancements_discussed", "contract_renewal_positive"]
+    sentiment: "satisfied_but_demanding"
+    follow_ups: ["performance_improvement_plan", "api_enhancement_timeline"]
+    participants: ["customer_success", "technical_lead"]
+    meeting_duration: "45_minutes"
+    action_items:
+      - "Provide performance improvement plan within 2 weeks"
+      - "Schedule API enhancement discussion"
+
+  # Board and Investor Interactions
+  - stakeholder_id: "board-chair-robert-davis"
+    date: "2024-08-15"
+    type: "board_meeting"
+    topics: ["quarterly_results", "strategic_direction", "risk_assessment"]
+    outcomes: ["q3_results_approved", "strategic_plan_endorsed", "risk_mitigation_requested"]
+    sentiment: "professional"
+    follow_ups: ["risk_assessment_report", "strategic_milestone_tracking"]
+    participants: ["full_board", "executive_team"]
+    meeting_duration: "180_minutes"
+
+  - stakeholder_id: "lead-investor-sarah-kim"
+    date: "2024-09-01"
+    type: "investor_update"
+    topics: ["growth_metrics", "market_position", "funding_utilization"]
+    outcomes: ["growth_trajectory_positive", "market_expansion_supported", "additional_funding_discussed"]
+    sentiment: "optimistic"
+    follow_ups: ["monthly_metrics_report", "market_expansion_plan"]
+    participants: ["ceo-jane-smith", "vp-product-lisa-chen"]
+    meeting_duration: "60_minutes"
+
+# Stakeholder Groups and Coalition Mapping
+stakeholder_groups:
+  executive_team:
+    name: "Executive Leadership"
+    members: ["ceo-jane-smith", "cto-mike-johnson", "vp-product-lisa-chen"]
+    decision_authority: "strategic"
+    meeting_frequency: "weekly"
+    primary_concerns: ["company_direction", "performance", "growth"]
+
+  board_governance:
+    name: "Board and Governance"
+    members: ["board-chair-robert-davis", "lead-investor-sarah-kim"]
+    decision_authority: "oversight"
+    meeting_frequency: "monthly"
+    primary_concerns: ["financial_performance", "strategic_oversight", "risk_management"]
+
+  customer_advisory:
+    name: "Key Customer Representatives"
+    members: ["enterprise-client-alex-wilson"]
+    decision_authority: "advisory"
+    meeting_frequency: "monthly"
+    primary_concerns: ["product_quality", "feature_requests", "service_reliability"]
+
+  technical_leadership:
+    name: "Technical Decision Makers"
+    members: ["cto-mike-johnson"]
+    decision_authority: "technical"
+    meeting_frequency: "weekly"
+    primary_concerns: ["architecture", "scalability", "team_development"]
+
+# Stakeholder Communication Preferences and Protocols
+communication_protocols:
+  ceo-jane-smith:
+    preferred_channels: ["email", "slack", "in_person"]
+    meeting_preferences: "morning_meetings"
+    documentation_style: "executive_summary"
+    escalation_threshold: "high_impact_decisions"
+    regular_updates: ["weekly_progress", "monthly_metrics"]
+
+  cto-mike-johnson:
+    preferred_channels: ["slack", "technical_documentation", "code_reviews"]
+    meeting_preferences: "technical_deep_dives"
+    documentation_style: "detailed_technical"
+    escalation_threshold: "architecture_decisions"
+    regular_updates: ["sprint_summaries", "technical_metrics"]
+
+  vp-product-lisa-chen:
+    preferred_channels: ["product_management_tools", "email", "design_reviews"]
+    meeting_preferences: "product_demos"
+    documentation_style: "user_focused"
+    escalation_threshold: "product_strategy_changes"
+    regular_updates: ["user_feedback_summaries", "feature_progress"]
+
+  board-chair-robert-davis:
+    preferred_channels: ["formal_email", "board_portal"]
+    meeting_preferences: "structured_presentations"
+    documentation_style: "board_report_format"
+    escalation_threshold: "fiduciary_concerns"
+    regular_updates: ["quarterly_reports", "strategic_updates"]
+
+  lead-investor-sarah-kim:
+    preferred_channels: ["investor_portal", "email"]
+    meeting_preferences: "metrics_focused"
+    documentation_style: "investor_update_format"
+    escalation_threshold: "funding_implications"
+    regular_updates: ["monthly_metrics", "milestone_reports"]
+
+# Integration Points with Existing Systems
+integration_mapping:
+  team_roster_sync:
+    description: "Synchronizes internal team members between stakeholder_database.yaml and team_roster.yaml"
+    sync_fields: ["name", "email", "role", "department"]
+    update_frequency: "weekly"
+
+  stakeholder_contexts_sync:
+    description: "Integrates decision-making preferences from stakeholder_contexts.yaml"
+    sync_fields: ["decision_preferences", "communication_style", "expertise_areas"]
+    update_frequency: "monthly"
+
+  meeting_notes_integration:
+    description: "Links stakeholder interactions with meeting notes and project updates"
+    integration_points: ["meeting_participants", "action_items", "follow_ups"]
+
+  project_integration:
+    description: "Connects stakeholder involvement with project timelines and dependencies"
+    integration_points: ["project_ownership", "approval_authority", "communication_requirements"]
+
+  decision_framework_integration:
+    description: "Links stakeholder influence with decision-making processes"
+    integration_points: ["decision_authority", "influence_level", "communication_preferences"]
+
+# Metadata and System Configuration
+metadata:
+  version: "1.0"
+  last_updated: "2024-09-16"
+  maintained_by: "system_admin"
+  review_frequency: "monthly"
+  data_sources: ["manual_entry", "meeting_notes", "team_roster", "stakeholder_contexts"]
+  validation_rules:
+    required_fields: ["id", "name", "role", "email", "influence_level"]
+    relationship_validation: "both_stakeholders_must_exist"
+    interaction_history_retention: "2_years"
+
+stakeholder_metrics:
+  engagement_score_calculation: "interaction_frequency * relationship_strength * influence_level"
+  relationship_health_indicators: ["communication_frequency", "sentiment_trends", "follow_up_completion"]
+  influence_mapping_factors: ["authority_scope", "relationship_network", "decision_impact"]

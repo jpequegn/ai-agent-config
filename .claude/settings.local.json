@@ -48,7 +48,8 @@
       "Bash(gh pr view:*)",
       "Bash(git fetch:*)",
       "Bash(git restore:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(python test:*)"
     ],
     "deny": [],
     "ask": []
