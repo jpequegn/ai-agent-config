@@ -49,7 +49,9 @@
       "Bash(git fetch:*)",
       "Bash(git restore:*)",
       "Bash(git pull:*)",
-      "Bash(python test:*)"
+      "Bash(python test:*)",
+      "Bash(git merge-base:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
