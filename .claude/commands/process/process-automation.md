@@ -1,17 +1,17 @@
 ---
-name: process automation
+name: process automate
 description: Identify automation opportunities in processes to reduce manual effort and improve efficiency
 ---
 
-# Process Automation
+# Process Automate
 
 Systematically identify automation opportunities across organizational processes to reduce manual effort, eliminate human error, and improve efficiency through intelligent technology integration.
 
 ## Usage Examples:
-- `/process automation` - Analyze all processes for automation opportunities
-- `/process automation --workflow feature-dev-process` - Focus on specific workflow automation
-- `/process automation --category development` - Automate development processes
-- `/process automation --roi-threshold 10000` - Only show automations with >$10K annual savings
+- `/process automate <workflow>` - Analyze specific workflow for automation opportunities
+- `/process automate feature-dev-process` - Focus on feature development workflow automation
+- `/process automate --category development` - Automate development processes
+- `/process automate --roi-threshold 10000` - Only show automations with >$10K annual savings
 
 ## Instructions:
 
