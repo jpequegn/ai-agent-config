@@ -1,0 +1,66 @@
+# athlete_profile.yaml - Comprehensive athlete profile with training history, goals, and preferences
+
+athlete:
+  name: "Your Name"
+  age: 35
+  training_age: 8  # years of structured training
+  disciplines: ["running", "cycling", "triathlon"]
+  experience_level: "advanced"
+
+current_season:
+  start_date: "2024-09-01"
+  end_date: "2025-08-31"
+  primary_goals: ["sub-3-marathon", "70.3-improvement"]
+  secondary_goals: ["injury-prevention", "consistency"]
+
+training_history:
+  weekly_volume_avg: 12  # hours per week
+  long_run_max: "32km"
+  bike_ftp: 285  # watts
+  run_threshold_pace: "4:10"  # per km
+
+constraints:
+  time_availability: 12  # hours per week
+  travel_frequency: "monthly"
+  injury_history: ["it-band-2022", "plantar-fasciitis-2021"]
+  life_stress_level: "moderate"
+
+# Additional profile sections for comprehensive training management
+
+physical_metrics:
+  height: 175  # cm
+  weight: 70   # kg
+  body_fat_percentage: 12
+  resting_heart_rate: 45
+  max_heart_rate: 190
+  vo2_max: 55  # ml/kg/min
+
+equipment:
+  running:
+    shoes: ["Nike Vaporfly Next%", "ASICS Gel-Nimbus"]
+    gps_watch: "Garmin Forerunner 955"
+    heart_rate_monitor: "Polar H10"
+  cycling:
+    bike: "Canyon Aeroad CF SLX"
+    power_meter: "Quarq DZero"
+    trainer: "Wahoo KICKR V5"
+
+preferences:
+  workout_time: "morning"  # morning, afternoon, evening
+  indoor_outdoor: "outdoor_preferred"
+  group_solo: "mixed"
+  training_environment: "varied"
+
+recovery_metrics:
+  sleep_target: 8  # hours per night
+  rhr_trend: "stable"  # stable, increasing, decreasing
+  hrv_baseline: 45  # ms
+  stress_tolerance: "moderate"
+
+nutrition:
+  dietary_restrictions: []
+  hydration_strategy: "electrolyte_replacement"
+  fueling_preference: "whole_foods"
+  pre_workout: "coffee_banana"
+  during_workout: "sports_drink"
+  post_workout: "protein_carb_mix"
