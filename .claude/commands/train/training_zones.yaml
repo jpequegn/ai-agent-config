@@ -1,0 +1,165 @@
+# training_zones.yaml - Heart rate, pace, and power zone management for training optimization
+
+zones:
+  heart_rate:
+    zone_1:
+      range: [115, 135]
+      description: "Active recovery"
+      percentage: "60-70% HRmax"
+      purpose: "Recovery, fat burning, aerobic base building"
+
+    zone_2:
+      range: [136, 155]
+      description: "Aerobic base"
+      percentage: "70-80% HRmax"
+      purpose: "Aerobic base, long steady efforts, fat adaptation"
+
+    zone_3:
+      range: [156, 175]
+      description: "Tempo"
+      percentage: "80-90% HRmax"
+      purpose: "Aerobic threshold, comfortably hard effort"
+
+    zone_4:
+      range: [176, 185]
+      description: "Lactate threshold"
+      percentage: "90-95% HRmax"
+      purpose: "Lactate threshold, anaerobic threshold, race pace"
+
+    zone_5:
+      range: [186, 200]
+      description: "VO2 max"
+      percentage: "95-100% HRmax"
+      purpose: "VO2 max, neuromuscular power, speed"
+
+  run_pace:  # per km
+    recovery:
+      pace: "5:15-5:45"
+      description: "Easy recovery runs"
+      effort: "conversational, relaxed"
+
+    easy:
+      pace: "4:45-5:15"
+      description: "Aerobic base building"
+      effort: "comfortable, sustainable"
+
+    tempo:
+      pace: "4:10-4:20"
+      description: "Comfortably hard"
+      effort: "controlled, rhythmic breathing"
+
+    threshold:
+      pace: "3:55-4:05"
+      description: "Lactate threshold"
+      effort: "hard but sustainable for 20-60 min"
+
+    interval:
+      pace: "3:30-3:45"
+      description: "VO2 max intervals"
+      effort: "very hard, short bursts"
+
+    repetition:
+      pace: "3:15-3:30"
+      description: "Speed and neuromuscular"
+      effort: "near maximal, very short"
+
+  power_cycling:
+    zone_1:
+      range: [0, 142]
+      percentage: "0-50% FTP"
+      description: "Active recovery"
+      purpose: "Recovery rides, warming up/down"
+
+    zone_2:
+      range: [143, 199]
+      percentage: "51-70% FTP"
+      description: "Endurance"
+      purpose: "Aerobic base, long steady rides"
+
+    zone_3:
+      range: [200, 228]
+      percentage: "71-80% FTP"
+      description: "Tempo"
+      purpose: "Aerobic threshold, tempo efforts"
+
+    zone_4:
+      range: [229, 257]
+      percentage: "81-90% FTP"
+      description: "Lactate threshold"
+      purpose: "FTP intervals, race pace"
+
+    zone_5:
+      range: [258, 285]
+      percentage: "91-100% FTP"
+      description: "VO2 max"
+      purpose: "VO2 max intervals, anaerobic capacity"
+
+    zone_6:
+      range: [286, 342]
+      percentage: "101-120% FTP"
+      description: "Anaerobic capacity"
+      purpose: "Short high-intensity intervals"
+
+    zone_7:
+      range: [343, 400]
+      percentage: "121-150% FTP"
+      description: "Neuromuscular power"
+      purpose: "Sprint efforts, peak power"
+
+# Swimming zones (optional for triathletes)
+  swim_pace:  # per 100m
+    easy:
+      pace: "1:45-2:00"
+      description: "Aerobic base"
+      effort: "comfortable, sustainable"
+
+    moderate:
+      pace: "1:35-1:45"
+      description: "Aerobic threshold"
+      effort: "controlled, rhythmic"
+
+    hard:
+      pace: "1:25-1:35"
+      description: "Lactate threshold"
+      effort: "hard but sustainable"
+
+    very_hard:
+      pace: "1:15-1:25"
+      description: "VO2 max"
+      effort: "very hard, interval pace"
+
+# Training zone calculations and methodology
+zone_methodology:
+  heart_rate:
+    calculation_method: "percentage_hrmax"  # or lthr_based
+    max_heart_rate: 190
+    resting_heart_rate: 45
+    lactate_threshold_hr: 175
+
+  power:
+    ftp_watts: 285
+    last_ftp_test: "2024-08-15"
+    test_protocol: "20_minute_test"
+
+  pace:
+    threshold_pace: "4:00"  # per km
+    last_threshold_test: "2024-08-10"
+    test_protocol: "30_minute_time_trial"
+
+# Seasonal adjustments
+seasonal_adjustments:
+  base_phase:
+    emphasis: ["zone_1", "zone_2"]
+    intensity_distribution: {"easy": 80, "moderate": 15, "hard": 5}
+
+  build_phase:
+    emphasis: ["zone_3", "zone_4"]
+    intensity_distribution: {"easy": 70, "moderate": 20, "hard": 10}
+
+  peak_phase:
+    emphasis: ["zone_4", "zone_5"]
+    intensity_distribution: {"easy": 60, "moderate": 25, "hard": 15}
+
+  recovery_phase:
+    emphasis: ["zone_1"]
+    intensity_distribution: {"easy": 90, "moderate": 10, "hard": 0}

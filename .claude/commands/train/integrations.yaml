@@ -1,0 +1,150 @@
+# integrations.yaml - Training platform API integrations and data synchronization
+
+platforms:
+  strava:
+    enabled: true
+    api_key: "YOUR_STRAVA_API_KEY"
+    client_id: "YOUR_STRAVA_CLIENT_ID"
+    client_secret: "YOUR_STRAVA_CLIENT_SECRET"
+    data_sync: ["activities", "heart_rate", "power", "pace", "segments", "kudos"]
+    sync_frequency: "daily"
+    rate_limits:
+      requests_per_15min: 100
+      requests_per_day: 1000
+    endpoints:
+      activities: "https://www.strava.com/api/v3/athlete/activities"
+      athlete: "https://www.strava.com/api/v3/athlete"
+      segments: "https://www.strava.com/api/v3/segments"
+
+  garmin_connect:
+    enabled: true
+    username: "your_username"
+    password: "YOUR_GARMIN_PASSWORD"  # Use secure credential management
+    data_sync: ["sleep", "hrv", "stress", "body_battery", "training_load", "recovery"]
+    sync_frequency: "daily"
+    endpoints:
+      daily_summary: "https://connect.garmin.com/modern/proxy/usersummary-service/usersummary/daily"
+      activities: "https://connect.garmin.com/modern/proxy/activitylist-service/activities/search/activities"
+      wellness: "https://connect.garmin.com/modern/proxy/wellness-service/wellness"
+
+  trainingpeaks:
+    enabled: false
+    premium: true
+    api_key: "YOUR_TRAININGPEAKS_API_KEY"
+    username: "your_username"
+    data_sync: ["tss", "ctl", "atl", "form", "workouts", "planned_workouts"]
+    sync_frequency: "daily"
+    endpoints:
+      workouts: "https://api.trainingpeaks.com/v1/workouts"
+      metrics: "https://api.trainingpeaks.com/v1/metrics"
+
+  wahoo:
+    enabled: false
+    api_key: "YOUR_WAHOO_API_KEY"
+    data_sync: ["indoor_workouts", "power_data", "structured_workouts"]
+    sync_frequency: "real_time"
+
+  polar:
+    enabled: false
+    api_key: "YOUR_POLAR_API_KEY"
+    data_sync: ["training_sessions", "daily_activity", "sleep", "recovery"]
+    sync_frequency: "daily"
+
+# Data synchronization configuration
+sync_settings:
+  auto_sync: true
+  conflict_resolution: "latest_timestamp"  # latest_timestamp, manual_review, platform_priority
+  data_retention: "2_years"
+  backup_enabled: true
+  backup_frequency: "weekly"
+
+# Data parsing and normalization rules
+data_processing:
+  activity_types:
+    mapping:
+      "Run": "running"
+      "Ride": "cycling"
+      "Swim": "swimming"
+      "Workout": "strength"
+      "Yoga": "flexibility"
+      "Walk": "recovery"
+
+  metrics_normalization:
+    heart_rate:
+      unit: "bpm"
+      smoothing: "3_second_average"
+      zones_source: "training_zones.yaml"
+
+    power:
+      unit: "watts"
+      smoothing: "3_second_average"
+      normalization: "normalized_power"
+
+    pace:
+      unit: "per_km"
+      smoothing: "lap_average"
+      calculation: "gps_distance"
+
+    elevation:
+      unit: "meters"
+      correction: "barometric_preferred"
+
+# Data validation and quality control
+data_quality:
+  validation_rules:
+    - name: "heart_rate_bounds"
+      condition: "hr_min >= 30 AND hr_max <= 220"
+      action: "flag_for_review"
+
+    - name: "power_consistency"
+      condition: "power_spikes < 2x_20min_average"
+      action: "smooth_outliers"
+
+    - name: "gps_accuracy"
+      condition: "gps_accuracy < 5_meters"
+      action: "use_corrected_distance"
+
+  data_completeness:
+    required_fields: ["start_time", "duration", "activity_type"]
+    optional_fields: ["heart_rate", "power", "gps_data", "elevation"]
+
+# Error handling and retry logic
+error_handling:
+  retry_attempts: 3
+  retry_delay: "exponential_backoff"  # 1s, 2s, 4s
+  timeout: 30  # seconds
+
+  error_actions:
+    rate_limit: "delay_and_retry"
+    authentication: "refresh_token"
+    network_error: "retry_later"
+    data_corruption: "manual_review"
+
+# Privacy and security settings
+security:
+  data_encryption: true
+  credential_storage: "keychain"  # keychain, env_vars, encrypted_file
+  data_sharing: false
+  anonymization: true
+
+  permissions:
+    read_activities: true
+    read_profile: true
+    read_wellness: true
+    write_activities: false  # typically read-only for safety
+
+# Integration monitoring and alerts
+monitoring:
+  health_checks: true
+  alert_on_sync_failure: true
+  sync_status_dashboard: true
+
+  notifications:
+    email: "your_email@example.com"
+    slack_webhook: "YOUR_SLACK_WEBHOOK_URL"
+
+  metrics_tracking:
+    - sync_success_rate
+    - data_freshness
+    - api_response_time
+    - error_frequency
