@@ -1,0 +1,303 @@
+# training_plans.yaml - Training plan templates, periodization principles, and goal configurations
+
+# Goal-specific training plan templates
+goal_templates:
+  sub-3-marathon:
+    target_time: "2:59:59"
+    target_pace: "4:15"  # per km
+    discipline: "running"
+    minimum_weeks: 20
+    optimal_weeks: 28
+    maximum_weeks: 36
+
+    fitness_requirements:
+      current_10k_pace: "4:30"  # or faster to be realistic
+      weekly_volume_minimum: 50  # km per week
+      long_run_experience: 25  # km minimum
+
+    phase_structure:
+      base_building:
+        percentage: 43  # 12 weeks of 28-week plan
+        focus: ["aerobic_development", "injury_prevention", "base_building"]
+        volume_progression: "gradual"
+        intensity_distribution: {"easy": 85, "moderate": 10, "hard": 5}
+
+      build:
+        percentage: 29  # 8 weeks of 28-week plan
+        focus: ["marathon_specific", "lactate_threshold", "race_pace"]
+        volume_progression: "peak"
+        intensity_distribution: {"easy": 75, "moderate": 15, "hard": 10}
+
+      peak_taper:
+        percentage: 28  # 8 weeks of 28-week plan
+        focus: ["race_sharpening", "recovery", "taper"]
+        volume_progression: "taper"
+        intensity_distribution: {"easy": 80, "moderate": 15, "hard": 5}
+
+  sub-330-marathon:
+    target_time: "3:29:59"
+    target_pace: "4:58"  # per km
+    discipline: "running"
+    minimum_weeks: 16
+    optimal_weeks: 24
+    maximum_weeks: 32
+
+  70.3-improvement:
+    target_discipline: "triathlon"
+    distance: "70.3"
+    minimum_weeks: 20
+    optimal_weeks: 28
+    maximum_weeks: 36
+
+    sport_allocation:
+      swim: 20  # percentage of training time
+      bike: 50
+      run: 25
+      transition: 5
+
+  century-ride:
+    target_distance: "160km"
+    discipline: "cycling"
+    minimum_weeks: 12
+    optimal_weeks: 16
+    maximum_weeks: 24
+
+# Periodization principles and methodology
+periodization:
+  models:
+    linear:
+      description: "Progressive overload with gradual intensity increase"
+      phases: ["base", "build", "peak", "taper"]
+      progression: "volume_then_intensity"
+
+    block:
+      description: "Focused training blocks with specific adaptations"
+      phases: ["accumulation", "intensification", "realization"]
+      progression: "block_specific"
+
+    polarized:
+      description: "80/20 easy-hard distribution"
+      intensity_zones: {"zone_1_2": 80, "zone_3": 5, "zone_4_5": 15}
+      principle: "aerobic_base_with_intensity"
+
+  phase_definitions:
+    base_building:
+      duration_weeks: [8, 16]
+      volume_increase: "5-10% per week"
+      intensity_focus: "aerobic_threshold"
+      key_adaptations: ["aerobic_capacity", "mitochondrial_density", "fat_oxidation"]
+
+    build:
+      duration_weeks: [6, 10]
+      volume_increase: "maintenance to peak"
+      intensity_focus: "lactate_threshold"
+      key_adaptations: ["lactate_clearance", "race_pace", "neuromuscular"]
+
+    peak:
+      duration_weeks: [2, 4]
+      volume_increase: "maintenance"
+      intensity_focus: "race_specific"
+      key_adaptations: ["race_readiness", "speed", "power"]
+
+    taper:
+      duration_weeks: [2, 4]
+      volume_reduction: "40-60%"
+      intensity_maintenance: "race_pace"
+      key_adaptations: ["recovery", "glycogen_storage", "mental_freshness"]
+
+# Weekly structure templates
+weekly_structures:
+  marathon_base:
+    sessions_per_week: 6
+    hard_sessions: 2
+    easy_sessions: 3
+    rest_days: 1
+
+    template:
+      monday: "rest_or_easy"
+      tuesday: "tempo_threshold"
+      wednesday: "easy_medium"
+      thursday: "intervals_speed"
+      friday: "rest_or_easy"
+      saturday: "easy_medium"
+      sunday: "long_run"
+
+  marathon_build:
+    sessions_per_week: 6
+    hard_sessions: 2
+    easy_sessions: 3
+    rest_days: 1
+
+    template:
+      monday: "rest_or_easy"
+      tuesday: "marathon_pace"
+      wednesday: "easy_medium"
+      thursday: "threshold_tempo"
+      friday: "rest_or_easy"
+      saturday: "easy_medium"
+      sunday: "long_run_with_pace"
+
+  triathlon_standard:
+    sessions_per_week: 8
+    swim_sessions: 2
+    bike_sessions: 3
+    run_sessions: 3
+    brick_sessions: 1
+
+# Workout database and session types
+workout_templates:
+  tempo:
+    description: "Comfortably hard aerobic threshold efforts"
+    intensities: ["zone_3", "tempo_pace"]
+    examples:
+      - "20-30 min continuous tempo"
+      - "3-4 x 8 min at tempo, 2 min recovery"
+      - "2 x 15 min at tempo, 3 min recovery"
+
+  threshold:
+    description: "Lactate threshold training at race pace"
+    intensities: ["zone_4", "threshold_pace"]
+    examples:
+      - "4-6 x 8 min at threshold, 90s recovery"
+      - "3 x 12 min at threshold, 2 min recovery"
+      - "20-40 min continuous threshold"
+
+  intervals:
+    description: "VO2 max and speed development"
+    intensities: ["zone_5", "interval_pace"]
+    examples:
+      - "6-8 x 3 min at 5k pace, equal recovery"
+      - "5 x 1000m at 5k pace, 400m jog recovery"
+      - "12 x 400m at 3k pace, 400m jog recovery"
+
+# Progression and adaptation rules
+progression_rules:
+  volume:
+    weekly_increase: [5, 10]  # percentage range
+    build_weeks: 3
+    recovery_week_reduction: [20, 30]  # percentage reduction
+    maximum_weekly_increase: 15  # safety limit
+
+  intensity:
+    progression_triggers:
+      - "completed_sessions_3_weeks"
+      - "heart_rate_drift_improvement"
+      - "perceived_effort_decrease"
+    increase_methods:
+      - "extend_interval_duration"
+      - "increase_interval_intensity"
+      - "reduce_recovery_time"
+
+  long_run:
+    base_phase_increase: "1-2km every 2 weeks"
+    build_phase_focus: "race_pace_segments"
+    maximum_single_increase: "3km"
+    percentage_of_weekly: [25, 35]  # of total weekly volume
+
+# Adaptation and adjustment triggers
+adaptation_triggers:
+  performance_indicators:
+    positive:
+      - "threshold_pace_improvement"
+      - "lower_heart_rate_at_pace"
+      - "faster_recovery_between_intervals"
+      - "completed_sessions_feeling_easier"
+    negative:
+      - "declining_performance_3_sessions"
+      - "elevated_resting_heart_rate"
+      - "poor_sleep_quality_consecutive"
+      - "increased_perceived_effort"
+
+  life_factors:
+    high_stress:
+      adjustments: ["reduce_intensity_20%", "add_rest_day", "shorten_sessions"]
+    travel:
+      adjustments: ["maintain_easy_running", "bodyweight_exercises", "schedule_flexibility"]
+    illness:
+      minor: ["reduce_intensity_50%", "maintain_easy_movement"]
+      significant: ["complete_rest", "extend_phase_duration"]
+
+  external_factors:
+    weather:
+      extreme_heat: ["early_morning_sessions", "reduce_pace_10%", "extra_hydration"]
+      extreme_cold: ["extended_warmup", "indoor_alternatives"]
+    facility_access:
+      no_pool: ["increase_bike_run", "open_water_alternatives"]
+      no_track: ["road_interval_alternatives", "hill_repeats"]
+
+# Recovery and regeneration protocols
+recovery_protocols:
+  daily:
+    sleep: "8+ hours"
+    nutrition: "within_30min_post_workout"
+    hydration: "monitor_urine_color"
+
+  weekly:
+    complete_rest: "1-2 days"
+    massage_mobility: "1 session"
+    easy_movement: "active_recovery"
+
+  monthly:
+    recovery_week: "every_4th_week"
+    volume_reduction: "30%"
+    intensity_maintenance: "some_race_pace"
+
+# Risk management and injury prevention
+risk_management:
+  volume_increases:
+    maximum_weekly: "10%"
+    consecutive_increases: "3 weeks maximum"
+    forced_recovery: "every_4th_week"
+
+  injury_prevention:
+    strength_training: "2x per week minimum"
+    mobility_work: "daily"
+    equipment_rotation: "multiple_shoe_pairs"
+    surface_variation: "avoid_concrete_only"
+
+  warning_signs:
+    physical: ["persistent_soreness", "declining_performance", "unusual_fatigue"]
+    psychological: ["training_dread", "irritability", "sleep_disturbance"]
+    action: ["reduce_volume_20%", "add_rest_day", "consider_recovery_week"]
+
+# Plan customization parameters
+customization_factors:
+  experience_level:
+    beginner:
+      volume_conservative: true
+      intensity_reduced: "20%"
+      recovery_extended: true
+
+    intermediate:
+      volume_moderate: true
+      intensity_standard: true
+      recovery_standard: true
+
+    advanced:
+      volume_aggressive: true
+      intensity_enhanced: "10%"
+      recovery_optimized: true
+
+  time_availability:
+    low:
+      sessions_per_week: [3, 4]
+      session_duration: "quality_over_quantity"
+
+    moderate:
+      sessions_per_week: [4, 6]
+      session_duration: "balanced"
+
+    high:
+      sessions_per_week: [6, 8]
+      session_duration: "volume_focused"
+
+  injury_history:
+    recent_injury:
+      volume_reduction: "20%"
+      alternative_training: "cross_training"
+      progression_conservative: true
+
+    chronic_issues:
+      specific_prevention: "targeted_exercises"
+      load_monitoring: "enhanced"
+      recovery_prioritized: true
