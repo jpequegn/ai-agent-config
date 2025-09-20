@@ -1,0 +1,260 @@
+# Financial Accounts Configuration
+# Comprehensive tracking of all financial accounts for portfolio management
+
+accounts:
+  checking:
+    - name: "Primary Checking"
+      bank: "Chase"
+      account_type: "checking"
+      account_number_masked: "****1234"
+      routing_number: "021000021"
+      balance: 12000
+      monthly_inflow: 16000
+      monthly_outflow: 11800
+      interest_rate: 0.01
+      fees:
+        monthly_maintenance: 0
+        overdraft: 35
+      features:
+        - "mobile_deposit"
+        - "bill_pay"
+        - "zelle"
+      integration:
+        plaid_account_id: "acc_123456"
+        sync_enabled: true
+        last_sync: "2024-09-20T08:00:00Z"
+
+    - name: "Business Checking"
+      bank: "Bank of America"
+      account_type: "business_checking"
+      account_number_masked: "****5678"
+      balance: 8500
+      monthly_inflow: 5000
+      monthly_outflow: 3200
+      purpose: "Consulting business operations"
+      integration:
+        quickbooks_connected: true
+        sync_enabled: true
+
+  savings:
+    - name: "Emergency Fund"
+      bank: "Marcus by Goldman Sachs"
+      account_type: "high_yield_savings"
+      account_number_masked: "****9876"
+      balance: 35000
+      apy: 0.045
+      minimum_balance: 0
+      withdrawal_limit: 6  # Per month
+      goal_allocation: "emergency_fund"
+      automatic_transfer:
+        amount: 2000
+        frequency: "monthly"
+        source_account: "Primary Checking"
+      integration:
+        sync_enabled: true
+        last_sync: "2024-09-20T08:00:00Z"
+
+    - name: "House Down Payment"
+      bank: "Ally Bank"
+      account_type: "high_yield_savings"
+      account_number_masked: "****5432"
+      balance: 45000
+      apy: 0.044
+      goal_allocation: "house_down_payment"
+      automatic_transfer:
+        amount: 3000
+        frequency: "monthly"
+        source_account: "Primary Checking"
+      target_balance: 200000
+      target_date: "2026-06-01"
+
+  investment:
+    - name: "401k - Current Employer"
+      provider: "Fidelity"
+      account_type: "401k"
+      account_number_masked: "****7890"
+      balance: 180000
+      monthly_contribution: 2000
+      employer_match: 0.06
+      employer_match_limit: 9000  # Annual
+      vesting_schedule: "immediate"
+      investment_options:
+        - symbol: "FXNAX"
+          name: "Fidelity U.S. Bond Index Fund"
+          allocation: 0.20
+        - symbol: "FZROX"
+          name: "Fidelity ZERO Total Market Index Fund"
+          allocation: 0.60
+        - symbol: "FTIHX"
+          name: "Fidelity Total International Index Fund"
+          allocation: 0.20
+      integration:
+        sync_enabled: true
+        data_source: "manual_upload"
+
+    - name: "Roth IRA"
+      provider: "Vanguard"
+      account_type: "roth_ira"
+      account_number_masked: "****2468"
+      balance: 65000
+      annual_contribution_limit: 6500
+      current_year_contribution: 6500
+      investment_strategy: "three_fund_portfolio"
+      holdings:
+        - symbol: "VTSAX"
+          name: "Vanguard Total Stock Market Index"
+          shares: 45.2
+          value: 39000
+          allocation: 0.60
+        - symbol: "VTIAX"
+          name: "Vanguard Total International Stock Index"
+          shares: 28.8
+          value: 16250
+          allocation: 0.25
+        - symbol: "VBTLX"
+          name: "Vanguard Total Bond Market Index"
+          shares: 95.1
+          value: 9750
+          allocation: 0.15
+      integration:
+        api_connection: "vanguard_personal"
+        sync_enabled: true
+
+    - name: "Taxable Brokerage"
+      provider: "Charles Schwab"
+      account_type: "individual_investment"
+      account_number_masked: "****1357"
+      balance: 95000
+      cash_balance: 4750
+      investment_strategy: "diversified_growth"
+      holdings:
+        - symbol: "SCHB"
+          name: "Schwab U.S. Broad Market ETF"
+          shares: 312
+          value: 45600
+          allocation: 0.48
+        - symbol: "SCHF"
+          name: "Schwab International Equity ETF"
+          shares: 189
+          value: 19950
+          allocation: 0.21
+        - symbol: "SCHZ"
+          name: "Schwab Intermediate-Term Treasury ETF"
+          shares: 245
+          value: 12250
+          allocation: 0.13
+        - symbol: "VNQ"
+          name: "Vanguard Real Estate Index Fund ETF"
+          shares: 98
+          value: 8575
+          allocation: 0.09
+        - symbol: "BTC"
+          name: "Bitcoin (via GBTC)"
+          shares: 15
+          value: 3875
+          allocation: 0.04
+      automatic_investment:
+        amount: 1000
+        frequency: "monthly"
+        allocation_strategy: "maintain_target_allocation"
+
+  credit:
+    - name: "Primary Credit Card"
+      provider: "Chase Sapphire Preferred"
+      account_type: "credit_card"
+      account_number_masked: "****8642"
+      credit_limit: 15000
+      current_balance: 2850
+      available_credit: 12150
+      apr: 0.2099
+      annual_fee: 95
+      rewards_program: "Ultimate Rewards"
+      points_balance: 45230
+      payment_due_date: "2024-10-15"
+      minimum_payment: 75
+      integration:
+        autopay_enabled: true
+        autopay_amount: "full_balance"
+
+    - name: "Business Credit Card"
+      provider: "Capital One Spark Cash"
+      account_type: "business_credit_card"
+      account_number_masked: "****9753"
+      credit_limit: 25000
+      current_balance: 1250
+      available_credit: 23750
+      apr: 0.1899
+      annual_fee: 0
+      rewards_program: "2% Cash Back"
+      cash_back_balance: 185
+
+  debt:
+    - name: "Student Loan"
+      provider: "Federal Student Aid"
+      account_type: "student_loan"
+      account_number_masked: "****4681"
+      balance: 12500
+      original_balance: 45000
+      interest_rate: 0.045
+      minimum_payment: 185
+      current_payment: 350  # Paying extra
+      term_remaining_months: 48
+      loan_type: "federal_direct"
+      payment_status: "current"
+      integration:
+        servicer: "Great Lakes"
+        autopay_discount: 0.0025  # 0.25% rate reduction
+
+# Account summaries and analytics
+summary:
+  net_worth: 367850  # Total assets minus total liabilities
+  liquid_assets: 92000  # Checking + Savings
+  investment_assets: 340000  # All investment accounts
+  total_debt: 16600  # Credit cards + student loan
+
+  monthly_cash_flow:
+    income: 16666  # Monthly gross income
+    expenses: 11800  # Monthly expenses
+    debt_payments: 535  # Total monthly debt payments
+    savings_rate: 0.38  # Percentage of income saved
+
+  asset_allocation:
+    cash: 0.23  # Checking and savings as % of total assets
+    stocks: 0.62  # Domestic and international stocks
+    bonds: 0.13  # Bond funds and fixed income
+    real_estate: 0.02  # REITs and real estate exposure
+    alternatives: 0.00  # Commodities, crypto, etc.
+
+# Account maintenance and monitoring
+maintenance:
+  review_frequency: "monthly"
+  rebalancing_frequency: "quarterly"
+  password_update_frequency: "annually"
+
+  alerts:
+    low_balance_threshold: 1000  # Alert if checking below this
+    high_credit_utilization: 0.30  # Alert if credit cards above this %
+    unusual_spending: true  # Alert for transactions outside normal patterns
+    goal_progress: true  # Monthly goal progress notifications
+
+  security:
+    two_factor_enabled: true
+    account_monitoring: true
+    fraud_alerts: true
+    credit_monitoring: true
+
+# Account integration status
+integration_status:
+  total_accounts: 10
+  connected_accounts: 8
+  manual_update_required: 2
+  sync_frequency: "daily"
+  last_full_sync: "2024-09-20T08:00:00Z"
+
+  sync_issues:
+    - account: "401k - Current Employer"
+      issue: "Manual upload required"
+      last_successful_sync: "2024-09-15T12:00:00Z"
+    - account: "Business Credit Card"
+      issue: "API rate limit exceeded"
+      expected_resolution: "2024-09-21T00:00:00Z"
