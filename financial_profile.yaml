@@ -1,0 +1,163 @@
+# Financial Profile Configuration
+# Comprehensive financial profile for intelligent money management and goal planning
+
+profile:
+  name: "Your Name"
+  age: 35
+  financial_phase: "wealth_building"  # accumulation, preservation, distribution
+  risk_tolerance: "moderate_aggressive"
+  time_horizon: 30  # years to retirement
+  updated: "2024-09-20"
+
+income:
+  primary:
+    source: "salary"
+    amount_annual: 150000
+    currency: "USD"
+    stability: "high"
+    growth_rate: 0.05  # Expected annual growth rate
+  business:
+    source: "consulting"
+    amount_annual: 50000
+    variability: "medium"
+    seasonal_pattern: "Q4_heavy"  # Indicates higher Q4 earnings
+  investment:
+    dividends_annual: 8000
+    realized_gains_annual: 12000
+    expected_growth: 0.07  # Expected annual investment return
+  other:
+    source: "side_projects"
+    amount_annual: 5000
+    notes: "Variable income from various projects"
+
+expenses:
+  fixed_monthly: 8500  # rent, insurance, utilities, loans
+  variable_monthly: 3200  # food, entertainment, discretionary
+  annual_one_time: 15000  # vacation, gifts, irregular expenses
+  tax_rate: 0.28  # Estimated effective tax rate
+
+  # Detailed breakdown for better analysis
+  categories:
+    housing: 4200  # Rent/mortgage, utilities, maintenance
+    transportation: 800  # Car payment, gas, insurance, maintenance
+    food: 1200  # Groceries, dining out
+    insurance: 600  # Health, life, disability
+    entertainment: 800  # Subscriptions, dining, activities
+    personal_care: 300  # Healthcare, fitness, personal items
+    savings_contributions: 1100  # Automatic transfers to savings/investment
+
+goals:
+  emergency_fund:
+    target: 51000  # 6 months expenses
+    current: 35000
+    priority: "high"
+    target_date: "2025-03-01"
+    monthly_contribution: 2000
+
+  retirement:
+    target_annual_income: 120000  # in today's dollars
+    current_savings: 280000
+    monthly_contribution: 4000
+    target_age: 65
+    expected_return: 0.07
+    inflation_assumption: 0.03
+
+  house_down_payment:
+    target: 200000
+    current: 45000
+    target_date: "2026-06-01"
+    monthly_savings: 3000
+    house_price_target: 800000
+    location_preference: "Urban/Suburban"
+
+  debt_payoff:
+    target: 0
+    current_debt: 15000  # Credit cards, student loans, etc.
+    monthly_payment: 800
+    interest_rate: 0.18
+    priority: "medium"
+
+  travel_fund:
+    target: 25000
+    current: 8000
+    target_date: "2025-12-01"
+    monthly_savings: 500
+    purpose: "International travel and experiences"
+
+# Financial preferences and constraints
+preferences:
+  investment_style: "index_fund_focused"  # active, passive, mixed
+  esg_preference: true  # Environmental, Social, Governance investing
+  international_exposure: 0.30  # Desired percentage of international investments
+  bond_allocation: 0.20  # Desired percentage in bonds/fixed income
+
+  # Spending preferences
+  value_priorities:
+    - "experiences_over_things"
+    - "quality_over_quantity"
+    - "time_savings"
+    - "health_and_wellness"
+
+  # Constraints
+  constraints:
+    max_single_stock_position: 0.05  # Max 5% in any single stock
+    min_emergency_fund_months: 6
+    max_debt_to_income_ratio: 0.30
+    min_retirement_contribution_rate: 0.15
+
+# Risk assessment
+risk_profile:
+  questionnaire_score: 7  # Out of 10, higher = more risk tolerance
+  loss_tolerance: "moderate"  # conservative, moderate, aggressive
+  volatility_comfort: "medium"  # low, medium, high
+  investment_experience: "intermediate"  # beginner, intermediate, advanced
+
+  # Specific risk factors
+  job_security: "high"
+  industry_stability: "high"
+  health_status: "excellent"
+  family_obligations: "moderate"
+
+# Financial milestones and tracking
+milestones:
+  net_worth_targets:
+    age_30: 100000  # Achieved: true
+    age_35: 350000  # Current target
+    age_40: 600000
+    age_45: 900000
+    age_50: 1300000
+
+  income_targets:
+    current_year: 200000  # Total income target
+    five_year: 275000
+    ten_year: 350000
+
+# Behavioral patterns and insights
+behavior_insights:
+  spending_patterns:
+    discretionary_control: "good"  # excellent, good, fair, poor
+    impulse_buying: "occasional"
+    budget_adherence: "85%"
+    seasonal_spending_spikes: ["December", "July"]  # Holiday and vacation months
+
+  saving_patterns:
+    automation_level: "high"  # Automated vs manual savings
+    consistency: "excellent"
+    goal_prioritization: "retirement_first"
+
+  investment_behavior:
+    monitoring_frequency: "weekly"
+    rebalancing_discipline: "quarterly"
+    emotional_decision_making: "low"  # Tendency to make emotional investment decisions
+    market_timing_attempts: "rare"
+
+# Integration settings
+integration_preferences:
+  sync_frequency: "daily"  # How often to sync with external platforms
+  data_retention_period: "7_years"  # How long to keep historical data
+  privacy_level: "standard"  # minimal, standard, comprehensive
+  notification_preferences:
+    goal_progress: true
+    budget_alerts: true
+    investment_performance: false
+    bill_reminders: true
