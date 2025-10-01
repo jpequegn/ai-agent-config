@@ -64,39 +64,28 @@ When notes commands include project context:
    # - Add project milestone context to agenda
    ```
 
-2. **Auto-Linked Project Notes**
+2. **Auto-Linked Project Notes with ConfigManager**
    ```python
-   import yaml
-   import json
-   from pathlib import Path
+   from tools import ConfigManager
 
-   # Load project configuration
-   with open('.claude/projects.yaml', 'r') as f:
-       projects = yaml.safe_load(f)
+   # Initialize ConfigManager
+   mgr = ConfigManager()
 
-   # Create note with project context
+   # Create note with automatic project synchronization
    def create_project_note(project_name, note_data):
-       # Update project cache with new note
-       cache_file = f'.claude/cache/notes_{project_name.replace("-", "_")}.json'
+       # Automatic project-to-notes sync via ConfigManager
+       mgr.sync_project_to_notes(project_name)
 
-       # Load existing cache or create new
-       cache_data = load_or_create_cache(cache_file)
+       # Notes cache automatically updated at:
+       # .claude/cache/notes_{project_name}.json
 
-       # Add note reference to project cache
-       cache_data['project_notes'].append({
-           'note_id': note_data['id'],
-           'title': note_data['title'],
-           'created_at': note_data['created_at'],
-           'type': note_data['template'],
-           'summary': generate_note_summary(note_data),
-           'action_items': extract_action_items(note_data),
-           'decisions': extract_decisions(note_data)
-       })
+       # Cache contains validated project data:
+       # - Project metadata (name, description, status)
+       # - Milestones and deadlines
+       # - Team members and ownership
+       # - Dependencies and relationships
 
-       # Save updated cache
-       save_cache(cache_file, cache_data)
-
-       return cache_data
+       return f"Project '{project_name}' synced to notes cache"
    ```
 
 **Project Notes Overview:**
@@ -105,47 +94,70 @@ When notes commands include project context:
 # User: /project notes mobile-app-v2
 ```
 
-Execute project notes analysis:
+Execute project notes analysis using ConfigManager:
 
-1. **Load Project Context and Notes**
+1. **Load Project Context and Notes with ConfigManager**
    ```python
-   # Load project configuration
-   project_data = load_project('mobile-app-v2')
+   from tools import ConfigManager
+   import json
 
-   # Load project notes cache
-   notes_cache = load_cache('.claude/cache/notes_mobile_app_v2.json')
+   mgr = ConfigManager()
+
+   # Sync project to notes cache first (ensures fresh data)
+   mgr.sync_project_to_notes('mobile-app-v2')
+
+   # Load synced project data with type safety
+   project = mgr.get_project('mobile-app-v2')
+
+   # Load notes cache (automatically updated by sync)
+   cache_file = mgr.config_root / "cache" / "notes_mobile-app-v2.json"
+   with open(cache_file, 'r') as f:
+       notes_cache = json.load(f)
 
    # Generate comprehensive project notes overview
-   overview = generate_project_notes_overview(project_data, notes_cache)
+   # Project data is type-safe and validated via Pydantic
+   overview = {
+       'project_name': project.name,
+       'project_status': project.status,
+       'milestones': [m.model_dump() for m in project.milestones],
+       'team': [project.owner] + project.team_members,
+       'notes_cache': notes_cache
+   }
    ```
 
 2. **Present Integrated Overview**
 
-**Action Item Synchronization:**
+**Action Item Synchronization with ConfigManager:**
 
 ```bash
 # User: /notes sync-actions --project mobile-app-v2
 ```
 
-Execute action item synchronization:
+Execute automatic synchronization using ConfigManager:
 
-1. **Extract and Map Action Items**
+1. **Automatic Project-to-Notes Sync**
    ```python
-   # Load all notes for project
-   project_notes = load_project_notes('mobile-app-v2')
+   from tools import ConfigManager
 
-   # Extract action items from notes
-   note_actions = extract_all_action_items(project_notes)
+   mgr = ConfigManager()
 
-   # Load project milestones and tasks
-   project_data = load_project('mobile-app-v2')
-   project_milestones = project_data['milestones']
+   # Sync project data to notes cache (automatic and atomic)
+   mgr.sync_project_to_notes('mobile-app-v2')
 
-   # Map action items to project milestones
-   action_mappings = map_actions_to_milestones(note_actions, project_milestones)
+   # Notes cache automatically updated with:
+   # - Latest project milestones and tasks
+   # - Team member assignments
+   # - Project status and deadlines
+   # - Dependencies and relationships
 
-   # Update project cache with action item mappings
-   update_project_actions(action_mappings)
+   # Type-safe access to synced project data
+   project = mgr.get_project('mobile-app-v2')
+
+   # Access project milestones with type safety
+   for milestone in project.milestones:
+       print(f"Milestone: {milestone.title}")
+       print(f"  Due: {milestone.target_date}")
+       print(f"  Status: {milestone.status}")
    ```
 
 ### Output Formats
@@ -478,6 +490,58 @@ def detect_project_context(note_content, note_title, note_metadata):
 - Check for orphaned notes references in project caches
 - Maintain referential integrity between notes and projects
 
+### Error Handling
+
+ConfigManager provides automatic error handling for project-to-notes synchronization:
+
+```python
+from tools import ConfigManager, ConfigNotFoundError, ConfigValidationError
+
+try:
+    mgr = ConfigManager()
+
+    # Sync project to notes cache
+    mgr.sync_project_to_notes('mobile-app-v2')
+
+    # Load synced project data
+    project = mgr.get_project('mobile-app-v2')
+
+    # Access project milestones
+    for milestone in project.milestones:
+        print(f"Milestone: {milestone.title}")
+
+except KeyError as e:
+    # Handle missing project
+    print(f"Project not found: {e}")
+    print("Check project ID and ensure it exists in projects.yaml")
+
+except ConfigNotFoundError:
+    # Handle missing configuration file
+    print("Projects configuration not found. Please create projects.yaml")
+
+except ConfigValidationError as e:
+    # Handle invalid project structure
+    print(f"Invalid project configuration: {e}")
+    print("Check that all required fields are present and properly formatted")
+
+except Exception as e:
+    # Handle sync failures
+    print(f"Synchronization failed: {e}")
+    print("Notes cache may be inconsistent. Please retry sync operation")
+```
+
+**Error Scenarios:**
+- **Missing Project**: KeyError with clear message about which project was not found
+- **Missing Config File**: ConfigNotFoundError with guidance to create projects.yaml
+- **Invalid Project**: ConfigValidationError with details about which fields are missing or malformed
+- **Sync Failures**: Exception with error details and recovery guidance
+- **Type Safety**: Pydantic models prevent attribute access errors at runtime
+
+**Sync Rollback:**
+- ConfigManager sync operations are atomic
+- If sync fails, notes cache remains in previous valid state
+- No partial updates to ensure data consistency
+
 ### Best Practices
 
 1. **Seamless User Experience:**
@@ -485,20 +549,30 @@ def detect_project_context(note_content, note_title, note_metadata):
    - Provide intelligent defaults and suggestions
    - Make explicit project association optional but easy
    - Maintain backward compatibility with existing notes workflow
+   - Use ConfigManager's automatic sync for consistency
 
 2. **Data Integrity:**
-   - Keep notes and project data synchronized automatically
-   - Provide mechanisms to detect and resolve data inconsistencies
+   - Use ConfigManager's atomic sync operations
+   - Sync project data before accessing notes cache
+   - Rely on Pydantic validation for data consistency
    - Archive old references while maintaining historical context
 
 3. **Performance Optimization:**
-   - Cache project-note relationship data for fast access
-   - Use incremental updates rather than full synchronization
+   - Leverage ConfigManager's caching (<10ms cached reads)
+   - Use incremental updates via sync_project_to_notes()
    - Implement lazy loading for large project note histories
+   - Cache relationship data is automatically maintained
 
 4. **Extensibility:**
    - Design integration points for future note types and project features
    - Support plugin architecture for custom project-note workflows
    - Enable API access for external integrations
+   - Use type-safe ConfigManager methods for reliability
 
-Remember: Effective notes-project integration creates a unified knowledge system where project context enhances note-taking and notes provide rich context for project management.
+5. **Configuration Management:**
+   - Always use ConfigManager for project access
+   - Rely on automatic synchronization for consistency
+   - Use type-safe field access to prevent runtime errors
+   - Handle missing configurations gracefully with proper error messages
+
+Remember: Effective notes-project integration creates a unified knowledge system where project context enhances note-taking and notes provide rich context for project management. ConfigManager ensures this integration is automatic, type-safe, and consistent.
