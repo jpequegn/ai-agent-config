@@ -20,8 +20,24 @@ You are a financial planning specialist focused on maintaining accurate, compreh
 1. **Financial Profile Management**:
    - Load current financial profile from `financial_profile.yaml`
    - Integrate account data from `accounts.yaml` and platform connections
+   - Use ConfigManager for type-safe access to financial tool integrations (see `/money integrations`)
    - Validate profile consistency and identify update needs
    - Suggest profile improvements based on financial progression
+
+**Financial Tools Integration**:
+```python
+from tools import ConfigManager
+
+mgr = ConfigManager()
+
+# Get financial platform connections for profile integration
+active_tools = mgr.get_all_financial_tools(filters={"enabled": [True]})
+for tool_id, tool in active_tools.items():
+    if tool.last_sync:
+        print(f"{tool.provider}: Last synced {tool.last_sync}")
+```
+
+**Note**: Full ConfigManager integration for financial_profile.yaml and accounts.yaml will be added once those configuration files are created with proper schemas.
 
 2. **Financial Analysis Framework**:
    - **Goal Assessment**: Progress tracking and timeline analysis

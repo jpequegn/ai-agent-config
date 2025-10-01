@@ -204,6 +204,76 @@ integrations:
       required_directories: [".claude/commands/decide"]
       sync_dependencies: ["team_management", "projects", "notes"]
 
+# Financial Platform Integrations
+financial_tools:
+  plaid:
+    enabled: true
+    provider: "Plaid"
+    connection_type: "API"
+    api_version: "2020-09-14"
+    credentials:
+      # Use environment variables for sensitive data
+      client_id: null  # Set via PLAID_CLIENT_ID
+      client_secret: null  # Set via PLAID_CLIENT_SECRET
+      access_token: null
+    sync_frequency: "daily"
+    sync_time: "06:00"
+    data_types:
+      - balances
+      - transactions
+      - account_info
+    rate_limits:
+      requests_per_hour: 100
+      requests_per_day: 1000
+    status: "active"
+    last_sync: null
+    sync_errors: 0
+    notes: "Primary banking aggregation service"
+
+  vanguard:
+    enabled: true
+    provider: "Vanguard"
+    connection_type: "API"
+    credentials:
+      username: null  # Set via VANGUARD_USERNAME
+      password: null  # Set via VANGUARD_PASSWORD
+      api_key: null
+    sync_frequency: "daily"
+    sync_time: "06:00"
+    data_types:
+      - holdings
+      - performance
+      - transactions
+      - dividends
+    status: "active"
+    last_sync: null
+    sync_errors: 0
+    notes: "Roth IRA investment tracking"
+
+  schwab:
+    enabled: true
+    provider: "Charles Schwab"
+    connection_type: "API"
+    api_version: "v2"
+    credentials:
+      client_id: null  # Set via SCHWAB_CLIENT_ID
+      client_secret: null  # Set via SCHWAB_CLIENT_SECRET
+      access_token: null
+      refresh_token: null
+    sync_frequency: "daily"
+    sync_time: "06:00"
+    data_types:
+      - positions
+      - market_data
+      - trading_history
+    rate_limits:
+      requests_per_hour: 120
+      requests_per_day: 1200
+    status: "active"
+    last_sync: null
+    sync_errors: 0
+    notes: "Taxable brokerage account"
+
 # Integration Categories
 categories:
   version_control:
