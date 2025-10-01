@@ -1,0 +1,35 @@
+projects:
+  test-project-1:
+    name: Test Project 1
+    status: active
+    priority: high
+    owner: test@example.com
+    start_date: '2024-01-01'
+    target_date: '2024-12-31'
+    github_repos:
+      - test-repo-1
+    dependencies:
+      - dependency-1
+    tags:
+      - test
+      - active
+    milestones:
+      - name: Milestone 1
+        date: '2024-06-01'
+        status: completed
+      - name: Milestone 2
+        date: '2024-12-01'
+        status: in_progress
+
+  test-project-2:
+    name: Test Project 2
+    status: planning
+    priority: medium
+    owner: test2@example.com
+    start_date: '2024-02-01'
+    target_date: '2025-01-31'
+    github_repos: []
+    dependencies: []
+    tags:
+      - test
+    milestones: []
