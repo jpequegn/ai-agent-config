@@ -22,13 +22,43 @@ You are an intelligent decision framework application system. When this command 
 ### Core Functionality
 
 1. **Framework Selection and Application**
-   - Load decision frameworks from `decision_frameworks.yaml`
+   - Use ConfigManager for validated framework configuration access:
+     ```python
+     from tools import ConfigManager
+     from tools.schemas import DecisionFrameworksConfig, DecisionFramework
+
+     mgr = ConfigManager()
+
+     # Load all decision frameworks with automatic validation
+     frameworks_config = mgr.load_config("decision_frameworks.yaml", schema=DecisionFrameworksConfig)
+
+     # Type-safe framework access
+     framework = frameworks_config.frameworks["business_decision"]
+
+     # Access framework criteria with validation
+     for criterion in framework.criteria:
+         print(f"{criterion.name}: {criterion.weight} ({criterion.measurement})")
+
+     # Validate criteria weights sum to 1.0 (automatic via Pydantic)
+     total_weight = sum(c.weight for c in framework.criteria)
+     ```
+   - Automatic schema validation via Pydantic models
+   - Automatic criteria weight validation (must sum to 1.0)
+   - <10ms cached reads for repeated framework access
    - Analyze decision context to recommend optimal framework
    - Apply framework criteria and weighting to decision options
    - Generate structured decision analysis with scoring matrix
 
 2. **Stakeholder Integration**
-   - Load stakeholder profiles from `stakeholder_contexts.yaml`
+   - Use ConfigManager for stakeholder profile access:
+     ```python
+     # Load stakeholder for decision involvement
+     stakeholder = mgr.get_stakeholder("john@company.com")
+
+     # Access stakeholder decision preferences
+     comm_style = stakeholder.decision_preferences.communication_style
+     detail_level = stakeholder.decision_preferences.detail_level
+     ```
    - Identify relevant stakeholders based on decision type and scope
    - Apply stakeholder preferences and communication styles
    - Generate stakeholder-specific analysis and recommendations
@@ -44,7 +74,21 @@ You are an intelligent decision framework application system. When this command 
 **Standard Framework Application `/decide framework "Decision Topic"`:**
 1. **Decision Analysis and Framework Selection**
    - Parse decision topic and classify decision type
-   - Recommend optimal framework based on decision characteristics
+   - Recommend optimal framework based on decision characteristics using ConfigManager:
+     ```python
+     # Load all frameworks
+     frameworks_config = mgr.load_config("decision_frameworks.yaml", schema=DecisionFrameworksConfig)
+
+     # Select appropriate framework based on decision type
+     decision_type = classify_decision(topic)  # e.g., "business", "technical", "product"
+     framework_key = f"{decision_type}_decision"
+     framework = frameworks_config.frameworks[framework_key]
+
+     # Access framework properties with type safety
+     print(f"Using: {framework.name}")
+     print(f"Use cases: {', '.join(framework.use_cases)}")
+     print(f"Criteria count: {len(framework.criteria)}")
+     ```
    - Load framework criteria, weights, and evaluation scales
    - Identify success criteria and constraints
 
@@ -395,26 +439,82 @@ This framework-based decision analysis provides a structured, evidence-based app
    - Decision tracking and outcome analysis
    - Knowledge base updates and pattern recognition
 
+### Error Handling
+
+ConfigManager provides automatic validation and error handling for framework configurations:
+
+```python
+from tools import ConfigManager, ConfigNotFoundError, ConfigValidationError
+
+try:
+    mgr = ConfigManager()
+
+    # Load frameworks with automatic validation
+    frameworks_config = mgr.load_config("decision_frameworks.yaml", schema=DecisionFrameworksConfig)
+
+    # Type-safe framework access
+    framework = frameworks_config.frameworks["business_decision"]
+
+    # Criteria weight validation happens automatically
+    for criterion in framework.criteria:
+        print(f"{criterion.name}: {criterion.weight}")
+
+except ConfigNotFoundError:
+    # Handle missing configuration file
+    print("Decision frameworks configuration not found. Please create decision_frameworks.yaml")
+
+except ConfigValidationError as e:
+    # Handle invalid framework structure
+    print(f"Invalid framework configuration: {e}")
+    print("Check that:")
+    print("- All required fields are present (name, description, criteria)")
+    print("- Criteria weights are between 0 and 1")
+    print("- Criteria weights sum to 1.0 for each framework")
+    print("- Criteria have required fields (name, weight, scale, description, measurement)")
+
+except KeyError as e:
+    # Handle missing framework
+    available_frameworks = list(frameworks_config.frameworks.keys())
+    print(f"Framework not found: {e}")
+    print(f"Available frameworks: {', '.join(available_frameworks)}")
+```
+
+**Error Scenarios:**
+- **Missing Config File**: ConfigNotFoundError with guidance to create decision_frameworks.yaml
+- **Invalid Framework Structure**: ConfigValidationError with details about which fields are missing or malformed
+- **Invalid Criteria Weights**: ValueError if criteria weights don't sum to 1.0
+- **Missing Framework**: KeyError with list of available frameworks
+- **Type Safety**: Pydantic models prevent attribute access errors at runtime
+
 ### Best Practices
 
 1. **Framework Application**
    - Use appropriate framework for decision type and complexity
-   - Ensure criteria relevance and proper weighting
+   - Ensure criteria relevance and proper weighting (automatic validation ensures weights sum to 1.0)
    - Include quantitative and qualitative assessment methods
+   - Leverage ConfigManager's cached reads for performance (<10ms)
 
 2. **Stakeholder Management**
    - Map all affected stakeholders early in the process
-   - Adapt communication style to stakeholder preferences
+   - Adapt communication style to stakeholder preferences (use ConfigManager to access profiles)
    - Build consensus through structured consultation
 
 3. **Decision Quality**
    - Generate comprehensive option sets including status quo
    - Apply systematic evaluation with evidence-based scoring
    - Include implementation feasibility in recommendation
+   - Use validated framework criteria to ensure consistent scoring
 
 4. **Learning and Improvement**
    - Track decision outcomes against predictions
    - Capture lessons learned for future decisions
    - Update frameworks and stakeholder profiles based on experience
+   - Leverage type-safe configuration access for reliability
+
+5. **Configuration Management**
+   - Always use ConfigManager for framework and stakeholder access
+   - Rely on automatic weight validation to catch configuration errors
+   - Use type-safe field access to prevent runtime errors
+   - Handle missing configurations gracefully with proper error messages
 
 Always ensure decisions are evidence-based, stakeholder-inclusive, and optimized for successful implementation and outcomes.
