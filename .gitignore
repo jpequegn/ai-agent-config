@@ -66,3 +66,8 @@ logs/
 **/review-temp/
 **/weekly-review-temp.md
 **/monthly-review-temp.md
+
+# Python package build artifacts
+ai_agent_config.egg-info/
+.coverage
+htmlcov/
