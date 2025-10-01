@@ -397,7 +397,7 @@ pip install -e ".[dev]"
 pytest
 
 # Format code
-black .
+ruff format .
 
 # Lint
 ruff check .
