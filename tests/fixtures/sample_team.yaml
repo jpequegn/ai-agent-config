@@ -1,0 +1,20 @@
+team_members:
+  test@example.com:
+    name: Test User
+    role: Developer
+    start_date: '2023-01-01'
+    current_projects:
+      - test-project-1
+    goals_2024:
+      - Learn new skills
+    strengths:
+      - Python
+      - Testing
+    development_areas:
+      - Leadership
+    last_review: '2024-06-01'
+    next_review: '2024-12-01'
+    status: active
+    timezone: PST
+    location: San Francisco
+    manager: manager@example.com
