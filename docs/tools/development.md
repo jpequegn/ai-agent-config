@@ -25,8 +25,7 @@ pip install -r requirements-dev.txt
 We use the following tools for code quality:
 
 - **pytest**: Testing framework with coverage reporting
-- **black**: Code formatting (line length: 100)
-- **ruff**: Fast Python linter
+- **ruff**: Fast Python formatter and linter (line length: 100)
 - **mypy**: Static type checking
 
 ## Development Workflow
@@ -51,7 +50,10 @@ Follow these standards:
 
 ```bash
 # Format code
-black .
+ruff format .
+
+# Check formatting without changes
+ruff format --check .
 
 # Check linting
 ruff check .
@@ -225,7 +227,7 @@ except yaml.YAMLError as e:
 ## Continuous Integration
 
 All pull requests must pass:
-- ✅ Black formatting check
+- ✅ Ruff formatting check
 - ✅ Ruff linting check
 - ✅ Mypy type checking
 - ✅ Pytest with >80% coverage
