@@ -444,6 +444,78 @@ class ConfigManager:
 
             self.update_config("stakeholder_contexts.yaml", nested_updates)
 
+    def get_financial_tool(self, tool_id: str) -> "FinancialTool":
+        """
+        Get financial tool configuration by ID.
+
+        Args:
+            tool_id: Financial tool identifier (e.g., "plaid", "vanguard")
+
+        Returns:
+            FinancialTool model
+
+        Raises:
+            KeyError: If financial tool not found
+        """
+        from tools.schemas import FinancialTool
+
+        config = self.load_config("integrations.yaml", schema=IntegrationsConfig)
+        if tool_id not in config["financial_tools"]:
+            raise KeyError(f"Financial tool not found: {tool_id}")
+
+        return FinancialTool(**config["financial_tools"][tool_id])
+
+    def get_all_financial_tools(
+        self, filters: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, "FinancialTool"]:
+        """
+        Get all financial tools with optional filtering.
+
+        Args:
+            filters: Optional filters (e.g., {"enabled": [True], "provider": ["Plaid"]})
+
+        Returns:
+            Dictionary of tool ID to FinancialTool model
+        """
+        from tools.schemas import FinancialTool
+
+        config = self.load_config("integrations.yaml", schema=IntegrationsConfig)
+        tools = {
+            tid: FinancialTool(**tdata)
+            for tid, tdata in config["financial_tools"].items()
+        }
+
+        if not filters:
+            return tools
+
+        # Apply filters
+        filtered = {}
+        for tid, tool in tools.items():
+            matches = True
+            for key, values in filters.items():
+                tool_value = getattr(tool, key, None)
+                if tool_value not in values:
+                    matches = False
+                    break
+            if matches:
+                filtered[tid] = tool
+
+        return filtered
+
+    def update_financial_tool(self, tool_id: str, updates: Dict[str, Any]) -> None:
+        """
+        Update specific financial tool configuration.
+
+        Args:
+            tool_id: Financial tool identifier
+            updates: Dictionary of updates
+
+        Note:
+            Credentials should be stored in environment variables, not in config files.
+        """
+        tool_updates = {"financial_tools": {tool_id: updates}}
+        self.update_config("integrations.yaml", tool_updates)
+
     def get_cache_stats(self) -> Dict[str, Any]:
         """
         Get cache statistics.

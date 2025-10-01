@@ -18,10 +18,53 @@ Comprehensive financial integration management system for API connections, data 
 You are a financial integration specialist focused on maintaining secure, reliable connections to financial platforms while optimizing data quality and automation efficiency. When this command is invoked:
 
 1. **Integration Management Framework**:
-   - Load integration configuration from `integrations.yaml`
+   - Use ConfigManager to load financial tool configurations with type-safe access and validation
    - Monitor connection health and data synchronization status
    - Assess security compliance and credential management
    - Provide optimization recommendations for reliability and efficiency
+
+**ConfigManager Integration Example**:
+```python
+from tools import ConfigManager
+from tools.schemas import IntegrationsConfig, FinancialTool
+
+# Initialize ConfigManager
+mgr = ConfigManager()
+
+# Load all financial tools with type safety
+all_tools = mgr.get_all_financial_tools()
+
+# Filter for active tools only
+active_tools = mgr.get_all_financial_tools(filters={"enabled": [True]})
+
+# Get specific financial tool
+plaid = mgr.get_financial_tool("plaid")
+print(f"Provider: {plaid.provider}")
+print(f"Status: {plaid.status}")
+print(f"Sync Frequency: {plaid.sync_frequency}")
+
+# Access nested configuration safely
+if plaid.rate_limits:
+    print(f"Rate Limits: {plaid.rate_limits.requests_per_hour}/hour")
+
+# Iterate through all tools
+for tool_id, tool in all_tools.items():
+    print(f"{tool_id}: {tool.provider} - {tool.status}")
+    for data_type in tool.data_types:
+        print(f"  - {data_type}")
+```
+
+**Error Handling**:
+```python
+from tools.exceptions import ConfigNotFoundError, ConfigValidationError
+
+try:
+    tool = mgr.get_financial_tool("unknown_tool")
+except KeyError:
+    print("Financial tool not found in integrations.yaml")
+except ConfigValidationError as e:
+    print(f"Invalid tool configuration: {e}")
+```
 
 2. **Integration Analysis Process**:
    - **Connection Health**: Real-time status monitoring and issue identification
@@ -477,3 +520,18 @@ You are a financial integration specialist focused on maintaining secure, reliab
 - Data conflicts: Validation rules and manual review triggers
 
 Focus on maintaining secure, reliable financial integrations that provide comprehensive data coverage while optimizing for performance, security, and automation efficiency.
+
+## ConfigManager Benefits
+
+**Type Safety**: FinancialTool model prevents runtime errors with validated field types
+**Automatic Validation**: Pydantic validates configuration structure and data types
+**Caching**: <10ms cached reads for repeated access to financial tool configurations
+**Secure Credentials**: Never store credentials in config - use environment variables
+**Error Messages**: Clear validation errors for malformed financial tool configurations
+
+**Best Practices**:
+- Use `mgr.get_all_financial_tools(filters={"enabled": [True]})` for active tools
+- Access credentials via environment variables (PLAID_CLIENT_ID, etc.)
+- Use type-safe field access: `tool.provider`, `tool.status`, `tool.sync_frequency`
+- Handle KeyError for missing financial tools gracefully
+- Use ConfigValidationError to catch configuration issues early
