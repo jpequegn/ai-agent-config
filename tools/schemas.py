@@ -111,18 +111,33 @@ class DecisionPreferences(BaseModel):
 
 
 class InfluenceFactors(BaseModel):
-    """Decision influence factors with weights."""
+    """Decision influence factors with weights.
 
-    technical_feasibility: float = Field(ge=0, le=1)
-    team_impact: float = Field(ge=0, le=1)
-    learning_opportunities: float = Field(ge=0, le=1)
-    timeline_constraints: float = Field(ge=0, le=1)
+    Supports flexible influence factor keys (technical_feasibility, business_impact, etc.)
+    All values must be floats between 0 and 1.
+    """
+
+    model_config = {"extra": "allow"}  # Allow additional fields
+
+    # Common influence factors (all optional to support flexible keys)
+    technical_feasibility: Optional[float] = Field(default=None, ge=0, le=1)
+    team_impact: Optional[float] = Field(default=None, ge=0, le=1)
+    learning_opportunities: Optional[float] = Field(default=None, ge=0, le=1)
+    timeline_constraints: Optional[float] = Field(default=None, ge=0, le=1)
+    business_impact: Optional[float] = Field(default=None, ge=0, le=1)
+    resource_efficiency: Optional[float] = Field(default=None, ge=0, le=1)
+    strategic_alignment: Optional[float] = Field(default=None, ge=0, le=1)
+    risk_management: Optional[float] = Field(default=None, ge=0, le=1)
+    operational_impact: Optional[float] = Field(default=None, ge=0, le=1)
+    security_implications: Optional[float] = Field(default=None, ge=0, le=1)
+    maintenance_complexity: Optional[float] = Field(default=None, ge=0, le=1)
+    automation_potential: Optional[float] = Field(default=None, ge=0, le=1)
 
     @field_validator("*")
     @classmethod
-    def validate_weights(cls, v: float) -> float:
+    def validate_weights(cls, v: Optional[float]) -> Optional[float]:
         """Validate weight is between 0 and 1."""
-        if not 0 <= v <= 1:
+        if v is not None and not 0 <= v <= 1:
             raise ValueError("Weight must be between 0 and 1")
         return v
 
