@@ -23,10 +23,18 @@ You are a comprehensive project management system. When this command is invoked:
 ### Core Functionality
 
 1. **Load Project Configuration**
-   - Read and parse `.claude/projects.yaml`
-   - Validate project data structure
-   - Check for required fields and data integrity
-   - Load integration settings from `.claude/integrations.yaml`
+   - Use ConfigManager for type-safe, cached configuration access:
+     ```python
+     from tools import ConfigManager
+     from tools.schemas import ProjectsConfig
+
+     mgr = ConfigManager()
+     projects_config = mgr.load_config("projects.yaml", schema=ProjectsConfig)
+     integrations_config = mgr.load_config("integrations.yaml")
+     ```
+   - Automatic schema validation via Pydantic models for projects.yaml
+   - <10ms cached reads for repeated access
+   - Clear error messages for missing/invalid configurations
 
 2. **Project Status Display**
    - Show project overview with key metrics
@@ -38,9 +46,17 @@ You are a comprehensive project management system. When this command is invoked:
 3. **Command Actions**
 
    **Default `/cc project-status`:**
-   - Display dashboard of all active projects
+   - Display dashboard of all active projects using type-safe filtering:
+     ```python
+     # Get all active/in-progress projects with type safety
+     active_projects = mgr.get_all_projects(filters={"status": ["active", "in_progress"]})
+     ```
    - Show summary statistics (total, by status, by priority)
-   - Highlight critical and high-priority projects
+   - Highlight critical and high-priority projects:
+     ```python
+     # Filter by priority
+     critical_projects = mgr.get_all_projects(filters={"priority": ["critical", "high"]})
+     ```
    - List upcoming milestones (next 30 days)
    - Identify blocked projects or dependencies
 
@@ -136,6 +152,11 @@ Structure your response as a professional project status report:
    - Suggest optimal execution order
 
 4. **Integration Insights**
+   - Load integration configuration:
+     ```python
+     integrations = mgr.load_config("integrations.yaml")
+     github_config = integrations.get("integrations", {}).get("github", {})
+     ```
    - Pull GitHub repo activity if integrated
    - Check for recent commits and PR activity
    - Identify stale repositories
@@ -152,10 +173,23 @@ When using `--update` flag:
 
 ### Error Handling
 
-- Handle missing or malformed YAML files gracefully
-- Provide helpful error messages for invalid project IDs
-- Suggest corrections for common mistakes
-- Offer to create projects.yaml if missing
+- ConfigManager handles missing YAML files with `ConfigNotFoundError`
+- Validation errors raise `ConfigValidationError` with detailed messages
+- Type-safe operations prevent invalid project access
+- Use try/except blocks to handle configuration errors gracefully:
+  ```python
+  from tools import ConfigManager, ConfigNotFoundError, ConfigValidationError
+
+  try:
+      mgr = ConfigManager()
+      project = mgr.get_project("my-project")
+  except ConfigNotFoundError:
+      # Handle missing configuration file
+      print("Configuration file not found. Run setup to create it.")
+  except ConfigValidationError as e:
+      # Handle invalid configuration
+      print(f"Invalid configuration: {e}")
+  ```
 
 ### Best Practices
 
