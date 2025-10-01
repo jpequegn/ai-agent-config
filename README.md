@@ -363,6 +363,73 @@ ls -la 1-projects/
 mv "1-projects/completed-project" "4-archive/$(date +%Y-%m-%d)_completed-project"
 ```
 
+## Tools System
+
+This repository includes a comprehensive tools system for extending and automating PARA workflows. The tools are designed to be modular, testable, and integrate with Claude Code slash commands.
+
+### Directory Structure
+
+```
+tools/                    # Modular tool packages
+├── config/              # Configuration management
+├── notes/               # Notes processing
+├── projects/            # Project management
+└── shared/              # Shared utilities
+
+scripts/                 # Utility scripts
+├── para-processor.py            # PARA note processing
+├── project_data_collector.py   # Project data collection
+├── project_status_analyzer.py  # Status analysis
+├── project_planner.py          # Planning utilities
+└── project_synchronizer.py     # Project synchronization
+
+tests/                   # Comprehensive test suite
+docs/tools/              # Tool documentation
+```
+
+### Development Setup
+
+```bash
+# Install in editable mode with development dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Format code
+black .
+
+# Lint
+ruff check .
+
+# Type check
+mypy tools/ scripts/
+```
+
+### Tool Categories
+
+**Configuration Management**
+- ConfigManager: Centralized configuration
+- ProjectConfig: Project-specific settings
+- LearningConfig: Learning goals tracking
+- TeamConfig: Team member management
+
+**Notes Processing**
+- NotesProcessor: PARA note parsing
+- ActionItemExtractor: Extract action items
+- NoteLinker: Link notes to projects
+
+**Project Management**
+- ProjectDataCollector: Collect metadata
+- ProjectStatusAnalyzer: Health analysis
+- ProjectPlanner: Planning and milestones
+- ProjectSynchronizer: Sync with notes
+
+### Documentation
+
+- [Tools Architecture](docs/tools/README.md) - System overview and design
+- [Development Guide](docs/tools/development.md) - Development workflow and standards
+
 ## Contributing
 
 This is a personal knowledge management system, but the structure and scripts can be adapted for team use or other personal systems.
