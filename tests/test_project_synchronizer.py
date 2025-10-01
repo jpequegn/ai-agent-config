@@ -11,7 +11,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Import the synchronizer
-from project_synchronizer import ProjectSynchronizer, ResourceConflict, DependencyIssue
+from scripts.project_synchronizer import ProjectSynchronizer, ResourceConflict, DependencyIssue
 
 def test_project_synchronizer_initialization():
     """Test ProjectSynchronizer initialization"""
