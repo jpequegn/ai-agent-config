@@ -224,21 +224,38 @@ class IntegrationsConfig(BaseModel):
 
 # Decision Framework Models
 class DecisionCriteria(BaseModel):
-    """Decision criteria with weight."""
+    """Decision criteria with weight.
+
+    Criteria weights must sum to 1.0 for each framework.
+    """
 
     name: str
     weight: float = Field(ge=0, le=1)
-    description: Optional[str] = None
+    scale: str = "1-10"
+    description: str
+    measurement: str
 
 
 class DecisionFramework(BaseModel):
-    """Decision framework model."""
+    """Decision framework model.
+
+    Automatically validates that criteria weights sum to 1.0.
+    """
 
     name: str
     description: str
+    use_cases: List[str] = Field(default_factory=list)
     criteria: List[DecisionCriteria]
-    scoring_method: str
-    approval_threshold: Optional[float] = None
+
+    @field_validator("criteria")
+    @classmethod
+    def validate_weights_sum(cls, criteria: List[DecisionCriteria]) -> List[DecisionCriteria]:
+        """Validate that criteria weights sum to 1.0."""
+        if criteria:
+            total_weight = sum(c.weight for c in criteria)
+            if not 0.99 <= total_weight <= 1.01:  # Allow small floating-point errors
+                raise ValueError(f"Criteria weights must sum to 1.0, got {total_weight}")
+        return criteria
 
 
 class DecisionFrameworksConfig(BaseModel):
