@@ -22,7 +22,23 @@ You are an intelligent stakeholder analysis and engagement system. When this com
 ### Core Functionality
 
 1. **Stakeholder Intelligence and Mapping**
-   - Load stakeholder profiles from `stakeholder_contexts.yaml`
+   - Use ConfigManager for type-safe stakeholder profile access:
+     ```python
+     from tools import ConfigManager
+     from tools.schemas import StakeholderProfile
+
+     mgr = ConfigManager()
+
+     # Type-safe stakeholder access
+     stakeholder = mgr.get_stakeholder("john@company.com")
+
+     # Access strongly-typed fields
+     print(f"Authority Level: {stakeholder.decision_authority_level}")
+     print(f"Communication Style: {stakeholder.decision_preferences.communication_style}")
+     print(f"Influence Factors: {stakeholder.influence_factors.technical_feasibility}")
+     ```
+   - Automatic schema validation via Pydantic models
+   - <10ms cached reads for repeated stakeholder access
    - Analyze stakeholder influence, interests, and decision-making patterns
    - Map stakeholder relationships and coalition opportunities
    - Identify potential resistance sources and mitigation strategies
@@ -42,13 +58,53 @@ You are an intelligent stakeholder analysis and engagement system. When this com
 ### Command Actions
 
 **Stakeholder Mapping `/decide stakeholder "Decision Topic"`:**
-- Identify all relevant stakeholders based on decision scope and impact
+- Identify all relevant stakeholders based on decision scope and impact using ConfigManager:
+  ```python
+  # Load all stakeholder profiles
+  stakeholders_config = mgr.load_config("stakeholder_contexts.yaml")
+  all_stakeholders = stakeholders_config.get("stakeholder_profiles", {})
+
+  # Filter stakeholders by criteria
+  high_influence = {
+      email: profile
+      for email, profile in all_stakeholders.items()
+      if mgr.get_stakeholder(email).decision_authority_level in ["high", "executive"]
+  }
+
+  # Analyze communication preferences
+  exec_stakeholders = [
+      email for email, s in all_stakeholders.items()
+      if mgr.get_stakeholder(email).decision_preferences.detail_level == "executive_summary"
+  ]
+  ```
 - Analyze stakeholder influence levels, interests, and potential positions
 - Generate stakeholder influence map with coalition and resistance analysis
 - Provide communication strategy recommendations for each stakeholder group
 
 **Individual Stakeholder Analysis `/decide stakeholder --analyze {stakeholder-email}`:**
-- Deep dive into individual stakeholder profile and decision patterns
+- Deep dive into individual stakeholder profile using type-safe access:
+  ```python
+  stakeholder = mgr.get_stakeholder(stakeholder_email)
+
+  # Access decision preferences
+  comm_style = stakeholder.decision_preferences.communication_style
+  detail_level = stakeholder.decision_preferences.detail_level
+  risk_tolerance = stakeholder.decision_preferences.risk_tolerance
+
+  # Access influence factors (stakeholder-specific)
+  # Different stakeholders may have different influence factors
+  # Check which factors are defined for this stakeholder
+  if stakeholder.influence_factors.technical_feasibility:
+      tech_weight = stakeholder.influence_factors.technical_feasibility
+  if stakeholder.influence_factors.business_impact:
+      business_weight = stakeholder.influence_factors.business_impact
+  if stakeholder.influence_factors.operational_impact:
+      ops_weight = stakeholder.influence_factors.operational_impact
+
+  # Access notification preferences
+  decision_updates = stakeholder.notification_preferences.decision_updates
+  urgent_decisions = stakeholder.notification_preferences.urgent_decisions
+  ```
 - Analyze historical engagement effectiveness and preferences
 - Generate personalized engagement strategy and communication approach
 - Identify influence opportunities and potential concerns
@@ -391,6 +447,42 @@ This stakeholder analysis and engagement system ensures that decision-making pro
    - Sentiment tracking and concern categorization
    - Decision adjustment recommendations based on stakeholder input
 
+### Error Handling
+
+ConfigManager provides automatic error handling for stakeholder profile access:
+
+```python
+from tools import ConfigManager, ConfigNotFoundError, ConfigValidationError
+
+try:
+    mgr = ConfigManager()
+    stakeholder = mgr.get_stakeholder("john@company.com")
+
+    # Type-safe field access
+    authority = stakeholder.decision_authority_level
+    comm_style = stakeholder.decision_preferences.communication_style
+
+except KeyError as e:
+    # Handle missing stakeholder profile
+    print(f"Stakeholder not found: {e}")
+    print("Available stakeholders:", list(mgr.load_config('stakeholder_contexts.yaml').get('stakeholder_profiles', {}).keys()))
+
+except ConfigNotFoundError:
+    # Handle missing configuration file
+    print("Stakeholder contexts configuration not found. Please create stakeholder_contexts.yaml")
+
+except ConfigValidationError as e:
+    # Handle invalid stakeholder profile structure
+    print(f"Invalid stakeholder profile: {e}")
+    print("Please check that all required fields are present and properly formatted")
+```
+
+**Error Scenarios:**
+- **Missing Stakeholder**: KeyError with clear message about which stakeholder was not found
+- **Missing Config File**: ConfigNotFoundError with guidance to create stakeholder_contexts.yaml
+- **Invalid Profile**: ConfigValidationError with details about which fields are missing or malformed
+- **Type Safety**: Pydantic models prevent attribute access errors at runtime
+
 ### Best Practices
 
 1. **Comprehensive Stakeholder Mapping**
@@ -412,5 +504,11 @@ This stakeholder analysis and engagement system ensures that decision-making pro
    - Monitor engagement effectiveness and adjust strategies
    - Maintain relationship quality beyond individual decisions
    - Build stakeholder capacity for future decision participation
+
+5. **Type-Safe Profile Access**
+   - Always use ConfigManager's get_stakeholder() for type safety
+   - Leverage Pydantic model validation for data integrity
+   - Use cached reads for performance optimization (<10ms)
+   - Handle missing stakeholders gracefully with proper error messages
 
 Always ensure stakeholder engagement is inclusive, transparent, and focused on building long-term relationships that support successful decision implementation and organizational effectiveness.
