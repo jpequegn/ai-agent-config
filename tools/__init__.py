@@ -9,6 +9,20 @@ from tools.data_models import (
     ProjectData,
     TeamData,
 )
+from tools.health_calculator import HealthCalculator, HealthCalculatorError
+from tools.health_config import HealthConfig
+from tools.health_models import (
+    ComponentScore,
+    HealthCategory,
+    HealthScore,
+    Risk,
+    RiskLikelihood,
+    RiskSeverity,
+    TeamPerformanceMetrics,
+    TrendAnalysis,
+    TrendDataPoint,
+    TrendDirection,
+)
 from tools.note_models import (
     ActionItem,
     ActionItemFilters,
@@ -33,6 +47,19 @@ __all__ = [
     "NotesData",
     "TeamData",
     "ProjectData",
+    "HealthCalculator",
+    "HealthCalculatorError",
+    "HealthConfig",
+    "ComponentScore",
+    "HealthCategory",
+    "HealthScore",
+    "Risk",
+    "RiskLikelihood",
+    "RiskSeverity",
+    "TeamPerformanceMetrics",
+    "TrendAnalysis",
+    "TrendDataPoint",
+    "TrendDirection",
     "NoteProcessor",
     "NoteProcessorError",
     "ActionItem",
