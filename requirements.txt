@@ -12,5 +12,11 @@ python-frontmatter>=1.0.0
 # Configuration validation
 pydantic>=2.0.0
 
+# Caching with TTL support
+cachetools>=5.0.0
+
+# HTTP requests for API calls
+requests>=2.28.0
+
 # Optional: Enhanced CLI interface
 click>=8.0.0
