@@ -1,0 +1,106 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 🏥 Health Overview
+
+{{ health_score(data.overall_health, 'Overall System Health') }}
+
+{% if data.health_category %}
+**Category**: {{ data.health_category.title() }}
+{% endif %}
+
+{% if data.trend %}
+**Trend**: {% if data.trend == 'improving' %}{{ emoji.success }} Improving{% elif data.trend == 'declining' %}{{ emoji.warning }} Declining{% else %}{{ emoji.info }} Stable{% endif %}
+{% endif %}
+
+## 📊 Component Health
+
+{% if data.components %}
+| Component | Score | Status | Details |
+|:----------|:------|:-------|:--------|
+{% for component in data.components %}
+| {{ component.name }} | {{ (component.score * 100) | round(1) }}% | {{ score_to_emoji(component.score) }} {{ component.status | default('unknown') }} | {{ component.details | default('-') }} |
+{% endfor %}
+{% endif %}
+
+## 📈 Trend Analysis
+
+{% if data.historical_data %}
+**Time Window**: {{ data.time_window_days | default(30) }} days
+
+{% if data.trend_analysis %}
+- **Direction**: {{ data.trend_analysis.direction }}
+- **Slope**: {{ (data.trend_analysis.slope * 100) | round(2) }}%
+- **Confidence**: {{ (data.trend_analysis.confidence * 100) | round(1) }}%
+{% if data.trend_analysis.prediction %}
+- **Predicted Next Value**: {{ (data.trend_analysis.prediction * 100) | round(1) }}%
+{% endif %}
+{% endif %}
+
+### Recent History
+{% for point in data.historical_data[-10:] %}
+- {{ format_date(point.timestamp, 'SHORT') }}: {{ health_score(point.value) }}
+{% endfor %}
+{% endif %}
+
+## ⚠️ Risk Assessment
+
+{% if data.risks %}
+### High Priority Risks
+
+{% for risk in data.risks %}
+{% if risk.priority_score > 0.7 %}
+#### {{ emoji.warning }} {{ risk.title }}
+
+**Severity**: {{ risk.severity }} | **Likelihood**: {{ risk.likelihood }} | **Priority**: {{ (risk.priority_score * 100) | round(0) }}%
+
+{{ risk.description }}
+
+{% if risk.affected_areas %}
+**Affected Areas**: {{ risk.affected_areas | join(', ') }}
+{% endif %}
+
+{% if risk.mitigation_suggestions %}
+**Mitigation**:
+{% for suggestion in risk.mitigation_suggestions %}
+- {{ suggestion }}
+{% endfor %}
+{% endif %}
+
+---
+{% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant risks identified
+{% endif %}
+
+## 🎯 Performance Metrics
+
+{% if data.performance %}
+{% for metric_name, metric_value in data.performance.items() %}
+- **{{ metric_name.replace('_', ' ').title() }}**: {{ metric_value }}
+{% endfor %}
+{% endif %}
+
+## 💡 Recommendations
+
+{% if data.recommendations %}
+{% for rec in data.recommendations %}
+{{ loop.index }}. **{{ rec.title }}**
+   - {{ rec.description }}
+   - Priority: {{ rec.priority | default('medium') }}
+   {% if rec.expected_impact %}
+   - Expected Impact: {{ health_score(rec.expected_impact) }}
+   {% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} System operating optimally, no recommendations at this time
+{% endif %}
+
+## 📅 Next Review
+
+{% if data.next_review_date %}
+**Scheduled**: {{ format_date(data.next_review_date, 'SHORT') }}
+{% endif %}
+
+{% endblock %}

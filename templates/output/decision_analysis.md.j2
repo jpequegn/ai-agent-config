@@ -1,0 +1,109 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 🎯 Decision Overview
+
+**Decision**: {{ data.decision.title }}
+
+{% if data.decision.description %}
+{{ data.decision.description }}
+{% endif %}
+
+{% if data.decision.urgency %}
+**Urgency**: {{ status_indicator(data.decision.urgency) }} {{ data.decision.urgency.title() }}
+{% endif %}
+
+{% if data.decision.deadline %}
+**Deadline**: {{ format_date(data.decision.deadline, 'SHORT') }}
+{% endif %}
+
+## 📊 Options Analysis
+
+{% for option in data.options %}
+### Option {{ loop.index }}: {{ option.name }}
+
+{% if option.description %}
+{{ option.description }}
+{% endif %}
+
+**Overall Score**: {{ health_score(option.score | default(0.5)) }}
+
+#### Pros
+{% for pro in option.pros %}
+- {{ emoji.success }} {{ pro }}
+{% endfor %}
+
+#### Cons
+{% for con in option.cons %}
+- {{ emoji.warning }} {{ con }}
+{% endfor %}
+
+{% if option.criteria_scores %}
+#### Criteria Evaluation
+{% for criterion, score in option.criteria_scores.items() %}
+- {{ health_score(score, criterion.replace('_', ' ').title()) }}
+{% endfor %}
+{% endif %}
+
+{% if option.estimated_cost %}
+**Estimated Cost**: {{ option.estimated_cost }}
+{% endif %}
+
+{% if option.estimated_time %}
+**Estimated Time**: {{ option.estimated_time }}
+{% endif %}
+
+---
+{% endfor %}
+
+## 🎓 Recommendation
+
+{% if data.recommendation %}
+{{ emoji.info }} **Recommended Option**: {{ data.recommendation.option }}
+
+{% if data.recommendation.reasoning %}
+**Reasoning**:
+{{ data.recommendation.reasoning }}
+{% endif %}
+
+{% if data.recommendation.confidence %}
+**Confidence**: {{ health_score(data.recommendation.confidence, 'Recommendation Confidence') }}
+{% endif %}
+{% endif %}
+
+## 👥 Stakeholder Impact
+
+{% if data.stakeholder_impact %}
+{% for stakeholder, impact in data.stakeholder_impact.items() %}
+- **{{ stakeholder }}**: {{ impact.description }} ({{ status_indicator(impact.sentiment) }} {{ impact.sentiment }})
+{% endfor %}
+{% endif %}
+
+## ⚠️ Risks & Mitigation
+
+{% if data.risks %}
+{% for risk in data.risks %}
+### {{ emoji.warning }} {{ risk.title }}
+
+**Severity**: {{ risk.severity }} | **Likelihood**: {{ risk.likelihood }}
+
+{{ risk.description }}
+
+{% if risk.mitigation %}
+**Mitigation Strategy**:
+{{ risk.mitigation }}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant risks identified
+{% endif %}
+
+## 📅 Next Steps
+
+{% if data.next_steps %}
+{% for step in data.next_steps %}
+{{ loop.index }}. {{ step.action }}{% if step.owner %} (Owner: {{ step.owner }}){% endif %}{% if step.deadline %} - Due: {{ format_date(step.deadline, 'SHORT') }}{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endblock %}

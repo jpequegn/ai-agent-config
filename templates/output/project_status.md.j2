@@ -1,0 +1,91 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 📊 Overall Health
+
+{{ health_score(data.health.overall_score, 'Project Health') }}
+
+### Component Breakdown
+{% for component_name, component in data.health.components.items() %}
+- {{ health_score(component.score, component_name.title()) }}
+{% endfor %}
+
+## 📅 Timeline
+
+**Status**: {{ status_indicator(data.timeline.status) }} {{ data.timeline.status.title() }}
+
+{% if data.timeline.milestones %}
+### Milestones
+| Name | Status | Due Date | Progress |
+|:-----|:-------|:---------|:---------|
+{% for milestone in data.timeline.milestones %}
+| {{ milestone.name }} | {{ status_indicator(milestone.status) }} {{ milestone.status.title() }} | {{ format_date(milestone.due_date, 'SHORT') }} | {{ (milestone.progress * 100) | round(0) }}% |
+{% endfor %}
+{% endif %}
+
+{% if data.timeline.on_track == false %}
+{{ emoji.warning }} **Timeline Risk**: Project is {{ ((1 - data.timeline.progress_ratio) * 100) | round(0) }}% behind schedule
+{% endif %}
+
+## 🎯 Activity
+
+{% if data.activity %}
+- **Commits**: {{ data.activity.commits | default(0) }}
+- **Pull Requests**: {{ data.activity.pull_requests | default(0) }}
+- **Issues Closed**: {{ data.activity.issues_closed | default(0) }}
+- **Activity Score**: {{ health_score(data.activity.score) }}
+{% endif %}
+
+## 🚧 Blockers
+
+{% if data.blockers %}
+**Total Blockers**: {{ data.blockers | length }}
+
+{% for blocker in data.blockers %}
+- {{ status_indicator('blocked') }} **{{ blocker.title }}** ({{ blocker.severity }})
+  {% if blocker.description %}
+  - {{ blocker.description }}
+  {% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No active blockers
+{% endif %}
+
+## 🔗 Dependencies
+
+{% if data.dependencies %}
+{% for dep in data.dependencies %}
+- {{ health_score(dep.health_score | default(0.8), dep.name) }}
+{% endfor %}
+{% else %}
+{{ emoji.info }} No tracked dependencies
+{% endif %}
+
+{% if data.risks %}
+## ⚠️ Risks
+
+{% for risk in data.risks %}
+### {{ emoji.warning }} {{ risk.title }}
+
+**Severity**: {{ risk.severity }} | **Likelihood**: {{ risk.likelihood }}
+
+{{ risk.description }}
+
+{% if risk.mitigation_suggestions %}
+**Mitigation**:
+{% for suggestion in risk.mitigation_suggestions %}
+- {{ suggestion }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if data.next_steps %}
+## 🎯 Next Steps
+
+{% for step in data.next_steps %}
+- {{ step }}
+{% endfor %}
+{% endif %}
+
+{% endblock %}

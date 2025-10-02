@@ -34,6 +34,19 @@ from tools.note_models import (
     ParsedNote,
 )
 from tools.note_processor import NoteProcessor, NoteProcessorError
+from tools.output_formatter import OutputFormatter, OutputFormatterError, TemplateLoadError
+from tools.output_models import (
+    AudienceType,
+    DateStyle,
+    EmojiIndicators,
+    FormattedOutput,
+    FormattingContext,
+    HealthScoreFormat,
+    OutputFormat,
+    OutputSchema,
+    TableColumn,
+    TemplateMetadata,
+)
 from tools.stakeholder_analyzer import StakeholderAnalyzer, StakeholderAnalyzerError
 from tools.stakeholder_models import (
     AlignmentAnalysis,
@@ -86,6 +99,19 @@ __all__ = [
     "NoteSearchFilters",
     "ParaCategory",
     "ParsedNote",
+    "OutputFormatter",
+    "OutputFormatterError",
+    "TemplateLoadError",
+    "AudienceType",
+    "DateStyle",
+    "EmojiIndicators",
+    "FormattedOutput",
+    "FormattingContext",
+    "HealthScoreFormat",
+    "OutputFormat",
+    "OutputSchema",
+    "TableColumn",
+    "TemplateMetadata",
     "StakeholderAnalyzer",
     "StakeholderAnalyzerError",
     "AlignmentAnalysis",
