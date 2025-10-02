@@ -1,0 +1,44 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## Executive Summary
+
+{% if data.summary %}
+{{ data.summary }}
+{% endif %}
+
+### Key Metrics
+
+{% if data.metrics %}
+{% for metric_name, metric_value in data.metrics.items() %}
+- **{{ metric_name.replace('_', ' ').title() }}**: {{ metric_value }}
+{% endfor %}
+{% endif %}
+
+### Status
+
+{% if data.health %}
+{{ health_score(data.health.overall_score, 'Overall Health') }}
+{% endif %}
+
+{% if data.status %}
+{{ status_indicator(data.status) }} **Status**: {{ data.status.title() }}
+{% endif %}
+
+### Critical Items
+
+{% if data.critical_items %}
+{% for item in data.critical_items %}
+- {{ emoji.warning }} {{ item }}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No critical items
+{% endif %}
+
+### Recommendation
+
+{% if data.recommendation %}
+{{ data.recommendation }}
+{% endif %}
+
+{% endblock %}

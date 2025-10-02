@@ -1,0 +1,85 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## Technical Report
+
+{% if data.overview %}
+### Overview
+{{ data.overview }}
+{% endif %}
+
+## 🔧 Technical Details
+
+{% if data.technical_details %}
+{% for section, content in data.technical_details.items() %}
+### {{ section.replace('_', ' ').title() }}
+
+{{ content }}
+
+{% endfor %}
+{% endif %}
+
+## 📊 Metrics & Performance
+
+{% if data.metrics %}
+| Metric | Value | Status |
+|:-------|:------|:-------|
+{% for metric_name, metric_data in data.metrics.items() %}
+| {{ metric_name.replace('_', ' ').title() }} | {{ metric_data.value }} | {{ score_to_emoji(metric_data.score | default(0.8)) }} |
+{% endfor %}
+{% endif %}
+
+{% if include_code and data.code_examples %}
+## 💻 Code Examples
+
+{% for example in data.code_examples %}
+### {{ example.title }}
+
+{% if example.description %}
+{{ example.description }}
+{% endif %}
+
+```{{ example.language | default('python') }}
+{{ example.code }}
+```
+
+{% endfor %}
+{% endif %}
+
+## 🔍 Analysis
+
+{% if data.analysis %}
+{{ data.analysis }}
+{% endif %}
+
+## ⚠️ Technical Risks
+
+{% if data.technical_risks %}
+{% for risk in data.technical_risks %}
+### {{ emoji.warning }} {{ risk.title }}
+
+**Severity**: {{ risk.severity }} | **Area**: {{ risk.area }}
+
+{{ risk.description }}
+
+{% if risk.mitigation %}
+**Mitigation**:
+```
+{{ risk.mitigation }}
+```
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## 🎯 Technical Recommendations
+
+{% if data.recommendations %}
+{% for rec in data.recommendations %}
+{{ loop.index }}. **{{ rec.title }}**
+   - {{ rec.description }}
+   - Complexity: {{ rec.complexity | default('medium') }}
+   - Impact: {{ health_score(rec.impact | default(0.7)) }}
+{% endfor %}
+{% endif %}
+
+{% endblock %}

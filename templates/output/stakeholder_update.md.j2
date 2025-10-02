@@ -1,0 +1,143 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 👥 Stakeholder Update
+
+{% if stakeholder %}
+**For**: {{ stakeholder }}
+{% endif %}
+
+{% if data.period %}
+**Period**: {{ data.period }}
+{% endif %}
+
+## 🎯 Executive Summary
+
+{% if data.executive_summary %}
+{{ data.executive_summary }}
+{% else %}
+{{ data.summary | default('Project update') }}
+{% endif %}
+
+## 📊 Key Highlights
+
+{% if data.highlights %}
+{% for highlight in data.highlights %}
+- {{ emoji.success }} {{ highlight }}
+{% endfor %}
+{% endif %}
+
+## 📈 Progress Update
+
+{% if data.progress %}
+**Overall Progress**: {{ (data.progress.overall * 100) | round(1) }}%
+
+{% if data.progress.milestones %}
+### Milestone Status
+{% for milestone in data.progress.milestones %}
+- {{ status_indicator(milestone.status) }} **{{ milestone.name }}**: {{ (milestone.progress * 100) | round(0) }}%
+{% endfor %}
+{% endif %}
+
+{% if data.progress.on_track %}
+{{ emoji.success }} Project is on track for {{ format_date(data.progress.target_date, 'SHORT') }}
+{% else %}
+{{ emoji.warning }} Timeline adjustments may be needed
+{% endif %}
+{% endif %}
+
+## 🎉 Accomplishments
+
+{% if data.accomplishments %}
+{% for item in data.accomplishments %}
+- {{ emoji.success }} {{ item }}
+{% endfor %}
+{% else %}
+_No major accomplishments this period_
+{% endif %}
+
+## 🚧 Challenges
+
+{% if data.challenges %}
+{% for challenge in data.challenges %}
+### {{ emoji.warning }} {{ challenge.title }}
+
+{{ challenge.description }}
+
+{% if challenge.impact %}
+**Impact**: {{ challenge.impact }}
+{% endif %}
+
+{% if challenge.resolution %}
+**Resolution**: {{ challenge.resolution }}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant challenges
+{% endif %}
+
+## 📅 Upcoming Priorities
+
+{% if data.upcoming_priorities %}
+{% for priority in data.upcoming_priorities %}
+{{ loop.index }}. {{ priority }}
+{% endfor %}
+{% endif %}
+
+## 💰 Budget & Resources
+
+{% if data.budget %}
+- **Budget Utilization**: {{ (data.budget.utilization * 100) | round(1) }}%
+- **Remaining Budget**: {{ data.budget.remaining }}
+{% if data.budget.on_track %}
+{{ emoji.success }} Budget tracking as expected
+{% else %}
+{{ emoji.warning }} Budget variance detected
+{% endif %}
+{% endif %}
+
+{% if data.resources %}
+### Resource Status
+{% for resource in data.resources %}
+- **{{ resource.name }}**: {{ resource.status }} ({{ resource.allocation }}% allocated)
+{% endfor %}
+{% endif %}
+
+## ⚠️ Risks & Issues
+
+{% if data.risks %}
+{% for risk in data.risks %}
+- {{ emoji.warning }} **{{ risk.title }}** ({{ risk.severity }})
+  - {{ risk.description }}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant risks identified
+{% endif %}
+
+## 🤝 Required Support
+
+{% if data.support_needed %}
+{% for item in data.support_needed %}
+- {{ item.description }} ({{ item.urgency | default('normal') }} priority)
+{% endfor %}
+{% else %}
+{{ emoji.success }} No additional support needed at this time
+{% endif %}
+
+## 📅 Next Steps
+
+{% if data.next_steps %}
+{% for step in data.next_steps %}
+{{ loop.index }}. {{ step.action }}{% if step.owner %} - {{ step.owner }}{% endif %}{% if step.deadline %} ({{ format_date(step.deadline, 'SHORT') }}){% endif %}
+{% endfor %}
+{% endif %}
+
+## 📞 Contact Information
+
+{% if data.contacts %}
+{% for contact in data.contacts %}
+- **{{ contact.name }}** ({{ contact.role }}): {{ contact.email }}
+{% endfor %}
+{% endif %}
+
+{% endblock %}

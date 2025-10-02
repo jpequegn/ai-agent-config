@@ -1,0 +1,88 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 📋 Action Items Summary
+
+**Total Action Items**: {{ data.action_items | length }}
+
+{% if data.action_items %}
+### By Status
+{% set status_counts = {} %}
+{% for item in data.action_items %}
+  {% set _ = status_counts.update({item.status: status_counts.get(item.status, 0) + 1}) %}
+{% endfor %}
+
+{% for status, count in status_counts.items() %}
+- {{ status_indicator(status) }} **{{ status.title() }}**: {{ count }} items
+{% endfor %}
+
+### Action Items
+
+{% for item in data.action_items %}
+#### {{ status_indicator(item.status) }} {{ item.title }}
+
+{% if item.description %}
+{{ item.description }}
+{% endif %}
+
+- **Owner**: {{ item.owner | default('Unassigned') }}
+- **Priority**: {{ item.priority | default('medium') }}
+{% if item.due_date %}
+- **Due Date**: {{ format_date(item.due_date, 'SHORT') }}
+{% endif %}
+{% if item.source %}
+- **Source**: {{ item.source }}
+{% endif %}
+
+{% if item.status == 'blocked' and item.blocker %}
+{{ emoji.blocked }} **Blocker**: {{ item.blocker }}
+{% endif %}
+
+---
+{% endfor %}
+{% else %}
+{{ emoji.success }} No action items at this time
+{% endif %}
+
+## 📊 Progress Metrics
+
+{% if data.metrics %}
+- **Completion Rate**: {{ (data.metrics.completion_rate * 100) | round(1) }}%
+- **On-Time Completion**: {{ (data.metrics.on_time_rate * 100) | round(1) }}%
+- **Average Age**: {{ data.metrics.average_age_days }} days
+{% if data.metrics.overdue_count > 0 %}
+- {{ emoji.warning }} **Overdue Items**: {{ data.metrics.overdue_count }}
+{% endif %}
+{% endif %}
+
+## 🎯 By Owner
+
+{% if data.by_owner %}
+{% for owner, items in data.by_owner.items() %}
+### {{ owner }}
+
+{% for item in items %}
+- {{ status_indicator(item.status) }} {{ item.title }}{% if item.due_date %} (Due: {{ format_date(item.due_date, 'SHORT') }}){% endif %}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+## ⚠️ Attention Required
+
+{% if data.attention_required %}
+{% for item in data.attention_required %}
+- {{ emoji.warning }} **{{ item.title }}** - {{ item.reason }}
+{% endfor %}
+{% else %}
+{{ emoji.success }} All action items on track
+{% endif %}
+
+## 📅 Upcoming Deadlines
+
+{% if data.upcoming_deadlines %}
+{% for item in data.upcoming_deadlines %}
+- {{ format_date(item.due_date, 'SHORT') }}: {{ item.title }} ({{ item.owner | default('Unassigned') }})
+{% endfor %}
+{% endif %}
+
+{% endblock %}
