@@ -9,6 +9,17 @@ from tools.data_models import (
     ProjectData,
     TeamData,
 )
+from tools.note_models import (
+    ActionItem,
+    ActionItemFilters,
+    BatchProcessResult,
+    CategorizationResult,
+    NoteLink,
+    NoteSearchFilters,
+    ParaCategory,
+    ParsedNote,
+)
+from tools.note_processor import NoteProcessor, NoteProcessorError
 
 __all__ = [
     "ConfigManager",
@@ -22,4 +33,14 @@ __all__ = [
     "NotesData",
     "TeamData",
     "ProjectData",
+    "NoteProcessor",
+    "NoteProcessorError",
+    "ActionItem",
+    "ActionItemFilters",
+    "BatchProcessResult",
+    "CategorizationResult",
+    "NoteLink",
+    "NoteSearchFilters",
+    "ParaCategory",
+    "ParsedNote",
 ]
