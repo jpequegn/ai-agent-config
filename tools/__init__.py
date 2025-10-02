@@ -34,6 +34,22 @@ from tools.note_models import (
     ParsedNote,
 )
 from tools.note_processor import NoteProcessor, NoteProcessorError
+from tools.stakeholder_analyzer import StakeholderAnalyzer, StakeholderAnalyzerError
+from tools.stakeholder_models import (
+    AlignmentAnalysis,
+    AlignmentStatus,
+    CommunicationMessage,
+    CommunicationPlan,
+    CommunicationPriority,
+    InfluenceLevel,
+    InfluenceScore,
+    InterestLevel,
+    PowerInterestGrid,
+    PowerInterestPosition,
+    PowerInterestQuadrant,
+    Stakeholder,
+    StakeholderAlignment,
+)
 
 __all__ = [
     "ConfigManager",
@@ -70,4 +86,19 @@ __all__ = [
     "NoteSearchFilters",
     "ParaCategory",
     "ParsedNote",
+    "StakeholderAnalyzer",
+    "StakeholderAnalyzerError",
+    "AlignmentAnalysis",
+    "AlignmentStatus",
+    "CommunicationMessage",
+    "CommunicationPlan",
+    "CommunicationPriority",
+    "InfluenceLevel",
+    "InfluenceScore",
+    "InterestLevel",
+    "PowerInterestGrid",
+    "PowerInterestPosition",
+    "PowerInterestQuadrant",
+    "Stakeholder",
+    "StakeholderAlignment",
 ]
