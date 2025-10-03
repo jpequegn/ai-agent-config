@@ -18,9 +18,10 @@ You are an intelligent podcast analysis assistant interfacing with the Parakeet 
 ### Environment Configuration
 ```python
 import subprocess
+import os
 from pathlib import Path
 
-P3_PATH = Path("/Users/julienpequegnot/Code/parakeet-podcast-processor")
+P3_PATH = Path(os.path.expanduser("~/Code/parakeet-podcast-processor"))
 P3_VENV = P3_PATH / "venv" / "bin" / "activate"
 P3_DB = P3_PATH / "data" / "p3.duckdb"
 ```
@@ -29,7 +30,7 @@ P3_DB = P3_PATH / "data" / "p3.duckdb"
 
 **CRITICAL**: The P³ system uses DuckDB, not SQLite. Always use the correct database path and schema.
 
-**Database Path**: `/Users/julienpequegnot/Code/parakeet-podcast-processor/data/p3.duckdb`
+**Database Path**: `~/Code/parakeet-podcast-processor/data/p3.duckdb`
 
 **Table Schemas**:
 
@@ -69,7 +70,7 @@ P3_DB = P3_PATH / "data" / "p3.duckdb"
 When invoked without arguments, execute `p3 status` to show the current pipeline state:
 
 ```bash
-cd /Users/julienpequegnot/Code/parakeet-podcast-processor
+cd ~/Code/parakeet-podcast-processor
 source venv/bin/activate
 p3 status
 ```
@@ -104,7 +105,7 @@ For natural language queries about podcasts, use **direct DuckDB queries** inste
 #### 1. Time-Based Queries
 **"What episodes were downloaded today/this week?"**
 ```python
-cd /Users/julienpequegnot/Code/parakeet-podcast-processor && source venv/bin/activate && python3 -c "
+cd ~/Code/parakeet-podcast-processor && source venv/bin/activate && python3 -c "
 import duckdb
 from datetime import date
 
@@ -177,7 +178,7 @@ If you encounter "no such column" or "table does not have column" errors:
 ```
 ❌ Error: Parakeet Podcast Processor not found at expected location.
 
-Expected: /Users/julienpequegnot/Code/parakeet-podcast-processor
+Expected: ~/Code/parakeet-podcast-processor
 
 Please ensure P³ is installed and the path is correct.
 ```
@@ -187,7 +188,7 @@ Please ensure P³ is installed and the path is correct.
 ⚠️  Warning: Virtual environment not activated properly.
 
 Try manually activating:
-  cd /Users/julienpequegnot/Code/parakeet-podcast-processor
+  cd ~/Code/parakeet-podcast-processor
   source venv/bin/activate
   p3 status
 ```

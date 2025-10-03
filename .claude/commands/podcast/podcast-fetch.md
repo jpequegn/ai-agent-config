@@ -19,9 +19,10 @@ You are responsible for downloading podcast episodes through the P³ system.
 ### Environment Configuration
 ```python
 import subprocess
+import os
 from pathlib import Path
 
-P3_PATH = Path("/Users/julienpequegnot/Code/parakeet-podcast-processor")
+P3_PATH = Path(os.path.expanduser("~/Code/parakeet-podcast-processor"))
 P3_VENV = P3_PATH / "venv" / "bin" / "activate"
 ```
 
@@ -33,7 +34,7 @@ P3_VENV = P3_PATH / "venv" / "bin" / "activate"
 
 **Execute Fetch:**
 ```bash
-cd /Users/julienpequegnot/Code/parakeet-podcast-processor
+cd ~/Code/parakeet-podcast-processor
 source venv/bin/activate
 p3 fetch --max-episodes [N]
 ```
@@ -114,7 +115,7 @@ Troubleshooting:
 ```
 ❌ Error: P³ system not found
 
-Expected location: /Users/julienpequegnot/Code/parakeet-podcast-processor
+Expected location: ~/Code/parakeet-podcast-processor
 
 Please verify P³ is installed correctly.
 ```
@@ -195,7 +196,7 @@ def fetch_episodes(max_episodes: int = 10) -> dict:
 
 Episodes are downloaded based on RSS feeds configured in:
 ```
-/Users/julienpequegnot/Code/parakeet-podcast-processor/config/feeds.yaml
+~/Code/parakeet-podcast-processor/config/feeds.yaml
 ```
 
 ### Related Commands
