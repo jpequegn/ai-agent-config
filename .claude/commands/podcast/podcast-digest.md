@@ -20,9 +20,10 @@ You are responsible for generating intelligent podcast summaries through the P³
 ### Environment Configuration
 ```python
 import subprocess
+import os
 from pathlib import Path
 
-P3_PATH = Path("/Users/julienpequegnot/Code/parakeet-podcast-processor")
+P3_PATH = Path(os.path.expanduser("~/Code/parakeet-podcast-processor"))
 P3_VENV = P3_PATH / "venv" / "bin" / "activate"
 ```
 
@@ -41,7 +42,7 @@ P3_VENV = P3_PATH / "venv" / "bin" / "activate"
 
 **Execute Digest:**
 ```bash
-cd /Users/julienpequegnot/Code/parakeet-podcast-processor
+cd ~/Code/parakeet-podcast-processor
 source venv/bin/activate
 p3 digest --provider ollama --model llama3.2 --skip-errors
 ```

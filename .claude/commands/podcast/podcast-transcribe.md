@@ -20,9 +20,10 @@ You are responsible for transcribing podcast audio through the P³ system with P
 ### Environment Configuration
 ```python
 import subprocess
+import os
 from pathlib import Path
 
-P3_PATH = Path("/Users/julienpequegnot/Code/parakeet-podcast-processor")
+P3_PATH = Path(os.path.expanduser("~/Code/parakeet-podcast-processor"))
 P3_VENV = P3_PATH / "venv" / "bin" / "activate"
 ```
 
@@ -37,7 +38,7 @@ P3_VENV = P3_PATH / "venv" / "bin" / "activate"
 
 **Execute Transcription:**
 ```bash
-cd /Users/julienpequegnot/Code/parakeet-podcast-processor
+cd ~/Code/parakeet-podcast-processor
 source venv/bin/activate
 p3 transcribe --skip-errors --model base
 ```
@@ -145,7 +146,7 @@ Elapsed: 45s | Remaining: ~12s
 ```
 ❌ Error: P³ system not found
 
-Expected location: /Users/julienpequegnot/Code/parakeet-podcast-processor
+Expected location: ~/Code/parakeet-podcast-processor
 
 Please verify P³ is installed correctly.
 ```
