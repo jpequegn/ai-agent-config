@@ -26,7 +26,8 @@ You are a comprehensive follow-up and task management system. When this command 
 ### Core Functionality
 
 1. **Extract and Analyze Action Items**
-   - Use `./notes follow-up --status all` to get comprehensive action item data
+   - Use DataCollector tool to get comprehensive action item data from notes
+   - Automatic 5-minute caching for performance
    - Parse and organize items by status, assignee, due date, and priority
    - Identify patterns and provide intelligent insights
 
@@ -156,8 +157,70 @@ Structure your response as a professional task management report:
    - Suggest status updates for stale items
    - Provide completion rate trends
 
+### Implementation Steps
+
+When executing this command:
+
+1. **Initialize Data Collection**
+   ```python
+   from tools import DataCollector, ConfigManager
+
+   config = ConfigManager()
+   collector = DataCollector(config)
+   ```
+
+2. **Collect Action Items Data**
+   ```python
+   # Collect notes data with action items across all projects
+   notes_data = collector.collect_notes_data(
+       project="all",  # or specific project name for filtered view
+       include_action_items=True
+   )
+
+   # Access action items
+   action_items = notes_data.action_items
+   # Each action item has: description, assignee, due_date, priority, status
+
+   # Access other notes data if needed
+   project_notes = notes_data.project_notes
+   decisions = notes_data.decisions
+   ```
+
+3. **Filter and Analyze Based on Command Mode**
+   ```python
+   # Filter by status
+   pending = [item for item in action_items if item.get('status') == 'pending']
+   completed = [item for item in action_items if item.get('status') == 'completed']
+   overdue = [item for item in action_items if item.get('is_overdue', False)]
+
+   # Filter by assignee (for assignee mode)
+   if assignee_filter:
+       filtered = [item for item in action_items if item.get('assignee') == assignee_filter]
+
+   # Sort by priority (for priority mode)
+   priority_order = {'high': 0, 'medium': 1, 'low': 2, None: 3}
+   sorted_items = sorted(action_items, key=lambda x: priority_order.get(x.get('priority'), 3))
+   ```
+
+4. **Generate Intelligence and Insights**
+   - Calculate metrics (counts, percentages, trends)
+   - Identify patterns (frequently overdue assignees, bottlenecks)
+   - Generate recommendations based on data
+
+5. **Format Output**
+   - Use the structured format template above
+   - Highlight urgent items prominently
+   - Provide actionable next steps
+
 ### Error Handling
 
+DataCollector handles errors automatically with:
+- Automatic retry with exponential backoff (3 attempts)
+- Graceful degradation when notes CLI unavailable
+- Detailed error messages with recovery suggestions
+- Continuation with partial data when some sources fail
+
+Additional handling:
 - If no action items found, suggest creating some with templates
 - Handle missing assignees gracefully with "unassigned" designation
 - Provide helpful hints for improving action item format
@@ -165,9 +228,11 @@ Structure your response as a professional task management report:
 
 ### Integration Notes
 
-- Leverages existing `./notes follow-up` functionality
+- Uses DataCollector tool for efficient data retrieval with caching
+- Automatic 5-minute cache reduces repeated queries
 - Compatible with current action item format in markdown
 - Supports all existing patterns: `@assignee`, `Due: YYYY-MM-DD`, `[priority]`
+- Graceful degradation when notes CLI unavailable
 - Enhances user experience with intelligent analysis and recommendations
 
 ### Command Ecosystem Integration

@@ -346,15 +346,34 @@ class DataCollector:
             # Extract action items if requested
             action_items = []
             if include_action_items:
+                # Use follow-up command to get action items
+                # Support project="all" for all projects, or specific project name
+                follow_up_args = [str(notes_cli), "follow-up", "--status", "all"]
+                if project != "all":
+                    # For specific projects, we'd need directory filtering
+                    # For now, collect all and filter in memory
+                    pass
+
                 action_result = subprocess.run(
-                    [str(notes_cli), "actions", "--project", project, "--json"],
+                    follow_up_args,
                     capture_output=True,
                     text=True,
                     timeout=30,
                 )
                 if action_result.returncode == 0 and action_result.stdout.strip():
-                    action_data = json.loads(action_result.stdout)
-                    action_items = action_data.get("action_items", [])
+                    try:
+                        action_data = json.loads(action_result.stdout)
+                        if action_data.get("success", False):
+                            action_items = action_data.get("data", {}).get("action_items", [])
+                            # Filter by project if not "all"
+                            if project != "all":
+                                action_items = [
+                                    item for item in action_items
+                                    if item.get("project") == project
+                                ]
+                    except json.JSONDecodeError:
+                        # If JSON parsing fails, continue with empty action items
+                        pass
 
             notes_result = NotesData(
                 project_notes=notes_data.get("notes", []),
