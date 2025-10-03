@@ -1,241 +1,189 @@
-# Development Workflow
+# Development Guide
+
+Guide for developing and contributing to the tools suite.
 
 ## Setup
 
-### Initial Setup
-
-1. Clone the repository:
 ```bash
-git clone <repository-url>
+# Clone repository
+git clone https://github.com/jpequegn/ai-agent-config.git
 cd ai-agent-config
-```
 
-2. Install dependencies:
-```bash
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
-
-# Or install separately
+# Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt
+
+# Run tests
+pytest tests/ -v
 ```
-
-### Development Environment
-
-We use the following tools for code quality:
-
-- **pytest**: Testing framework with coverage reporting
-- **ruff**: Fast Python formatter and linter (line length: 100)
-- **mypy**: Static type checking
 
 ## Development Workflow
 
-### 1. Create a Branch
-
+### 1. Create Branch
 ```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b issue-123-description
+git checkout -b issue-XXX-feature-name
 ```
 
-### 2. Write Code
-
-Follow these standards:
-- Use type hints for all function parameters and returns
-- Write docstrings for all public functions and classes
-- Keep functions focused and under 50 lines
-- Follow the existing code structure
-
-### 3. Format and Lint
-
-```bash
-# Format code
-ruff format .
-
-# Check formatting without changes
-ruff format --check .
-
-# Check linting
-ruff check .
-
-# Fix auto-fixable issues
-ruff check . --fix
-```
-
-### 4. Type Check
-
-```bash
-mypy tools/
-mypy scripts/
-```
-
-### 5. Write Tests
-
-- Place tests in `tests/` directory
-- Name test files `test_*.py`
-- Aim for >80% code coverage
-- Test both success and error cases
-
-Example test structure:
+### 2. Write Tests First (TDD)
 ```python
-import pytest
-from tools.config.config_manager import ConfigManager
-
-def test_config_manager_initialization():
-    """Test ConfigManager initializes correctly."""
-    manager = ConfigManager()
-    assert manager is not None
-
-def test_config_manager_load_config():
-    """Test ConfigManager loads configuration."""
-    manager = ConfigManager()
-    config = manager.load_config("test-config.yaml")
-    assert config["version"] == "1.0"
+# tests/test_my_tool.py
+def test_my_feature():
+    tool = MyTool()
+    result = tool.my_feature(input)
+    assert result == expected
 ```
 
-### 6. Run Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=tools --cov=scripts
-
-# Run specific test file
-pytest tests/test_config_manager.py
-
-# Run with verbose output
-pytest -v
+### 3. Implement Feature
+```python
+# tools/my_tool.py
+class MyTool:
+    def my_feature(self, input):
+        """
+        Brief description.
+        
+        Args:
+            input: Description
+        
+        Returns:
+            Description
+        
+        Example:
+            >>> tool = MyTool()
+            >>> tool.my_feature("test")
+            'result'
+        """
+        return result
 ```
 
-### 7. Commit Changes
-
+### 4. Run Tests
 ```bash
-git add .
-git commit -m "feat: add ConfigManager tool for centralized configuration"
+pytest tests/test_my_tool.py -v
+pytest tests/ --cov=tools --cov-report=html
 ```
 
-Commit message format:
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation changes
-- `test:` - Test changes
-- `refactor:` - Code refactoring
-- `chore:` - Maintenance tasks
+### 5. Update Documentation
+- Add docstrings to all public methods
+- Update tool documentation in docs/tools/
+- Add usage examples
 
-### 8. Push and Create PR
-
+### 6. Create PR
 ```bash
-git push origin feature/your-feature-name
-gh pr create --title "Add ConfigManager tool" --body "Description of changes"
+git commit -m "Add my feature (#XXX)"
+git push origin issue-XXX-feature-name
+gh pr create
+```
+
+## Code Style
+
+### Python Style
+- Follow PEP 8
+- Use type hints
+- Write descriptive docstrings
+- Keep functions focused (single responsibility)
+
+### Naming Conventions
+- Classes: `PascalCase`
+- Functions/methods: `snake_case`
+- Constants: `UPPER_SNAKE_CASE`
+- Private: `_leading_underscore`
+
+### Documentation Style
+```python
+def function_name(param: str) -> Dict[str, Any]:
+    """
+    One-line summary.
+    
+    Longer description if needed.
+    
+    Args:
+        param: Description with type
+    
+    Returns:
+        Description of return value
+        
+    Raises:
+        ExceptionType: When this exception occurs
+        
+    Example:
+        >>> function_name("test")
+        {'result': 'value'}
+    """
 ```
 
 ## Testing Guidelines
 
 ### Test Structure
-
-```
-tests/
-├── __init__.py
-├── conftest.py              # Shared fixtures
-├── test_config_manager.py
-├── test_notes_processor.py
-└── fixtures/
-    ├── test-config.yaml
-    └── test-note.md
-```
-
-### Fixtures
-
-Use `conftest.py` for shared fixtures:
-
 ```python
 import pytest
-from pathlib import Path
+from tools import MyTool
 
 @pytest.fixture
-def test_data_dir():
-    """Return path to test data directory."""
-    return Path(__file__).parent / "fixtures"
+def tool():
+    return MyTool()
 
-@pytest.fixture
-def sample_config(test_data_dir):
-    """Load sample configuration."""
-    return test_data_dir / "test-config.yaml"
+class TestMyFeature:
+    def test_basic_case(self, tool):
+        result = tool.my_feature("input")
+        assert result == expected
+    
+    def test_edge_case(self, tool):
+        result = tool.my_feature("")
+        assert result is None
+    
+    def test_error_handling(self, tool):
+        with pytest.raises(ValueError):
+            tool.my_feature(None)
 ```
 
-### Coverage Requirements
+### Coverage Goals
+- Core tools: >85%
+- Specialized tools: >70%
+- Focus on business logic, not boilerplate
 
-- Minimum 80% overall coverage
-- All new features must have tests
-- Critical paths must have 100% coverage
+## Performance Guidelines
 
-## Code Quality Standards
+### Targets
+- Configuration reads (cached): <10ms
+- NLP operations: <10ms
+- Note parsing: <50ms
+- Output formatting: <20ms
 
-### Type Hints
-
-All functions must have type hints:
-
-```python
-from typing import Dict, List, Optional
-
-def process_notes(
-    note_path: str,
-    config: Dict[str, Any],
-    strict: bool = False
-) -> List[Dict[str, str]]:
-    """Process notes and extract metadata."""
-    ...
-```
-
-### Docstrings
-
-Use Google-style docstrings:
-
-```python
-def parse_frontmatter(content: str) -> Dict[str, Any]:
-    """Parse YAML frontmatter from note content.
-
-    Args:
-        content: The raw note content with frontmatter
-
-    Returns:
-        Dictionary containing parsed frontmatter metadata
-
-    Raises:
-        ValueError: If frontmatter is malformed
-    """
-    ...
-```
-
-### Error Handling
-
-- Use specific exception types
-- Provide clear error messages
-- Include context in exceptions
-
-```python
-try:
-    config = load_yaml(config_path)
-except FileNotFoundError:
-    raise ValueError(f"Configuration file not found: {config_path}")
-except yaml.YAMLError as e:
-    raise ValueError(f"Invalid YAML in {config_path}: {e}")
-```
-
-## Continuous Integration
-
-All pull requests must pass:
-- ✅ Ruff formatting check
-- ✅ Ruff linting check
-- ✅ Mypy type checking
-- ✅ Pytest with >80% coverage
+### Optimization
+- Use caching for expensive operations
+- Prefer O(n) algorithms
+- Lazy load when possible
+- Profile before optimizing
 
 ## Release Process
 
-1. Update version in `pyproject.toml`
-2. Update CHANGELOG.md
-3. Create release branch
-4. Tag release: `git tag v0.1.0`
-5. Push tag: `git push origin v0.1.0`
+### Version Bump
+Tools don't have separate versions - they follow repository releases.
+
+### Changelog
+Update CHANGELOG.md with:
+- New features
+- Bug fixes
+- Breaking changes
+- Performance improvements
+
+## Contributing
+
+### Good First Issues
+Look for issues labeled "good first issue" or "documentation".
+
+### Review Process
+- All PRs require review
+- CI must pass (tests, linting)
+- Documentation must be updated
+- Test coverage must not decrease
+
+## Getting Help
+
+- Check existing tool implementations
+- Read tests for usage examples
+- Ask in GitHub issues
+- Review documentation
+
+## See Also
+- [Migration Guide](migration_guide.md)
+- [Tool Documentation](README.md)
+- [Testing Best Practices](https://docs.pytest.org/)
