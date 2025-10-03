@@ -34,6 +34,18 @@ from tools.note_models import (
     ParsedNote,
 )
 from tools.note_processor import NoteProcessor, NoteProcessorError
+from tools.api_manager import APIManager, APIManagerError, RateLimitExceededError
+from tools.api_models import (
+    APIRequest,
+    APIResponse,
+    BatchRequest,
+    BatchResponse,
+    CacheEntry,
+    HTTPMethod,
+    RateLimitStatus,
+    ServiceConfig,
+    ServiceType,
+)
 from tools.output_formatter import OutputFormatter, OutputFormatterError, TemplateLoadError
 from tools.output_models import (
     AudienceType,
@@ -91,6 +103,18 @@ __all__ = [
     "TrendDirection",
     "NoteProcessor",
     "NoteProcessorError",
+    "APIManager",
+    "APIManagerError",
+    "RateLimitExceededError",
+    "APIRequest",
+    "APIResponse",
+    "BatchRequest",
+    "BatchResponse",
+    "CacheEntry",
+    "HTTPMethod",
+    "RateLimitStatus",
+    "ServiceConfig",
+    "ServiceType",
     "ActionItem",
     "ActionItemFilters",
     "BatchProcessResult",
