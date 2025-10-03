@@ -75,6 +75,17 @@ from tools.stakeholder_models import (
     Stakeholder,
     StakeholderAlignment,
 )
+from tools.nlp_processor import NLPProcessor, NLPProcessorError, DateParsingError
+from tools.nlp_models import (
+    ActionType,
+    CommandIntent,
+    DateExpression,
+    DateRange,
+    EntityMatch,
+    FuzzyMatch,
+    Priority,
+    SubjectType,
+)
 
 __all__ = [
     "ConfigManager",
@@ -151,4 +162,15 @@ __all__ = [
     "PowerInterestQuadrant",
     "Stakeholder",
     "StakeholderAlignment",
+    "NLPProcessor",
+    "NLPProcessorError",
+    "DateParsingError",
+    "ActionType",
+    "CommandIntent",
+    "DateExpression",
+    "DateRange",
+    "EntityMatch",
+    "FuzzyMatch",
+    "Priority",
+    "SubjectType",
 ]
