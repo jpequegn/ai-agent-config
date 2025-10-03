@@ -22,12 +22,15 @@ You are an intelligent project management analyst. When this command is invoked,
 ### Core Functionality
 
 1. **Multi-Source Data Collection**
-   - Use the ProjectDataCollector system (`./project_data_collector.py`) to gather data from:
+   - Use the DataCollector tool from the tools package to gather data from:
      - GitHub API (PRs, issues, commits, milestones)
      - Notes system (project-related notes and action items)
      - Calendar integration (meetings, deadlines)
+     - Team data (members, roles, availability)
    - Synthesize data from `.claude/projects.yaml` configuration
    - Integrate with `.claude/integrations.yaml` for API access
+   - Automatic 5-minute caching for performance
+   - Graceful degradation when data sources unavailable
 
 2. **Intelligent Health Scoring**
    - Calculate project health score (0.0-1.0) based on:
@@ -69,7 +72,7 @@ You are an intelligent project management analyst. When this command is invoked,
 **Default `/project status`:**
 Execute the following steps:
 
-1. Use ProjectDataCollector to gather data for all projects
+1. Use DataCollector tool to gather data for all projects
 2. Calculate health scores and trends for each project
 3. Identify risks and blockers across all projects
 4. Generate executive summary with key insights
@@ -263,16 +266,36 @@ When executing this command:
 
 1. **Initialize Data Collection**
    ```python
-   from project_data_collector import ProjectDataCollector
-   collector = ProjectDataCollector()
+   from tools import DataCollector, ConfigManager
+
+   config = ConfigManager()
+   collector = DataCollector(config)
    ```
 
 2. **Collect Project Data**
    ```python
    if project_name:
-       project_data = collector.collect_project_data(project_name)
+       # Collect data for specific project from all sources
+       project_data = collector.aggregate_project_data(
+           project_id=project_name,
+           sources=["github", "notes", "calendar", "team", "config"]
+       )
+
+       # Access collected data
+       github_data = project_data.github_data
+       notes_data = project_data.notes_data
+       calendar_data = project_data.calendar_data
+       team_data = project_data.team_data
+       config_data = project_data.config_data
    else:
-       project_data = collector.collect_all_projects_data()
+       # Collect data for all active projects
+       all_projects = config.get_all_projects(filters={"status": ["active", "in_progress"]})
+       project_data = {}
+       for project_id in all_projects:
+           project_data[project_id] = collector.aggregate_project_data(
+               project_id=project_id,
+               sources=["github", "notes", "calendar", "team", "config"]
+           )
    ```
 
 3. **Calculate Health Scores**
@@ -298,10 +321,16 @@ When executing this command:
 
 ### Error Handling
 
-- Handle missing project configurations gracefully
-- Provide meaningful errors for API connection failures
-- Suggest setup steps for missing integrations
-- Offer degraded functionality when data sources are unavailable
+DataCollector handles errors automatically with:
+- Automatic retry with exponential backoff (3 attempts)
+- Graceful degradation when data sources unavailable
+- Detailed error messages with recovery suggestions
+- Continuation with partial data when some sources fail
+
+Additional handling:
+- Validate project names against ConfigManager
+- Provide helpful error messages for missing integrations
+- Suggest setup steps when API credentials not configured
 
 ### Best Practices
 
