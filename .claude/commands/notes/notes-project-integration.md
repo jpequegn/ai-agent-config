@@ -64,28 +64,30 @@ When notes commands include project context:
    # - Add project milestone context to agenda
    ```
 
-2. **Auto-Linked Project Notes with ConfigManager**
+2. **Auto-Linked Project Notes with NoteProcessor and ConfigManager**
    ```python
-   from tools import ConfigManager
+   from tools import NoteProcessor, ConfigManager
 
-   # Initialize ConfigManager
+   # Initialize tools
+   processor = NoteProcessor()
    mgr = ConfigManager()
 
-   # Create note with automatic project synchronization
-   def create_project_note(project_name, note_data):
-       # Automatic project-to-notes sync via ConfigManager
-       mgr.sync_project_to_notes(project_name)
+   # Create note with automatic project linking
+   def create_project_note(project_name, note_path):
+       # Link note to project (simplified from manual cache updates)
+       processor.link_note_to_project(note_path, project_name)
 
-       # Notes cache automatically updated at:
-       # .claude/cache/notes_{project_name}.json
+       # Sync project notes cache
+       sync_result = processor.sync_project_notes(project_name)
 
-       # Cache contains validated project data:
-       # - Project metadata (name, description, status)
-       # - Milestones and deadlines
-       # - Team members and ownership
-       # - Dependencies and relationships
+       # Get all project notes
+       project_notes = processor.get_project_notes(project_name)
 
-       return f"Project '{project_name}' synced to notes cache"
+       return {
+           'project': project_name,
+           'synced_notes': sync_result['synced_count'],
+           'total_notes': len(project_notes)
+       }
    ```
 
 **Project Notes Overview:**
@@ -94,34 +96,38 @@ When notes commands include project context:
 # User: /project notes mobile-app-v2
 ```
 
-Execute project notes analysis using ConfigManager:
+Execute project notes analysis using NoteProcessor and ConfigManager:
 
-1. **Load Project Context and Notes with ConfigManager**
+1. **Load Project Context and Notes with NoteProcessor**
    ```python
-   from tools import ConfigManager
-   import json
+   from tools import NoteProcessor, ConfigManager
 
+   processor = NoteProcessor()
    mgr = ConfigManager()
 
-   # Sync project to notes cache first (ensures fresh data)
-   mgr.sync_project_to_notes('mobile-app-v2')
+   # Get all project notes (simplified from manual cache loading)
+   project_notes = processor.get_project_notes('mobile-app-v2')
 
-   # Load synced project data with type safety
+   # Get project action items
+   project_actions = processor.extract_action_items(
+       scope="project:mobile-app-v2"
+   )
+
+   # Sync project notes cache
+   sync_result = processor.sync_project_notes('mobile-app-v2')
+
+   # Load project config data
    project = mgr.get_project('mobile-app-v2')
 
-   # Load notes cache (automatically updated by sync)
-   cache_file = mgr.config_root / "cache" / "notes_mobile-app-v2.json"
-   with open(cache_file, 'r') as f:
-       notes_cache = json.load(f)
-
-   # Generate comprehensive project notes overview
-   # Project data is type-safe and validated via Pydantic
+   # Generate comprehensive overview
    overview = {
        'project_name': project.name,
        'project_status': project.status,
        'milestones': [m.model_dump() for m in project.milestones],
        'team': [project.owner] + project.team_members,
-       'notes_cache': notes_cache
+       'total_notes': len(project_notes),
+       'synced_at': sync_result['synced_at'],
+       'action_items': len(project_actions)
    }
    ```
 
@@ -575,4 +581,25 @@ except Exception as e:
    - Use type-safe field access to prevent runtime errors
    - Handle missing configurations gracefully with proper error messages
 
-Remember: Effective notes-project integration creates a unified knowledge system where project context enhances note-taking and notes provide rich context for project management. ConfigManager ensures this integration is automatic, type-safe, and consistent.
+## Implementation Notes
+
+**NoteProcessor Integration Benefits:**
+- **70+ lines → 10-15 lines** for project note operations
+- Type-safe ParsedNote models with project metadata
+- Automatic cache synchronization with `sync_project_notes()`
+- Simplified project linking with `link_note_to_project()`
+- Project-scoped action item extraction
+
+**Key Methods:**
+- `processor.get_project_notes(project_id)` - Get all notes linked to project
+- `processor.link_note_to_project(note_path, project_id)` - Link note to project
+- `processor.sync_project_notes(project_id)` - Sync and update cache
+- `processor.extract_action_items(scope="project:id")` - Get project action items
+
+**Integration with ConfigManager:**
+- ConfigManager handles project configuration access
+- NoteProcessor handles note operations and linking
+- Both use type-safe Pydantic models
+- Automatic synchronization between systems
+
+Remember: Effective notes-project integration creates a unified knowledge system where project context enhances note-taking and notes provide rich context for project management. NoteProcessor and ConfigManager ensure this integration is automatic, type-safe, and consistent.

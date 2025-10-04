@@ -50,25 +50,18 @@ You are an intelligent action item synchronization system that maintains alignme
 
 Execute comprehensive action item synchronization:
 
-1. **Discovery Phase**
+1. **Discovery Phase** (using NoteProcessor)
    ```python
-   import yaml
-   import json
-   from datetime import datetime, timedelta
-   from pathlib import Path
+   from tools import NoteProcessor
+   from tools.note_models import ActionItemFilters
 
-   # Load all project configurations
-   with open('.claude/projects.yaml', 'r') as f:
-       projects = yaml.safe_load(f)
+   processor = NoteProcessor()
 
-   # Discover all action items across project notes
-   all_action_items = []
-   for project_id in projects['projects']:
-       cache_file = f'.claude/cache/notes_{project_id.replace("-", "_")}.json'
-       if Path(cache_file).exists():
-           with open(cache_file, 'r') as f:
-               notes_cache = json.load(f)
-               all_action_items.extend(notes_cache.get('action_items', []))
+   # Get all action items across all projects (simplified from manual cache reading)
+   all_action_items = processor.extract_action_items(scope="all")
+   pending = processor.get_action_items_by_status("pending")
+   overdue = processor.get_action_items_by_status("overdue")
+   completed = processor.get_action_items_by_status("completed")
    ```
 
 2. **Synchronization Analysis**
@@ -105,11 +98,17 @@ Execute comprehensive action item synchronization:
 
 Execute targeted synchronization:
 
-1. **Project-Focused Analysis**
-   - Load specific project data and notes cache
-   - Analyze action item patterns and completion trends
-   - Map action items to project milestones with high precision
-   - Generate project-specific synchronization report
+1. **Project-Focused Analysis** (using NoteProcessor)
+   ```python
+   # Get project-specific notes and action items
+   project_notes = processor.get_project_notes(project_id)
+   project_actions = processor.extract_action_items(
+       scope=f"project:{project_id}"
+   )
+
+   # Sync project notes cache
+   sync_result = processor.sync_project_notes(project_id)
+   ```
 
 2. **Milestone Impact Assessment**
    - Calculate milestone completion percentage based on linked action items
@@ -373,24 +372,22 @@ To apply these changes, run: `/notes sync-actions` (without --dry-run flag)
 
 When executing this command:
 
-1. **Action Item Discovery**
+1. **Action Item Discovery** (simplified with NoteProcessor)
    ```python
-   def discover_action_items():
-       """Scan all project notes for action items"""
-       all_items = []
+   from tools import NoteProcessor
+   from tools.note_models import ActionItemFilters
 
-       # Load all project caches
-       for project_id in get_all_projects():
-           cache_file = f'.claude/cache/notes_{project_id.replace("-", "_")}.json'
-           if Path(cache_file).exists():
-               cache_data = load_cache(cache_file)
+   processor = NoteProcessor()
 
-               # Extract action items with enhanced metadata
-               for item in cache_data.get('action_items', []):
-                   enhanced_item = enrich_action_item(item, project_id)
-                   all_items.append(enhanced_item)
+   # Simple method calls replace 15+ lines of manual cache reading
+   all_items = processor.extract_action_items(scope="all")
 
-       return all_items
+   # Filter by project if needed
+   project_items = processor.extract_action_items(scope=f"project:{project_id}")
+
+   # Get by status
+   pending = processor.get_action_items_by_status("pending", project=project_id)
+   overdue = processor.get_action_items_by_status("overdue", project=project_id)
    ```
 
 2. **Milestone Mapping and Progress Calculation**
@@ -492,5 +489,22 @@ When executing this command:
    - Generate owner-specific action item summaries
    - Provide project managers with milestone risk assessments
    - Create executive summaries of action item portfolio health
+
+## Implementation Notes
+
+**NoteProcessor Integration Benefits:**
+- **90+ lines → 10 lines** for action item discovery
+- Type-safe operations with ActionItemFilters
+- Automatic error handling and validation
+- `get_project_notes()` replaces manual cache reading
+- `sync_project_notes()` handles cache updates automatically
+- `extract_action_items()` with scope filtering (all, project:id, inbox)
+- `get_action_items_by_status()` for pending, completed, overdue filtering
+
+**Key Methods:**
+- `processor.extract_action_items(scope="all")` - Get all action items
+- `processor.get_action_items_by_status("overdue", project=id)` - Filter by status
+- `processor.get_project_notes(project_id)` - Get project-linked notes
+- `processor.sync_project_notes(project_id)` - Update cache system
 
 Remember: Effective action item synchronization bridges the gap between detailed note-taking and strategic project management, ensuring nothing falls through the cracks.
