@@ -50,39 +50,53 @@ You are an intelligent risk assessment system that identifies threats, quantifie
 
 Execute comprehensive portfolio analysis:
 
-1. **Multi-Project Risk Analysis**
+1. **Multi-Project Risk Analysis with HealthCalculator**
    ```python
-   from tools import DataCollector, ConfigManager
+   from tools import DataCollector, HealthCalculator, ConfigManager
    from datetime import datetime, timedelta
 
-   # Initialize data collection
+   # Initialize tools
    config = ConfigManager()
-   collector = DataCollector(config)
+   collector = DataCollector()
+   calc = HealthCalculator()  # For deterministic risk assessment
 
    # Load all active projects with data
    active_projects = config.get_all_projects(
        filters={"status": ["active", "in_progress", "planning"]}
    )
 
-   # Collect data for risk analysis
-   project_data = {}
+   # Collect data and assess risks for each project
+   portfolio_risks = []
    for project_id in active_projects:
-       project_data[project_id] = collector.aggregate_project_data(
+       project_data = collector.aggregate_project_data(
            project_id=project_id,
            sources=["github", "notes", "config"]
        )
 
-   # Analyze cross-project risks and dependencies
-   portfolio_risks = analyze_cross_project_risks(active_projects, project_data)
+       # Use HealthCalculator for comprehensive risk assessment
+       project_risks = calc.assess_risks(project_data)
+       # Returns: List[Risk] sorted by priority
+       # Each Risk includes:
+       #   - type: "timeline", "blockers", "activity", "dependencies"
+       #   - severity: RiskSeverity (low/medium/high/critical)
+       #   - likelihood: float (0.0-1.0)
+       #   - priority_score: float (severity*0.6 + likelihood*0.4)
+       #   - title: str
+       #   - description: str
+       #   - mitigation_suggestions: List[str]
+
+       portfolio_risks.extend([(project_id, risk) for risk in project_risks])
+
+   # Sort all risks by priority across portfolio
+   portfolio_risks.sort(key=lambda x: x[1].priority_score, reverse=True)
    ```
 
-2. **Risk Aggregation and Prioritization**
-   ```python
-   # Aggregate individual project risks
-   # Identify portfolio-level systemic risks
-   # Calculate risk concentration and correlation
-   # Generate portfolio risk score and heat map
-   ```
+2. **Risk Prioritization and Categorization**
+   - Risks automatically prioritized by HealthCalculator's priority_score
+   - Timeline risks: Progress ratio < 0.95 (behind schedule)
+   - Blocker risks: Blocker count > 3 triggers warning
+   - Activity risks: Activity score < 0.5 indicates low velocity
+   - Severity levels: low (0-0.25), medium (0.25-0.5), high (0.5-0.75), critical (0.75-1.0)
 
 3. **Strategic Risk Assessment**
 
@@ -90,14 +104,43 @@ Execute comprehensive portfolio analysis:
 
 Execute targeted project analysis:
 
-1. **Deep Project Risk Analysis**
-   - Comprehensive risk discovery for specific project context
-   - Stakeholder-specific risk assessment and impact analysis
-   - Timeline and milestone-based risk evaluation
-   - Technical, operational, and business risk categorization
+1. **Deep Project Risk Analysis with HealthCalculator**
+   ```python
+   from tools import DataCollector, HealthCalculator
+
+   calc = HealthCalculator()
+   collector = DataCollector()
+
+   # Get comprehensive project data
+   project_data = collector.aggregate_project_data(
+       project_id=project_name,
+       sources=["github", "notes", "config", "calendar"]
+   )
+
+   # Assess all risks for the project
+   risks = calc.assess_risks(project_data)
+
+   # Group risks by type for detailed analysis
+   timeline_risks = [r for r in risks if r.type == "timeline"]
+   blocker_risks = [r for r in risks if r.type == "blockers"]
+   activity_risks = [r for r in risks if r.type == "activity"]
+   dependency_risks = [r for r in risks if r.type == "dependencies"]
+
+   # Display risks with mitigation strategies
+   for risk in risks:
+       print(f"\n{risk.severity.value.upper()}: {risk.title}")
+       print(f"Priority Score: {risk.priority_score:.2f}")
+       print(f"Likelihood: {risk.likelihood:.1%}")
+       print(f"Description: {risk.description}")
+       print(f"Mitigations:")
+       for suggestion in risk.mitigation_suggestions:
+           print(f"  - {suggestion}")
+   ```
 
 2. **Contextual Mitigation Planning**
-   - Project-specific resource and constraint considerations
+   - Mitigation suggestions automatically provided by HealthCalculator
+   - Prioritized by risk priority_score for optimal resource allocation
+   - Actionable, project-specific recommendations
    - Integration with existing project timelines and dependencies
    - Stakeholder-aligned mitigation strategies and communication plans
 
@@ -534,3 +577,54 @@ When executing this command:
    - Include regular review cycles and improvement feedback
 
 Remember: Effective risk management transforms uncertainty into manageable challenges through systematic identification, quantification, and proactive mitigation strategies.
+
+## Implementation Notes
+
+**HealthCalculator Integration Benefits:**
+- **Automated risk detection**: Comprehensive risk identification across all categories (timeline, blockers, activity, dependencies)
+- **Consistent scoring**: Deterministic priority_score algorithm (severity × 0.6 + likelihood × 0.4)
+- **Built-in mitigations**: Automatic generation of actionable mitigation suggestions
+- **Performance**: <50ms risk assessment per project
+- **Type-safe**: Pydantic Risk models with validated data
+- **Testable**: Deterministic algorithms with comprehensive test coverage
+
+**Key HealthCalculator Methods for Risk Assessment:**
+- `calc.assess_risks(project_data)` - Comprehensive risk analysis returning List[Risk]
+- Returns risks sorted by priority_score (highest first)
+- Each Risk includes: type, severity, likelihood, priority_score, title, description, mitigation_suggestions
+
+**Risk Categories Automatically Detected:**
+1. **Timeline Risks**: Progress ratio < 0.95 (behind schedule)
+   - Severity based on delay percentage
+   - Mitigation: timeline adjustments, resource allocation, milestone reprioritization
+
+2. **Blocker Risks**: Blocker count > 3
+   - Severity: 3-5 blockers (medium), 6+ blockers (high)
+   - Mitigation: prioritize blocker resolution, escalate critical blockers
+
+3. **Activity Risks**: Activity score < 0.5
+   - Indicates low development velocity
+   - Mitigation: capacity review, impediment removal, team support
+
+4. **Dependency Risks**: Missing or delayed dependencies
+   - Severity based on dependency criticality
+   - Mitigation: dependency tracking, alternative solutions, escalation
+
+**Integration Pattern:**
+```python
+# Simple, deterministic risk assessment
+calc = HealthCalculator()
+risks = calc.assess_risks(project_data)
+
+# Risks are automatically:
+# ✓ Detected across all categories
+# ✓ Classified by severity (low/medium/high/critical)
+# ✓ Prioritized by impact and likelihood
+# ✓ Sorted by priority_score
+# ✓ Include mitigation suggestions
+```
+
+**Consistency with Other Commands:**
+- Same risk logic as `/project status` command
+- Consistent severity and priority calculations
+- Shared HealthCalculator for portfolio-wide consistency
