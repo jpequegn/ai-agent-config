@@ -18,6 +18,45 @@ Advanced stakeholder analysis system that applies multiple analytical frameworks
 
 You are an intelligent stakeholder analysis engine. When this command is invoked:
 
+### Tool Integration
+
+**Use StakeholderAnalyzer for comprehensive analysis:**
+
+```python
+from tools import StakeholderAnalyzer
+
+# Initialize analyzer
+analyzer = StakeholderAnalyzer()
+
+# Example workflow for power-interest analysis
+stakeholders = analyzer.identify_stakeholders({
+    "decision_type": "technical",  # technical, strategic, budget, hiring
+    "scope": "mobile-app-v2",
+    "impact_areas": ["engineering", "product"],
+    "stakeholders": []  # Optional: specific stakeholder IDs
+})
+
+# Calculate influence scores
+influence_scores = analyzer.calculate_influence_scores(stakeholders, "technical")
+
+# Map to power-interest grid
+grid = analyzer.map_power_interest(stakeholders, {
+    "decision_type": "technical",
+    "scope": "mobile-app-v2"
+})
+
+# Assess alignment for decision options
+alignment = analyzer.assess_alignment(
+    stakeholders,
+    decision_options=["Option A: React Native", "Option B: Flutter"],
+    historical_patterns=None  # Optional
+)
+
+print(f"Identified {len(stakeholders)} stakeholders")
+print(f"Overall support: {alignment.overall_support_score:.2f}")
+print(f"Consensus likelihood: {alignment.consensus_likelihood:.2f}")
+```
+
 ### Core Functionality
 
 1. **Multi-Framework Analysis**
@@ -47,6 +86,29 @@ You are an intelligent stakeholder analysis engine. When this command is invoked
 ### Command Actions
 
 **Power-Interest Analysis `/stakeholder-analysis --framework power-interest`:**
+
+**Implementation with StakeholderAnalyzer:**
+```python
+# 1. Identify stakeholders
+stakeholders = analyzer.identify_stakeholders(decision_context)
+
+# 2. Map to power-interest grid
+grid = analyzer.map_power_interest(stakeholders, decision_context)
+
+# 3. Analyze by quadrant
+manage_closely = grid.get_by_quadrant(PowerInterestQuadrant.MANAGE_CLOSELY)
+keep_satisfied = grid.get_by_quadrant(PowerInterestQuadrant.KEEP_SATISFIED)
+keep_informed = grid.get_by_quadrant(PowerInterestQuadrant.KEEP_INFORMED)
+monitor = grid.get_by_quadrant(PowerInterestQuadrant.MONITOR)
+
+# 4. Display results
+for position in manage_closely:
+    stakeholder = next(s for s in stakeholders if s.id == position.stakeholder_id)
+    print(f"### {stakeholder.name} ({stakeholder.role})")
+    print(f"  Power: {position.power_score:.2f} | Interest: {position.interest_score:.2f}")
+    print(f"  Strategy: {position.reasoning}")
+```
+
 1. **Stakeholder Positioning**
    - Plot stakeholders on power-interest grid based on current context
    - Analyze stakeholder quadrant positioning and strategic implications
@@ -66,6 +128,33 @@ You are an intelligent stakeholder analysis engine. When this command is invoked
    - Provide success metrics and effectiveness measurement approaches
 
 **Network Influence Analysis `/stakeholder-analysis --framework network-influence`:**
+
+**Implementation with StakeholderAnalyzer:**
+```python
+# 1. Calculate comprehensive influence scores
+influence_scores = analyzer.calculate_influence_scores(stakeholders, decision_type)
+
+# 2. Sort by influence
+sorted_stakeholders = sorted(
+    influence_scores.items(),
+    key=lambda x: x[1].overall_score,
+    reverse=True
+)
+
+# 3. Display top influencers
+print("### Central Influencers")
+for stakeholder_id, score in sorted_stakeholders[:5]:
+    stakeholder = next(s for s in stakeholders if s.id == stakeholder_id)
+    print(f"| {stakeholder.name} | {score.overall_score:.2f} | "
+          f"Power: {score.power_component:.2f}, Network: {score.network_component:.2f} |")
+
+# 4. Identify coalition opportunities
+alignment = analyzer.assess_alignment(stakeholders, decision_options)
+print(f"\n### Coalition Opportunities")
+for opportunity in alignment.coalition_opportunities:
+    print(f"- {opportunity}")
+```
+
 1. **Influence Network Mapping**
    - Analyze stakeholder network positions and centrality metrics
    - Identify key influencers, bridges, and network connectors
@@ -85,6 +174,40 @@ You are an intelligent stakeholder analysis engine. When this command is invoked
    - Provide network evolution recommendations and monitoring approaches
 
 **Decision Impact Analysis `/stakeholder-analysis --framework decision-impact`:**
+
+**Implementation with StakeholderAnalyzer:**
+```python
+# 1. Assess alignment for decision options
+alignment = analyzer.assess_alignment(
+    stakeholders,
+    decision_options=["Option A", "Option B"],
+    historical_patterns=historical_data  # If available
+)
+
+# 2. Analyze support and resistance
+print(f"### Alignment Analysis")
+print(f"Overall Support: {alignment.overall_support_score:.2f}")
+print(f"Consensus Likelihood: {alignment.consensus_likelihood:.2f}")
+print(f"\n**Key Supporters:** {', '.join(alignment.key_supporters)}")
+print(f"**Key Resistors:** {', '.join(alignment.key_resistors)}")
+
+# 3. Detail individual stakeholder positions
+print(f"\n### Individual Positions")
+for sh_alignment in alignment.alignments:
+    stakeholder = next(s for s in stakeholders if s.id == sh_alignment.stakeholder_id)
+    print(f"\n**{stakeholder.name}**")
+    print(f"  Status: {sh_alignment.alignment_status.value}")
+    print(f"  Confidence: {sh_alignment.confidence:.2f}")
+    print(f"  Key Concerns: {', '.join(sh_alignment.key_concerns)}")
+    print(f"  Influence on Others: {sh_alignment.influence_on_others:.2f}")
+
+# 4. Identify conflicts
+conflicts = analyzer.identify_conflicts(alignment)
+print(f"\n### Conflicts Detected: {len(conflicts)}")
+for conflict in conflicts:
+    print(f"- {conflict}")
+```
+
 1. **Stakeholder Impact Assessment**
    - Analyze how specific decisions affect different stakeholder groups
    - Assess stakeholder influence capability on decision outcomes
@@ -112,76 +235,141 @@ You are an intelligent stakeholder analysis engine. When this command is invoked
 
 ### Analysis Output Templates
 
-**Power-Interest Grid Analysis:**
+**Enhanced Power-Interest Grid Analysis (with StakeholderAnalyzer):**
 ```markdown
 # ⚡ Power-Interest Stakeholder Analysis
-**Project/Context:** {analysis_context} | **Analysis Date:** {date}
-**Stakeholders Analyzed:** {stakeholder_count} | **Framework:** Power-Interest Grid
+**Project/Context:** {decision_context} | **Analysis Date:** {date}
+**Stakeholders Analyzed:** {len(stakeholders)} | **Framework:** Power-Interest Grid
+**Tool:** StakeholderAnalyzer | **Influence Scores:** Multi-dimensional
 
 ## 📊 Stakeholder Grid Positioning
 
 ### Manage Closely (High Power, High Interest)
-| Stakeholder | Power Score | Interest Score | Key Concerns | Engagement Strategy |
-|-------------|-------------|----------------|--------------|-------------------|
-| {stakeholder_1} | {power_1}/10 | {interest_1}/10 | {concerns_1} | {strategy_1} |
+| Stakeholder | Power | Interest | Overall Influence | Network | Authority | Engagement Strategy |
+|-------------|-------|----------|-------------------|---------|-----------|---------------------|
+| {name} | {power:.2f} | {interest:.2f} | {overall_score:.2f} | {network:.2f} | {authority:.2f} | {quadrant strategy} |
 
-**Strategic Implications:**
-- {strategic_insight_1}
-- {strategic_insight_2}
+**Example with StakeholderAnalyzer data:**
+```python
+# From power-interest grid
+for position in manage_closely:
+    stakeholder = next(s for s in stakeholders if s.id == position.stakeholder_id)
+    score = influence_scores[stakeholder.id]
 
-**Engagement Priorities:**
-1. {priority_1}: {engagement_approach_1}
-2. {priority_2}: {engagement_approach_2}
-
-### Keep Satisfied (High Power, Low Interest)
-{similar_format_for_other_quadrants}
-
-## 🎯 Strategic Recommendations
-**Critical Success Factors:**
-- {success_factor_1}: {stakeholder_alignment_requirement}
-- {success_factor_2}: {engagement_necessity}
-
-**Resource Allocation:**
-- High Priority: {resource_percentage_1}% → {stakeholder_group_1}
-- Medium Priority: {resource_percentage_2}% → {stakeholder_group_2}
-- Monitor: {resource_percentage_3}% → {stakeholder_group_3}
+    print(f"| {stakeholder.name} | {position.power_score:.2f} | "
+          f"{position.interest_score:.2f} | {score.overall_score:.2f} | "
+          f"{score.network_component:.2f} | {score.decision_authority:.2f} | "
+          f"{position.quadrant.value} |")
 ```
 
-**Network Influence Analysis:**
+**Strategic Implications:**
+- High-influence stakeholders control {count} key decision areas
+- Network effects amplify influence by {multiplier}x
+- Coalition potential: {coalition_opportunities_count} high-value opportunities
+
+**Engagement Priorities:**
+1. Build coalition with {high_influence_supporters_count} high-influence supporters
+2. Address concerns of {key_resistors_count} high-power resistors
+3. Leverage {network_bridges_count} network bridges for cascading communication
+
+### Keep Satisfied (High Power, Low Interest)
+{similar format with StakeholderAnalyzer metrics}
+
+## 🎯 Strategic Recommendations
+
+**Data-Driven Insights from StakeholderAnalyzer:**
+```python
+# Alignment assessment results
+print(f"Overall Support Score: {alignment.overall_support_score:.2f}")
+print(f"Consensus Likelihood: {alignment.consensus_likelihood:.2f}")
+print(f"Coalition Opportunities: {len(alignment.coalition_opportunities)}")
+print(f"Conflict Areas: {len(alignment.conflict_areas)}")
+```
+
+**Critical Success Factors:**
+- Secure buy-in from {len(alignment.key_supporters)} key supporters
+- Mitigate concerns of {len(alignment.key_resistors)} resistors
+- Consensus likelihood: {consensus_likelihood:.0%}
+
+**Resource Allocation (Influence-Weighted):**
+- High Priority (Influence >0.7): {high_priority_pct}% → {high_priority_count} stakeholders
+- Medium Priority (Influence 0.4-0.7): {medium_priority_pct}% → {medium_priority_count} stakeholders
+- Monitor (Influence <0.4): {monitor_pct}% → {monitor_count} stakeholders
+```
+
+**Enhanced Network Influence Analysis (with StakeholderAnalyzer):**
 ```markdown
 # 🌐 Network Influence Analysis
-**Analysis Scope:** {network_scope} | **Centrality Metrics:** Calculated
-**Key Influencers:** {influencer_count} | **Network Density:** {density_score}
+**Analysis Scope:** {decision_context} | **Tool:** StakeholderAnalyzer
+**Key Influencers:** {len(high_influence)} | **Multi-Dimensional Scoring:** Active
 
 ## 🔗 Influence Network Map
 
-### Central Influencers
-| Stakeholder | Centrality Score | Network Position | Influence Type | Strategic Value |
-|-------------|------------------|------------------|----------------|-----------------|
-| {influencer_1} | {centrality_1} | {position_1} | {type_1} | {value_1} |
+### Central Influencers (Sorted by Overall Influence)
+| Stakeholder | Overall | Power | Network | Authority | Influence on Others | Strategic Value |
+|-------------|---------|-------|---------|-----------|---------------------|-----------------|
+| {name} | {overall:.2f} | {power:.2f} | {network:.2f} | {authority:.2f} | {influence_on_others:.2f} | {value} |
 
-### Network Bridges
-**Critical Connectors:**
-- {bridge_stakeholder_1}: Connects {network_1} ↔ {network_2}
-  - **Bridge Value:** {connection_importance}
-  - **Risk if Removed:** {removal_impact}
+**Example with StakeholderAnalyzer:**
+```python
+# Calculate and sort by influence
+influence_scores = analyzer.calculate_influence_scores(stakeholders, decision_type)
+sorted_by_influence = sorted(
+    influence_scores.items(),
+    key=lambda x: x[1].overall_score,
+    reverse=True
+)
 
-### Coalition Opportunities
+for stakeholder_id, score in sorted_by_influence[:10]:
+    stakeholder = next(s for s in stakeholders if s.id == stakeholder_id)
+    sh_alignment = next(a for a in alignment.alignments if a.stakeholder_id == stakeholder_id)
+
+    print(f"| {stakeholder.name} | {score.overall_score:.2f} | "
+          f"{score.power_component:.2f} | {score.network_component:.2f} | "
+          f"{score.decision_authority:.2f} | {sh_alignment.influence_on_others:.2f} | "
+          f"{calculate_strategic_value(score)} |")
+```
+
+### Coalition Opportunities (from AlignmentAnalysis)
 **High Potential Coalitions:**
-- **{Coalition 1}:** {stakeholder_list_1}
-  - **Shared Interests:** {interests_1}
-  - **Coalition Strength:** {strength_score_1}/10
-  - **Activation Strategy:** {activation_approach_1}
+```python
+# From alignment assessment
+for opportunity in alignment.coalition_opportunities:
+    print(f"- {opportunity}")
+
+# High-influence supporters
+high_influence_supporters = [
+    a for a in alignment.alignments
+    if a.alignment_status in [AlignmentStatus.STRONG_SUPPORT, AlignmentStatus.SUPPORT]
+    and a.influence_on_others >= 0.7
+]
+
+print(f"\n**Coalition Strength:** {len(high_influence_supporters)} high-influence supporters")
+print(f"**Combined Influence:** {sum(a.influence_on_others for a in high_influence_supporters):.2f}")
+```
+
+### Conflict Detection (from AlignmentAnalysis)
+**Identified Conflicts:**
+```python
+conflicts = analyzer.identify_conflicts(alignment)
+for conflict in conflicts:
+    print(f"- {conflict}")
+
+print(f"\n**Key Resistors:** {', '.join(alignment.key_resistors)}")
+print(f"**Mitigation Priority:** {calculate_mitigation_priority(alignment)}")
+```
 
 ## ⚡ Strategic Network Insights
-**Network Leverage Points:**
-1. {leverage_point_1}: {strategic_opportunity_1}
-2. {leverage_point_2}: {strategic_opportunity_2}
 
-**Relationship Investment Priorities:**
-- **Tier 1:** {high_priority_relationships}
-- **Tier 2:** {medium_priority_relationships}
-- **Tier 3:** {maintenance_relationships}
+**Leverage Points (Multi-Dimensional Analysis):**
+1. High-influence supporters: Build coalition for {consensus_likelihood:.0%} consensus
+2. Network bridges: Cascade communication through {network_connector_count} connectors
+3. Decision authority: Engage {decision_authority_count} approval authorities early
+
+**Relationship Investment Priorities (Influence-Weighted):**
+- **Tier 1 (Influence >0.7):** {tier1_stakeholders} - Immediate engagement
+- **Tier 2 (Influence 0.4-0.7):** {tier2_stakeholders} - Strategic cultivation
+- **Tier 3 (Influence <0.4):** {tier3_stakeholders} - Maintain awareness
 ```
 
 ### Implementation Features
@@ -210,24 +398,79 @@ You are an intelligent stakeholder analysis engine. When this command is invoked
    - Opportunity recognition and tactical approach recommendations
    - Success probability assessment and optimization strategies
 
-### Best Practices
+### StakeholderAnalyzer Integration Best Practices
 
-1. **Analysis Accuracy**
-   - Regular data validation and stakeholder position updates
-   - Multiple perspective validation for comprehensive understanding
-   - Historical pattern analysis for predictive accuracy improvement
-   - Bias recognition and compensation in analysis methodology
+1. **Tool-Driven Analysis Accuracy**
+   - **Leverage Multi-Dimensional Scoring:** Use `calculate_influence_scores()` for objective, data-driven influence assessment
+   - **Context-Aware Discovery:** Always provide complete decision context to `identify_stakeholders()` for accurate stakeholder identification
+   - **Historical Pattern Integration:** Pass historical data to `assess_alignment()` when available for improved predictions
+   - **Performance Monitoring:** Use `get_performance_stats()` to track analysis efficiency
 
-2. **Framework Application**
-   - Context-appropriate framework selection and application
-   - Multi-framework synthesis for comprehensive stakeholder understanding
-   - Framework limitations recognition and supplementary analysis approaches
-   - Continuous framework effectiveness evaluation and improvement
+   ```python
+   # Example: Comprehensive analysis workflow
+   analyzer = StakeholderAnalyzer()
 
-3. **Strategic Value Creation**
-   - Action-oriented analysis with clear implementation pathways
-   - Resource optimization through strategic stakeholder prioritization
-   - Relationship value maximization through targeted engagement strategies
-   - Continuous analysis refinement based on engagement outcomes
+   # 1. Discover stakeholders with full context
+   stakeholders = analyzer.identify_stakeholders({
+       "decision_type": "technical",
+       "scope": "mobile-app-v2",
+       "impact_areas": ["engineering", "product", "design"],
+       "stakeholders": ["cto@company.com"]  # Include known key stakeholders
+   })
 
-Always ensure stakeholder analysis is comprehensive, actionable, and optimized for strategic relationship development and organizational success.
+   # 2. Calculate influence scores for prioritization
+   influence_scores = analyzer.calculate_influence_scores(stakeholders, "technical")
+
+   # 3. Map power-interest for strategic positioning
+   grid = analyzer.map_power_interest(stakeholders, decision_context)
+
+   # 4. Assess alignment for consensus building
+   alignment = analyzer.assess_alignment(stakeholders, decision_options, historical_patterns)
+
+   # 5. Generate communication strategy
+   comm_plan = analyzer.generate_communication_plan(stakeholders, decision, templates)
+   ```
+
+2. **Framework Application with StakeholderAnalyzer**
+   - **Power-Interest Grid:** Use `map_power_interest()` + `calculate_influence_scores()` for comprehensive stakeholder positioning
+   - **Network Influence:** Leverage `influence_scores[id].network_component` and `alignment.influence_on_others` for network analysis
+   - **Decision Impact:** Use `assess_alignment()` with decision options for data-driven impact assessment
+   - **Coalition Building:** Extract from `alignment.coalition_opportunities` and filter by `influence_on_others >= 0.7`
+
+3. **Strategic Value Creation with Data-Driven Insights**
+   - **Quantified Prioritization:** Sort stakeholders by `overall_score` from influence analysis
+   - **Evidence-Based Resource Allocation:** Weight engagement effort by influence scores (power × network × authority)
+   - **Predictive Consensus Building:** Use `consensus_likelihood` to assess decision viability
+   - **Automated Conflict Detection:** Leverage `identify_conflicts()` for proactive risk mitigation
+
+4. **Performance Optimization**
+   - **Batch Operations:** Load all stakeholders once, then run multiple analyses
+   - **Caching:** StakeholderAnalyzer integrates with ConfigManager for automatic caching
+   - **Parallel Analysis:** Run `map_power_interest()`, `calculate_influence_scores()`, and `assess_alignment()` with same stakeholder list
+   - **Performance Tracking:** Monitor with `get_performance_stats()` for optimization opportunities
+
+   ```python
+   # Performance-optimized workflow
+   stakeholders = analyzer.identify_stakeholders(context)  # Single load
+
+   # Parallel analysis (reuses stakeholder data)
+   grid = analyzer.map_power_interest(stakeholders, context)
+   scores = analyzer.calculate_influence_scores(stakeholders, decision_type)
+   alignment = analyzer.assess_alignment(stakeholders, options)
+
+   # Check performance
+   stats = analyzer.get_performance_stats()
+   print(f"Average analysis time: {stats['average_time_ms']:.2f}ms")
+   ```
+
+### Success Metrics with StakeholderAnalyzer
+
+**Quantifiable Outcomes:**
+- ✅ **Stakeholder Coverage:** `len(stakeholders)` identified vs manual process
+- ✅ **Influence Accuracy:** Multi-dimensional scores (power + network + authority) vs single-dimension estimates
+- ✅ **Consensus Prediction:** `consensus_likelihood` score for decision confidence
+- ✅ **Coalition Strength:** Sum of `influence_on_others` for supporter coalitions
+- ✅ **Analysis Speed:** <50ms average (from `get_performance_stats()`)
+- ✅ **Data-Driven Decisions:** Objective metrics replace subjective assessments
+
+Always ensure stakeholder analysis leverages StakeholderAnalyzer for comprehensive, data-driven, and actionable strategic relationship development.
