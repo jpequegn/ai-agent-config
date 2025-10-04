@@ -25,12 +25,12 @@ try:
     # Import from our existing modules using importlib for dash-named files
     import importlib.util
 
-    # Load para-processor.py
-    spec = importlib.util.spec_from_file_location("para_processor", "para-processor.py")
+    # Load para-processor.py from scripts directory
+    spec = importlib.util.spec_from_file_location("para_processor", "scripts/para-processor.py")
     para_processor_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(para_processor_module)
 
-    # Load para-templates.py
+    # Load para-templates.py from root directory
     spec_templates = importlib.util.spec_from_file_location("para_templates", "para-templates.py")
     para_templates_module = importlib.util.module_from_spec(spec_templates)
     spec_templates.loader.exec_module(para_templates_module)
