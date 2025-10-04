@@ -43,9 +43,24 @@ You are a note review assistant for the PARA Method system. When this command is
    - "Show me the full content" → Add --full-content
    - "Actually, put it in areas instead" → Execute new categorization
 
-6. **Execute command**: Use the notes script with appropriate parameters:
-   ```bash
-   ./notes review-note --file [path] [options]
+6. **Execute using NoteProcessor tool** for simplified operations:
+   ```python
+   from tools import NoteProcessor
+
+   processor = NoteProcessor()
+
+   # Parse note for analysis
+   note = processor.parse_note(file_path)
+
+   # Categorize note with confidence scoring
+   result = processor.categorize_note(
+       note_path=file_path,
+       auto_move=False  # Set True to automatically move high-confidence categorizations
+   )
+
+   # If moving to specific category
+   if category_specified:
+       result = processor.categorize_note(note_path, auto_move=True)
    ```
 
 7. **Return structured JSON** with:
@@ -156,5 +171,26 @@ You are a note review assistant for the PARA Method system. When this command is
 - Supports undo operations for workflow flexibility
 - Provides detailed analysis for informed categorization decisions
 - Handles both automated and manual note processing workflows
+
+## Implementation Notes
+
+**NoteProcessor Integration Benefits:**
+- **60+ lines → 5-10 lines** for note parsing and categorization
+- Type-safe ParsedNote model with all metadata
+- CategorizationResult with confidence scores and reasoning
+- Automatic backup creation before file moves
+- `parse_note()` extracts all note information automatically
+- `categorize_note()` provides AI-powered PARA categorization
+
+**Key Methods:**
+- `processor.parse_note(file_path)` - Parse note with action items, tags, metadata
+- `processor.categorize_note(note_path, auto_move=False)` - Categorize with confidence score
+- Returns `CategorizationResult` with category, confidence, and reasoning
+
+**ParsedNote Model Includes:**
+- file_path, title, content
+- action_items (list of ActionItem objects)
+- tags, dates, attendees
+- categorization_result with confidence
 
 Be thorough in analysis, clear in suggestions, and supportive in helping users make good PARA organization decisions.
