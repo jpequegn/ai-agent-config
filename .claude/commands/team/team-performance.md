@@ -23,8 +23,9 @@ You are a comprehensive team performance analytics system. When this command is 
 ### Core Functionality
 
 1. **Load Performance Data**
-   - Read and parse performance data from `.claude/team_roster.yaml`
-   - Integrate project completion data from `.claude/projects.yaml`
+   - Use DataCollector tool to aggregate team and project data
+   - Access team members via `team_data.members`
+   - Integrate project completion data from `config_data.projects`
    - Calculate derived metrics and trend analysis
    - Load performance benchmarks and targets
 
@@ -307,6 +308,81 @@ When analyzing specific members:
    - Evolution of metrics based on team needs
 
 Always ensure performance analysis is constructive, fair, and focused on team growth and development.
+
+### Implementation Steps
+
+**1. Initialize DataCollector:**
+```python
+from tools import DataCollector, ConfigManager
+
+collector = DataCollector()
+config_manager = ConfigManager()
+```
+
+**2. Collect Team Data:**
+```python
+# Get team data for specific project
+team_data = collector.collect_team_data(
+    project="mobile-app-v2",
+    include_performance=True
+)
+
+# Or aggregate all project data including team
+data = collector.aggregate_project_data(
+    project_id="mobile-app-v2",
+    sources=["team", "config", "notes", "github"]
+)
+```
+
+**3. Access Team Information:**
+```python
+# Team members
+members = team_data.members
+# Example: [{"id": "john.doe", "name": "John Doe", "role": "Senior Developer", ...}]
+
+# Roles
+roles = team_data.roles
+# Example: {"john.doe": "Senior Developer", "jane.smith": "Team Lead"}
+
+# Performance metrics (if included)
+performance = team_data.performance_metrics
+```
+
+**4. Cross-Reference with Other Data:**
+```python
+# Enrich team data with GitHub activity
+for member in members:
+    member_id = member['id']
+
+    # Get member's commits from GitHub data
+    member_commits = [
+        c for c in data.github_data.commits
+        if c.get('author') == member_id
+    ] if data.github_data else []
+
+    # Get member's action items from notes
+    member_actions = [
+        a for a in data.notes_data.action_items
+        if a.get('assignee') == member_id
+    ] if data.notes_data else []
+
+    # Calculate performance metrics
+    commit_count = len(member_commits)
+    completed_actions = len([a for a in member_actions if a.get('status') == 'completed'])
+```
+
+**5. Performance Calculations:**
+```python
+# Calculate team-wide metrics
+total_commits = len(data.github_data.commits) if data.github_data else 0
+total_members = len(members)
+avg_commits_per_member = total_commits / total_members if total_members > 0 else 0
+
+# Calculate individual performance scores
+for member in members:
+    member_score = calculate_performance_score(member, data)
+```
+
 ### Error Handling & Performance
 
 **DataCollector Benefits:**
@@ -320,6 +396,9 @@ Always ensure performance analysis is constructive, fair, and focused on team gr
 - Efficient multi-team analysis  
 
 ### Integration Notes
-- ConfigManager for teams
-- DataCollector for GitHub, notes, team data
-- Centralized tool (87% coverage)
+- **Primary Tool**: DataCollector for all team, GitHub, notes, and config data
+- **Alternative**: ConfigManager for direct config access (if needed)
+- **Data Sources**: Use `aggregate_project_data()` for comprehensive analysis
+- **Enrichment**: Cross-reference team data with GitHub commits and notes action items
+- **Caching**: 5-minute automatic cache reduces repeated data collection calls
+- **Centralized Logic**: 87% complexity reduction vs manual YAML parsing

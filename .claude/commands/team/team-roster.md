@@ -23,10 +23,11 @@ You are a comprehensive team management system. When this command is invoked:
 ### Core Functionality
 
 1. **Load Team Configuration**
-   - Read and parse `.claude/team_roster.yaml`
-   - Validate team member data structure
-   - Check for required fields and data integrity
-   - Load integration settings from `.claude/integrations.yaml`
+   - Use DataCollector tool to aggregate team data
+   - Access team members via `team_data.members`
+   - Validate team member data structure via Pydantic models
+   - Check for required fields and data integrity automatically
+   - Load integration settings from configuration
 
 2. **Team Roster Display**
    - Show team member overview with key information
@@ -198,3 +199,91 @@ When using `--update` flag:
    - Track team diversity and inclusion metrics
 
 Always provide actionable insights that help managers build stronger, more effective teams.
+
+### Implementation Steps
+
+**1. Initialize DataCollector:**
+```python
+from tools import DataCollector
+
+collector = DataCollector()
+```
+
+**2. Collect Team Data:**
+```python
+# Get team data for specific project
+team_data = collector.collect_team_data(
+    project="mobile-app-v2",
+    include_performance=False
+)
+
+# Access team members
+members = team_data.members
+roles = team_data.roles
+```
+
+**3. Display Team Roster:**
+```python
+# Iterate through team members
+for member in members:
+    member_id = member.get('id')
+    member_name = member.get('name')
+    member_role = member.get('role')
+    member_email = member.get('email')
+    member_status = member.get('status', 'active')
+
+    # Display member information
+    print(f"{member_name} ({member_email}) - {member_role}")
+```
+
+**4. Filter Members:**
+```python
+# Filter by role
+senior_devs = [m for m in members if m.get('role') == 'Senior Developer']
+
+# Filter by status
+active_members = [m for m in members if m.get('status') == 'active']
+
+# Filter by manager
+team_leads_team = [m for m in members if m.get('manager') == 'jane.smith']
+```
+
+**5. Cross-Reference with Projects:**
+```python
+# Get comprehensive project data
+data = collector.aggregate_project_data(
+    project_id="mobile-app-v2",
+    sources=["team", "config", "github"]
+)
+
+# Check member workload
+for member in data.team_data.members:
+    member_id = member['id']
+
+    # Count active projects for this member
+    member_projects = [
+        p for p_id, p in data.config_data.projects.items()
+        if member_id in p.get('team', [])
+    ]
+
+    print(f"{member['name']}: {len(member_projects)} active projects")
+```
+
+### Error Handling & Performance
+
+**DataCollector Benefits:**
+- **Automatic Caching**: 5-minute cache for team data
+- **Retry Logic**: Automatic retry (3 attempts)
+- **Graceful Degradation**: Continues with partial data
+- **Type Safety**: Pydantic models ensure data integrity
+
+**Performance:**
+- Response time: ~2s → <500ms cached
+- Efficient cross-project team queries
+
+### Integration Notes
+- **Primary Tool**: DataCollector for team data aggregation
+- **Data Access**: Use `team_data.members` and `team_data.roles`
+- **Validation**: Pydantic models provide automatic validation
+- **Caching**: 5-minute automatic cache reduces repeated calls
+- **Cross-Reference**: Easy integration with GitHub and notes data

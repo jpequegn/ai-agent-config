@@ -104,7 +104,7 @@ class DataCollector:
         """Load all required configurations."""
         self.integrations_config = self.config_manager.load_config("integrations.yaml")
         self.projects_config = self.config_manager.load_config("projects.yaml")
-        self.team_config = self.config_manager.load_config("team.yaml")
+        self.team_config = self.config_manager.load_config("team_roster.yaml")
 
     def _init_api_clients(self):
         """Initialize API clients and tokens."""
@@ -445,12 +445,28 @@ class DataCollector:
         project_config = self.projects_config.get("projects", {}).get(project, {})
         team_members = project_config.get("team", [])
 
-        # Get full team member details
-        all_members = self.team_config.get("team", {}).get("members", [])
-        project_member_details = [
-            member for member in all_members
-            if member.get("id") in team_members or member.get("name") in team_members
-        ]
+        # Get all team members from team_roster.yaml
+        # Structure: team_members: { email: { name, role, ... } }
+        all_members_dict = self.team_config.get("team_members", {})
+
+        # Convert to list format and filter by project if team field exists
+        if team_members:
+            # Filter by team field in project config
+            project_member_details = []
+            for email, member_data in all_members_dict.items():
+                if email in team_members or member_data.get("name") in team_members:
+                    member_data["id"] = email
+                    member_data["email"] = email
+                    project_member_details.append(member_data)
+        else:
+            # If no team field in project, check current_projects in team_roster
+            project_member_details = []
+            for email, member_data in all_members_dict.items():
+                current_projects = member_data.get("current_projects", [])
+                if project in current_projects:
+                    member_data["id"] = email
+                    member_data["email"] = email
+                    project_member_details.append(member_data)
 
         result = TeamData(
             members=project_member_details,
