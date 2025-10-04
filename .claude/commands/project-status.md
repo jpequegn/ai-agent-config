@@ -269,7 +269,7 @@ When executing this command:
    from tools import DataCollector, NoteProcessor, ConfigManager
 
    config = ConfigManager()
-   collector = DataCollector(config)
+   collector = DataCollector()  # Uses default config_root
    processor = NoteProcessor()  # For enhanced note operations
    ```
 
