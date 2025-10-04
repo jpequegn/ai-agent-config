@@ -195,31 +195,54 @@ class NoteProcessor:
             ...     filters=ActionItemFilters(status="pending")
             ... )
         """
-        # Build command
-        cmd = [str(self.notes_cli), "actions"]
+        # Build command using ./notes follow-up
+        # Note: --json flag must come before the subcommand
+        cmd = [str(self.notes_cli), "--json", "follow-up", "--status", "all"]
 
+        # Note: ./notes follow-up doesn't support project filtering directly
+        # We'll filter in memory if needed
+
+        if filters and filters.assignee:
+            cmd.extend(["--assignee", filters.assignee])
+
+        # Directory filtering based on scope
         if scope.startswith("project:"):
-            project_id = scope.split(":", 1)[1]
-            cmd.extend(["--project", project_id])
+            # For project scope, we search in project directories
+            cmd.extend(["--directory", "1-projects"])
         elif scope == "inbox":
-            cmd.append("--inbox")
-
-        if filters:
-            if filters.status:
-                cmd.extend(["--status", filters.status])
-            if filters.assignee:
-                cmd.extend(["--assignee", filters.assignee])
-            if filters.priority:
-                cmd.extend(["--priority", filters.priority])
-
-        cmd.append("--json")
+            cmd.extend(["--directory", "inbox"])
 
         try:
             result = subprocess.run(
                 cmd, capture_output=True, text=True, timeout=30, check=True
             )
-            data = json.loads(result.stdout) if result.stdout.strip() else {"action_items": []}
-            return data.get("action_items", [])
+            data = json.loads(result.stdout) if result.stdout.strip() else {"items": []}
+
+            # Extract action items from response
+            items = data.get("data", {}).get("items", []) if data.get("success") else []
+
+            # Apply in-memory filtering
+            if filters:
+                if filters.status:
+                    if filters.status == "pending":
+                        items = [item for item in items if not item.get("completed", False)]
+                    elif filters.status == "completed":
+                        items = [item for item in items if item.get("completed", False)]
+                    elif filters.status == "overdue":
+                        # Overdue filtering based on due_date
+                        from datetime import datetime
+                        today = datetime.now().date()
+                        items = [
+                            item for item in items
+                            if item.get("due_date") and
+                            datetime.fromisoformat(item["due_date"]).date() < today and
+                            not item.get("completed", False)
+                        ]
+
+                if filters.priority:
+                    items = [item for item in items if item.get("priority") == filters.priority]
+
+            return items
 
         except (subprocess.CalledProcessError, json.JSONDecodeError, OSError) as e:
             raise NoteProcessorError(f"Action item extraction failed: {e}")
