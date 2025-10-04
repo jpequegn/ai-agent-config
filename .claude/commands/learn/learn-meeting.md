@@ -447,4 +447,62 @@ Automatically detects:
 - Supports both formal meetings and informal conversations
 - Integrates with existing PARA Method learning and relationship management
 
+## Implementation Notes
+
+**NoteProcessor Integration for Enhanced Note Operations:**
+
+While this command uses custom Python for learning-specific data capture, NoteProcessor can enhance the workflow:
+
+```python
+from tools import NoteProcessor
+
+processor = NoteProcessor()
+
+# After creating the learning capture JSON, create a markdown note
+note_content = f"""---
+title: {meeting_topic}
+date: {timestamp}
+attendees: {attendees}
+learning_quality: {quality_score}/10
+tags: {tags}
+---
+
+# {meeting_topic}
+
+## Key Insights
+{format_insights(insights_list)}
+
+## Expert Advice
+{format_advice(advice_list)}
+
+## Follow-up Actions
+{format_actions(actions_list)}
+"""
+
+# Write note to inbox
+note_path = Path("inbox") / f"{timestamp}_{meeting_id}.md"
+note_path.write_text(note_content)
+
+# Auto-categorize with NoteProcessor
+result = processor.categorize_note(str(note_path), auto_move=True)
+print(f"Note categorized as: {result.category.value} (confidence: {result.confidence:.1%})")
+
+# Extract and validate action items
+extracted_items = processor.extract_action_items(scope=f"file:{note_path}")
+print(f"Extracted {len(extracted_items)} action items")
+```
+
+**Benefits of NoteProcessor Integration:**
+- Automatic PARA categorization with confidence scores
+- Type-safe note parsing and validation
+- Integrated action item extraction
+- Consistent note structure across learning system
+- Better integration with other PARA commands
+
+**Current Implementation:**
+- Uses custom learning_captures.json for structured data
+- Python-based learning quality assessment
+- Relationship and goal mapping
+- Maintains rich learning metadata
+
 Transform your conversations into structured learning with intelligent insight extraction, relationship mapping, and professional development acceleration.

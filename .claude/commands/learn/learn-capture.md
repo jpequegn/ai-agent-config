@@ -157,4 +157,84 @@ Automatically detects:
 - Integrates with existing PARA Method workflows
 - Supports both quick captures and detailed entries
 
+## Implementation Notes
+
+**NoteProcessor Integration for Enhanced Workflow:**
+
+The command can be enhanced by creating markdown notes alongside JSON captures:
+
+```python
+from tools import NoteProcessor
+from pathlib import Path
+
+processor = NoteProcessor()
+
+# After creating JSON capture, also create a markdown note
+note_content = f"""---
+title: {title}
+capture_type: {capture_type}
+source: {source_id}
+category: {category}
+tags: {tags}
+learning_goals: {learning_goals}
+priority: {priority}
+created: {timestamp}
+---
+
+# {title}
+
+{content}
+
+## Source
+{source_reference}
+
+## Applications
+- {applications}
+
+## Next Actions
+- {next_actions}
+"""
+
+# Write to inbox
+note_path = Path("inbox") / f"{timestamp}_{capture_id}.md"
+note_path.write_text(note_content)
+
+# Auto-categorize with NoteProcessor
+result = processor.categorize_note(str(note_path), auto_move=True)
+print(f"✓ Note categorized: {result.category.value} (confidence: {result.confidence:.1%})")
+
+# Update frontmatter with category and confidence
+processor.update_frontmatter(str(note_path), {
+    "para_category": result.category.value,
+    "categorization_confidence": result.confidence,
+    "auto_categorized": True
+})
+
+# Extract any action items from the content
+if "next actions" in content.lower() or "todo" in content.lower():
+    items = processor.extract_action_items(scope=f"file:{note_path}")
+    print(f"✓ Extracted {len(items)} action items")
+```
+
+**Benefits of NoteProcessor Integration:**
+- Automatic PARA categorization beyond learning categories
+- Type-safe note parsing and validation
+- Integrated action item extraction from learning captures
+- Consistent frontmatter management
+- Better integration with notes system
+- Dual storage: JSON for learning data + markdown for PARA
+
+**Current Implementation:**
+- Uses learning_captures.json for structured learning data
+- Manual categorization by learning category
+- Learning goal association and tracking
+- Source linking and cross-referencing
+
+**Recommended Workflow:**
+1. Create JSON capture for learning system tracking
+2. Generate markdown note from capture data
+3. Use NoteProcessor for PARA categorization
+4. Extract action items if present
+5. Maintain both formats for different purposes
+
 Process learning captures efficiently and build a comprehensive knowledge base that enhances personal learning and productivity.
