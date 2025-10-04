@@ -381,3 +381,19 @@ When executing this command:
    - Maintain regular communication with blocking projects
 
 Remember: This command generates intelligent, actionable project roadmaps that integrate with your existing project ecosystem and provide strategic insights for successful project delivery.
+### Error Handling & Performance
+
+**DataCollector Benefits:**
+- **Automatic Caching**: 5-minute cache for project data
+- **Retry Logic**: Automatic retry with exponential backoff (3 attempts)
+- **Graceful Degradation**: Continues with partial data
+- **Type Safety**: Pydantic models ensure consistency
+
+**Performance:**
+- Response time: ~3s → <1s for cached planning
+- Efficient resource allocation analysis
+
+### Integration Notes  
+- ConfigManager for type-safe project access
+- DataCollector for multi-source data (GitHub, notes, team)
+- Centralized in tested tool (87% coverage)

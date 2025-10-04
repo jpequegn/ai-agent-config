@@ -307,3 +307,19 @@ When analyzing specific members:
    - Evolution of metrics based on team needs
 
 Always ensure performance analysis is constructive, fair, and focused on team growth and development.
+### Error Handling & Performance
+
+**DataCollector Benefits:**
+- **Automatic Caching**: 5-minute cache for team data
+- **Retry Logic**: Automatic retry (3 attempts)
+- **Graceful Degradation**: Continues with partial data
+- **Type Safety**: Pydantic models
+
+**Performance:**
+- Response time: ~4s → <1s cached
+- Efficient multi-team analysis  
+
+### Integration Notes
+- ConfigManager for teams
+- DataCollector for GitHub, notes, team data
+- Centralized tool (87% coverage)
