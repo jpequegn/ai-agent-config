@@ -119,171 +119,102 @@ Execute the following steps:
 
 ### Output Format
 
-#### Human-Readable Format (Default)
+The `/project status` command uses **OutputFormatter** for consistent, template-based output generation.
 
-```markdown
-# 📊 Intelligent Project Status Analysis
-**Generated:** {timestamp}
-**Data Sources:** GitHub ✅ | Notes ✅ | Calendar ⚠️
+#### Markdown Output (Default)
 
-## 🎯 Executive Summary
-- **Total Projects:** {count}
-- **Health Distribution:** {excellent_count}🟢 {good_count}🟡 {risk_count}🟠 {critical_count}🔴
-- **Critical Actions Needed:** {critical_count}
-- **Overall Portfolio Health:** {portfolio_score}/1.0
+Output is generated using the `project_status.md.j2` template located in `templates/output/`:
 
-## 📈 Project Analysis
-
-### 🔴 Critical Projects (Immediate Action Required)
-**{Project Name}** (Health: {score}/1.0)
-- **Status:** {status} | **Owner:** {owner} | **Priority:** {priority}
-- **Progress:** {completion}% ({completed_milestones}/{total_milestones} milestones)
-- **Target Date:** {target_date} ({days_remaining} days remaining)
-- **🚨 Critical Issues:**
-  - {blocker_1}
-  - {blocker_2}
-- **💡 Immediate Actions:**
-  - {action_1}
-  - {action_2}
-- **📊 Recent Activity:** {github_summary}
-- **📈 Trend:** {trend_analysis}
-
-### 🟡 Projects Needing Attention
-[Similar format for at-risk projects]
-
-### 🟢 Projects On Track
-**{Project Name}** | Health: {score}/1.0 | Progress: {completion}%
-**{Project Name}** | Health: {score}/1.0 | Progress: {completion}%
-
-## 🎯 Key Insights & Recommendations
-
-### 📊 Portfolio Health Trends
-- **Velocity Trend:** {increasing/stable/decreasing}
-- **Risk Trend:** {improving/stable/declining}
-- **Resource Utilization:** {owner_workload_analysis}
-
-### 💡 Strategic Recommendations
-1. **Immediate (This Week):**
-   - {high_priority_action_1}
-   - {high_priority_action_2}
-
-2. **Short-term (Next 2 Weeks):**
-   - {medium_priority_action_1}
-   - {medium_priority_action_2}
-
-3. **Long-term (Next Month):**
-   - {strategic_action_1}
-   - {strategic_action_2}
-
-### 🔍 Detected Patterns
-- {insight_1}
-- {insight_2}
-- {insight_3}
+```python
+output = formatter.format_markdown(
+    data=project_data,
+    template="project_status",
+    context={"focus": focus_mode}
+)
+print(output.content)
 ```
 
-#### JSON Output Format (--json flag)
+**Template Features:**
+- Health scores with emoji indicators (🟢 🟡 🟠 🔴)
+- Milestone tables with progress tracking
+- Blocker and risk sections with severity levels
+- Activity metrics and trend indicators
+- Automatic date formatting (relative and absolute)
+- Focus-based content emphasis (risks, health, trends)
 
+**Sample Output Structure:**
+```markdown
+## 📊 Overall Health
+🟢 75.0% Project Health
+
+### Component Breakdown
+- 🟢 80.0% Timeline
+- 🟡 75.0% Activity
+- 🟠 65.0% Blockers
+- 🟢 70.0% Dependencies
+
+## 📅 Timeline
+**Status**: ✅ On Track
+
+### Milestones
+| Name | Status | Due Date | Progress |
+|:-----|:-------|:---------|:---------|
+| Planning | ✅ Complete | Oct 15, 2024 | 100% |
+| Development | 🔄 In Progress | Nov 30, 2024 | 60% |
+
+## 🎯 Activity
+- **Commits**: 45
+- **Pull Requests**: 12
+- **Issues Closed**: 8
+- **Activity Score**: 🟢 80.0%
+
+## 🚧 Blockers
+**Total Blockers**: 2
+
+- 🚧 **Budget Approval** (high)
+  - Waiting on executive approval for additional resources
+
+## ⚠️ Risks
+### ⚠️ Timeline Risk
+**Severity**: medium | **Likelihood**: high
+Project timeline may slip if budget approval delayed beyond next week.
+...
+```
+
+#### JSON Output (--json flag)
+
+```python
+output = formatter.format_json(project_data, pretty=True)
+print(output.content)
+```
+
+**JSON Structure:**
 ```json
 {
-  "status": "success",
-  "command": "/project status",
-  "generated_at": "2024-09-14T10:30:00Z",
-  "data_sources": {
-    "github": {"status": "connected", "last_updated": "2024-09-14T10:29:45Z"},
-    "notes": {"status": "available", "last_updated": "2024-09-14T10:29:50Z"},
-    "calendar": {"status": "disconnected", "message": "API key not configured"}
-  },
-  "summary": {
-    "total_projects": 3,
-    "health_distribution": {
-      "excellent": 1,
-      "good": 1,
-      "at_risk": 1,
-      "critical": 0
-    },
-    "portfolio_health_score": 0.73,
-    "critical_actions_needed": 2
-  },
-  "projects": [
-    {
-      "name": "Q4 Marketing Campaign",
-      "id": "q4-marketing-campaign",
-      "health_score": 0.65,
-      "health_category": "good",
-      "completion_percentage": 60,
-      "status": "in_progress",
-      "priority": "high",
-      "owner": "sarah@company.com",
-      "target_date": "2024-12-31",
-      "days_remaining": 108,
-      "milestones": {
-        "completed": 1,
-        "total": 4,
-        "next": {
-          "name": "Content Creation",
-          "date": "2024-10-31",
-          "days_until": 47
-        }
-      },
-      "blockers": [
-        {
-          "type": "dependency",
-          "description": "Waiting on budget-approval decision",
-          "severity": "medium",
-          "days_blocked": 5
-        }
-      ],
-      "recent_activity": {
-        "github": {
-          "commits_last_week": 8,
-          "prs_last_week": 3,
-          "open_issues": 2
-        },
-        "notes": {
-          "recent_notes": 2,
-          "action_items_open": 3
-        }
-      },
-      "trends": {
-        "velocity": "stable",
-        "risk_level": "medium",
-        "activity_trend": "increasing"
-      },
-      "recommendations": [
-        {
-          "priority": "high",
-          "action": "Follow up on budget approval decision",
-          "impact": "Unblocks content creation milestone"
-        }
-      ]
+  "health": {
+    "overall_score": 0.75,
+    "category": "good",
+    "components": {
+      "timeline": {"score": 0.80},
+      "activity": {"score": 0.75},
+      "blockers": {"score": 0.65},
+      "dependencies": {"score": 0.70}
     }
-  ],
-  "insights": {
-    "portfolio_trends": {
-      "velocity_trend": "stable",
-      "risk_trend": "stable",
-      "resource_utilization": "balanced"
-    },
-    "recommendations": {
-      "immediate": [
-        "Follow up on budget approval for Q4 Marketing Campaign",
-        "Review user research completion for Mobile App V2"
-      ],
-      "short_term": [
-        "Schedule architecture review for Mobile App V2",
-        "Plan infrastructure upgrade rollout"
-      ],
-      "long_term": [
-        "Consider resource reallocation based on project priorities",
-        "Implement automated project health monitoring"
-      ]
-    },
-    "patterns": [
-      "Projects with external dependencies have higher risk scores",
-      "GitHub activity correlates strongly with milestone completion",
-      "Projects without recent notes activity tend to stall"
-    ]
-  }
+  },
+  "timeline": {
+    "status": "on_track",
+    "milestones": [...],
+    "progress_ratio": 0.60
+  },
+  "activity": {
+    "commits": 45,
+    "pull_requests": 12,
+    "issues_closed": 8,
+    "score": 0.80
+  },
+  "blockers": [...],
+  "dependencies": [...],
+  "risks": [...]
 }
 ```
 
@@ -291,14 +222,15 @@ Execute the following steps:
 
 When executing this command:
 
-1. **Initialize Tools (DataCollector, NoteProcessor, HealthCalculator)**
+1. **Initialize Tools (DataCollector, NoteProcessor, HealthCalculator, OutputFormatter)**
    ```python
-   from tools import DataCollector, NoteProcessor, HealthCalculator, ConfigManager
+   from tools import DataCollector, NoteProcessor, HealthCalculator, ConfigManager, OutputFormatter
 
    config = ConfigManager()
    collector = DataCollector()  # Multi-source data aggregation
    processor = NoteProcessor()  # Enhanced note operations
    calc = HealthCalculator()    # Health scoring and risk assessment
+   formatter = OutputFormatter()  # Template-based output generation
    ```
 
 2. **Collect Project Data with Enhanced Note Operations**
@@ -383,10 +315,32 @@ When executing this command:
    - Suggest optimization based on health breakdown components
    - Highlight resource allocation issues from resource risks
 
-6. **Format Output**
-   - Default: Human-readable markdown with actionable insights
-   - --json flag: Structured JSON for programmatic use
-   - Focus modes: Emphasized analysis on specific areas
+5. **Format Output with OutputFormatter**
+   ```python
+   # Use OutputFormatter for consistent template-based output
+   if json_flag:
+       # JSON output for programmatic use
+       output = formatter.format_json(project_data, pretty=True)
+   else:
+       # Markdown output using project_status template
+       output = formatter.format_markdown(
+           data=project_data,
+           template="project_status",
+           context={"focus": focus_mode}  # 'risks', 'health', 'trends', or None
+       )
+
+   print(output.content)
+
+   # Performance tracking
+   stats = formatter.get_performance_stats()
+   print(f"<!-- Rendered in {output.processing_time_ms:.2f}ms -->")
+   ```
+
+   **Benefits of OutputFormatter:**
+   - **Simplification**: 200+ lines of template specs → 5-10 lines
+   - **Performance**: <50ms rendering with built-in caching
+   - **Consistency**: Uses same template as other commands
+   - **Maintainability**: Template changes don't require code changes
 
 ### Error Handling
 
@@ -411,6 +365,14 @@ Additional handling:
 
 ## Implementation Notes
 
+**OutputFormatter Integration Benefits:**
+- **Massive Simplification**: 200+ lines of manual template specs → 5-10 lines of code
+- **Performance**: <50ms rendering with built-in caching
+- **Consistency**: Same template system used across all commands
+- **Maintainability**: Template changes don't require code modifications
+- **Flexibility**: Easy to add new output formats (HTML, PDF, etc.)
+- **Type Safety**: Structured data models for reliable output
+
 **HealthCalculator Integration Benefits:**
 - **Simplified calculation**: 80+ lines of manual logic → 10 lines of HealthCalculator calls
 - **Deterministic scoring**: Consistent, tested algorithms across all projects
@@ -424,15 +386,17 @@ Additional handling:
 - `calc.analyze_trends(history, time_window)` - Returns TrendAnalysis with confidence
 - `calc.assess_risks(data)` - Returns prioritized list of Risk objects
 
-**HealthCalculator + DataCollector + NoteProcessor Integration:**
+**Complete Tool Integration (4 Tools Working Together):**
 - **DataCollector**: Multi-source aggregation (GitHub, notes, calendar, team, config)
 - **NoteProcessor**: Enhanced note operations with type-safe models
 - **HealthCalculator**: Deterministic health scoring, trend analysis, risk assessment
+- **OutputFormatter**: Template-based output generation with <50ms rendering
 - **Synergy**:
   - DataCollector provides data for HealthCalculator to analyze
   - NoteProcessor provides detailed note insights
   - HealthCalculator provides consistent scoring across all projects
-  - All three tools work together for comprehensive project analysis
+  - OutputFormatter transforms data into beautiful, consistent output
+  - All four tools work together for comprehensive project analysis and presentation
 
 **Key NoteProcessor Methods for Project Status:**
 - `processor.get_project_notes(project_id)` - Get all project-linked notes (type-safe ParsedNote objects)
