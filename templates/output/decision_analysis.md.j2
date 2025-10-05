@@ -10,11 +10,11 @@
 {% endif %}
 
 {% if data.decision.urgency %}
-**Urgency**: {{ status_indicator(data.decision.urgency) }} {{ data.decision.urgency.title() }}
+**Urgency**: {% if data.decision.urgency == 'critical' %}🔴{% elif data.decision.urgency == 'high' %}🟠{% elif data.decision.urgency == 'medium' %}🟡{% else %}🟢{% endif %} {{ data.decision.urgency.title() }}
 {% endif %}
 
 {% if data.decision.deadline %}
-**Deadline**: {{ format_date(data.decision.deadline, 'SHORT') }}
+**Deadline**: {{ data.decision.deadline if data.decision.deadline is string else format_date(data.decision.deadline, 'SHORT') }}
 {% endif %}
 
 ## 📊 Options Analysis
@@ -102,7 +102,7 @@
 
 {% if data.next_steps %}
 {% for step in data.next_steps %}
-{{ loop.index }}. {{ step.action }}{% if step.owner %} (Owner: {{ step.owner }}){% endif %}{% if step.deadline %} - Due: {{ format_date(step.deadline, 'SHORT') }}{% endif %}
+{{ loop.index }}. {{ step.action }}{% if step.owner %} (Owner: {{ step.owner }}){% endif %}{% if step.deadline %} - Due: {{ step.deadline if step.deadline is string else format_date(step.deadline, 'SHORT') }}{% endif %}
 {% endfor %}
 {% endif %}
 
