@@ -122,11 +122,104 @@ print(f"  /stakeholder <query> - Search and discover stakeholders")
    - Conflict identification with resolution recommendations
    - Value creation opportunity analysis
 
-4. **Communication Optimization** (via `analyzer.generate_communication_plan()` and `analyzer.adapt_message()`)
+4. **Communication Optimization** (via `analyzer.generate_communication_plan()`, `analyzer.adapt_message()`, and `OutputFormatter`)
    - Stakeholder-specific communication strategy generation
    - Multi-channel optimization with preference alignment
-   - Template-based messaging with personalization
+   - Template-based messaging with personalization via OutputFormatter
    - Communication effectiveness tracking and improvement
+
+   **OutputFormatter Integration for Stakeholder Communications:**
+   ```python
+   from tools import OutputFormatter
+
+   # Generate stakeholder update using OutputFormatter
+   formatter = OutputFormatter()
+
+   # Build stakeholder update data
+   update_data = {
+       'period': 'Q4 2024',
+       'executive_summary': 'Mobile app project progressing on schedule...',
+       'highlights': [
+           'Completed user authentication system',
+           'Achieved 95% test coverage',
+           'Deployed beta to internal users'
+       ],
+       'progress': {
+           'overall': 0.75,
+           'on_track': True,
+           'target_date': '2025-01-15'
+       },
+       'challenges': [
+           {
+               'title': 'Third-party API integration delays',
+               'description': 'Vendor API documentation incomplete',
+               'impact': 'Low - alternative solution identified',
+               'resolution': 'Implementing fallback integration approach'
+           }
+       ],
+       'upcoming_priorities': [
+           'Complete payment integration',
+           'Conduct security audit',
+           'Prepare production deployment'
+       ],
+       'risks': [
+           {
+               'title': 'Timeline pressure for Q1 launch',
+               'severity': 'medium',
+               'description': 'Security audit may extend timeline by 1-2 weeks'
+           }
+       ],
+       'next_steps': [
+           {
+               'action': 'Security audit kickoff',
+               'owner': 'Security Team',
+               'deadline': '2024-12-15'
+           }
+       ]
+   }
+
+   # Generate professional stakeholder update
+   output = formatter.stakeholder_update(update_data, stakeholder="Executive Team")
+   print(output.content)
+   ```
+
+### Tool Usage Guidelines
+
+**When to use StakeholderAnalyzer:**
+- Stakeholder identification and discovery
+- Power-interest grid generation and influence scoring
+- Alignment assessment and consensus building
+- Communication plan generation and message adaptation
+
+**When to use OutputFormatter:**
+- Generating formal stakeholder communications and updates
+- Creating professional project status reports for stakeholders
+- Formatting stakeholder-facing documents with consistent branding
+- Producing executive summaries and stakeholder briefings
+
+**Best Practice - Use Both Tools Together:**
+```python
+from tools import StakeholderAnalyzer, OutputFormatter
+
+# 1. Analyze stakeholders with StakeholderAnalyzer
+analyzer = StakeholderAnalyzer()
+stakeholders = analyzer.identify_stakeholders(context)
+comm_plan = analyzer.generate_communication_plan(stakeholders, decision)
+
+# 2. Format stakeholder communications with OutputFormatter
+formatter = OutputFormatter()
+for message in comm_plan.messages:
+    # Build update data from analysis
+    update_data = {
+        'period': message.timing,
+        'executive_summary': message.content,
+        # ... additional fields from project/decision data
+    }
+
+    # Generate professional formatted output
+    output = formatter.stakeholder_update(update_data, stakeholder=message.stakeholder_name)
+    print(output.content)
+```
 
 ### Command Actions
 
