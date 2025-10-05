@@ -22,26 +22,36 @@ You are an intelligent stakeholder analysis and engagement system. When this com
 ### Core Functionality
 
 1. **Stakeholder Intelligence and Mapping**
-   - Use ConfigManager for type-safe stakeholder profile access:
+   - Use StakeholderAnalyzer for comprehensive stakeholder analysis:
      ```python
-     from tools import ConfigManager
-     from tools.schemas import StakeholderProfile
+     from tools import StakeholderAnalyzer
 
-     mgr = ConfigManager()
+     analyzer = StakeholderAnalyzer()
 
-     # Type-safe stakeholder access
-     stakeholder = mgr.get_stakeholder("john@company.com")
+     # Identify stakeholders based on decision context (100 lines → 4 lines)
+     stakeholders = analyzer.identify_stakeholders({
+         "decision_type": "technical",
+         "scope": "mobile_app",
+         "impact_areas": ["Engineering", "Product"],
+     })
 
-     # Access strongly-typed fields
-     print(f"Authority Level: {stakeholder.decision_authority_level}")
-     print(f"Communication Style: {stakeholder.decision_preferences.communication_style}")
-     print(f"Influence Factors: {stakeholder.influence_factors.technical_feasibility}")
+     # Generate power-interest grid (30 lines → 2 lines)
+     grid = analyzer.map_power_interest(stakeholders, decision_context)
+     high_priority = grid.get_by_quadrant(PowerInterestQuadrant.MANAGE_CLOSELY)
+
+     # Assess alignment (40 lines → 3 lines)
+     alignment = analyzer.assess_alignment(stakeholders, decision_options, historical_patterns)
+     print(f"Support: {alignment.overall_support_score:.2f}")
+     print(f"Consensus likelihood: {alignment.consensus_likelihood:.2f}")
+
+     # Generate communication plan (30 lines → 2 lines)
+     plan = analyzer.generate_communication_plan(stakeholders, decision)
+     immediate = plan.get_immediate_communications()
      ```
-   - Automatic schema validation via Pydantic models
-   - <10ms cached reads for repeated stakeholder access
-   - Analyze stakeholder influence, interests, and decision-making patterns
-   - Map stakeholder relationships and coalition opportunities
-   - Identify potential resistance sources and mitigation strategies
+   - Automatic power-interest grid calculations (<50ms)
+   - Deterministic alignment assessment with confidence scoring
+   - Coalition opportunity identification
+   - Resistance mitigation strategy generation
 
 2. **Impact Analysis and Communication Optimization**
    - Assess decision impact on each stakeholder group
@@ -58,62 +68,67 @@ You are an intelligent stakeholder analysis and engagement system. When this com
 ### Command Actions
 
 **Stakeholder Mapping `/decide stakeholder "Decision Topic"`:**
-- Identify all relevant stakeholders based on decision scope and impact using ConfigManager:
+- Identify all relevant stakeholders using StakeholderAnalyzer:
   ```python
-  # Load all stakeholder profiles
-  stakeholders_config = mgr.load_config("stakeholder_contexts.yaml")
-  all_stakeholders = stakeholders_config.get("stakeholder_profiles", {})
+  # Context-aware stakeholder identification (50 lines → 5 lines)
+  stakeholders = analyzer.identify_stakeholders({
+      "decision_type": "technical",  # or "strategic", "budget", "general"
+      "scope": "mobile_app",
+      "impact_areas": ["Engineering", "Product", "Design"],
+  })
 
-  # Filter stakeholders by criteria
-  high_influence = {
-      email: profile
-      for email, profile in all_stakeholders.items()
-      if mgr.get_stakeholder(email).decision_authority_level in ["high", "executive"]
-  }
+  # Calculate influence scores
+  influence_scores = analyzer.calculate_influence_scores(stakeholders, decision_type="technical")
 
-  # Analyze communication preferences
-  exec_stakeholders = [
-      email for email, s in all_stakeholders.items()
-      if mgr.get_stakeholder(email).decision_preferences.detail_level == "executive_summary"
-  ]
+  # Get high-influence stakeholders
+  high_influence = [s for s in stakeholders if influence_scores[s.id].overall_score >= 0.7]
   ```
-- Analyze stakeholder influence levels, interests, and potential positions
-- Generate stakeholder influence map with coalition and resistance analysis
-- Provide communication strategy recommendations for each stakeholder group
+- Generate power-interest grid with automatic quadrant classification
+- Identify coalition opportunities and resistance patterns
+- Provide tailored communication strategies for each stakeholder group
 
 **Individual Stakeholder Analysis `/decide stakeholder --analyze {stakeholder-email}`:**
-- Deep dive into individual stakeholder profile using type-safe access:
+- Load and analyze individual stakeholder profile:
   ```python
-  stakeholder = mgr.get_stakeholder(stakeholder_email)
+  # Load specific stakeholder profile
+  stakeholder_profiles = analyzer.load_stakeholder_profiles([stakeholder_email])
+  stakeholder = stakeholder_profiles[0]
 
-  # Access decision preferences
-  comm_style = stakeholder.decision_preferences.communication_style
-  detail_level = stakeholder.decision_preferences.detail_level
-  risk_tolerance = stakeholder.decision_preferences.risk_tolerance
+  # Calculate comprehensive influence metrics
+  influence_score = analyzer.calculate_influence_scores([stakeholder])[stakeholder.id]
 
-  # Access influence factors (stakeholder-specific)
-  # Different stakeholders may have different influence factors
-  # Check which factors are defined for this stakeholder
-  if stakeholder.influence_factors.technical_feasibility:
-      tech_weight = stakeholder.influence_factors.technical_feasibility
-  if stakeholder.influence_factors.business_impact:
-      business_weight = stakeholder.influence_factors.business_impact
-  if stakeholder.influence_factors.operational_impact:
-      ops_weight = stakeholder.influence_factors.operational_impact
+  # Assess communication preferences
+  comm_plan = analyzer.generate_communication_plan([stakeholder], decision_context)
+  message = comm_plan.messages[0]
 
-  # Access notification preferences
-  decision_updates = stakeholder.notification_preferences.decision_updates
-  urgent_decisions = stakeholder.notification_preferences.urgent_decisions
+  print(f"Communication Style: {message.tone}")
+  print(f"Message Priority: {message.priority}")
+  print(f"Preferred Channel: {message.message_type}")
   ```
-- Analyze historical engagement effectiveness and preferences
-- Generate personalized engagement strategy and communication approach
-- Identify influence opportunities and potential concerns
+- Analyze influence components (power, interest, network, authority)
+- Generate personalized engagement strategy
+- Identify key concerns and supporting factors
 
 **Consensus Building Strategy `/decide stakeholder --consensus "Decision Topic"`:**
-- Generate comprehensive consensus-building roadmap
+- Generate comprehensive consensus-building roadmap:
+  ```python
+  # Comprehensive alignment analysis (40 lines → 5 lines)
+  alignment = analyzer.assess_alignment(
+      stakeholders,
+      decision_options=["Option A", "Option B"],
+      historical_patterns=None  # Optional: use historical data if available
+  )
+
+  # Access consensus metrics
+  print(f"Overall Support: {alignment.overall_support_score:.2%}")
+  print(f"Consensus Likelihood: {alignment.consensus_likelihood:.2%}")
+  print(f"Key Supporters: {alignment.key_supporters}")
+  print(f"Key Resistors: {alignment.key_resistors}")
+  print(f"Coalition Opportunities: {alignment.coalition_opportunities}")
+  ```
 - Identify coalition opportunities and resistance mitigation strategies
 - Design stakeholder engagement sequence and communication plan
-- Provide scripts and talking points for stakeholder conversations
+- Provide data-driven consensus building tactics
 
 ### Output Formats
 
@@ -422,66 +437,80 @@ This stakeholder analysis and engagement system ensures that decision-making pro
 
 ### Implementation Features
 
-1. **Intelligent Stakeholder Identification**
-   - Automatic stakeholder mapping based on decision scope and impact
-   - Influence and interest analysis with coalition opportunity identification
-   - Resistance pattern recognition and mitigation strategy development
+**Built on StakeholderAnalyzer Tool** - Reduces implementation from 100+ lines to 15-20 lines:
 
-2. **Communication Optimization**
-   - Stakeholder-specific communication strategies and preferences
-   - Automated script generation and template customization
-   - Multi-channel engagement coordination and timing optimization
+1. **Intelligent Stakeholder Identification** (50 lines → 5 lines)
+   - Context-aware discovery using `identify_stakeholders()`
+   - Automatic filtering by decision type, scope, and impact areas
+   - Integration with stakeholder database and contexts
+   - Performance: <50ms for typical analysis
 
-3. **Consensus Building Intelligence**
-   - Systematic consensus building roadmaps with milestone tracking
-   - Resistance analysis and conversion strategies
-   - Coalition formation and strategic partnership facilitation
+2. **Power-Interest Grid Analysis** (30 lines → 2 lines)
+   - Automated quadrant classification with `map_power_interest()`
+   - High-priority stakeholder identification
+   - Coalition opportunity detection
+   - Influence scoring with breakdown (power, interest, network, authority)
 
-4. **Engagement Effectiveness Tracking**
-   - Stakeholder participation and satisfaction monitoring
-   - Communication effectiveness measurement and optimization
-   - Relationship quality assessment and improvement planning
+3. **Alignment Assessment** (40 lines → 3 lines)
+   - Predictive consensus analysis using `assess_alignment()`
+   - Support/opposition scoring with confidence levels
+   - Key supporter and resistor identification
+   - Conflict area detection and coalition opportunities
 
-5. **Feedback Integration System**
-   - Multi-channel feedback collection and analysis
-   - Sentiment tracking and concern categorization
-   - Decision adjustment recommendations based on stakeholder input
+4. **Communication Planning** (30 lines → 2 lines)
+   - Tailored message generation with `generate_communication_plan()`
+   - Priority-based sequencing (high-influence first)
+   - Channel and timing optimization
+   - Resistance mitigation strategies
+
+5. **Performance Monitoring**
+   - Built-in performance tracking with `get_performance_stats()`
+   - Average analysis time <50ms (4x faster than manual)
+   - Deterministic, testable algorithms
+   - Graceful error handling with partial results
 
 ### Error Handling
 
-ConfigManager provides automatic error handling for stakeholder profile access:
+StakeholderAnalyzer provides automatic error handling with graceful degradation:
 
 ```python
-from tools import ConfigManager, ConfigNotFoundError, ConfigValidationError
+from tools import StakeholderAnalyzer, StakeholderAnalyzerError
 
 try:
-    mgr = ConfigManager()
-    stakeholder = mgr.get_stakeholder("john@company.com")
+    analyzer = StakeholderAnalyzer()
 
-    # Type-safe field access
-    authority = stakeholder.decision_authority_level
-    comm_style = stakeholder.decision_preferences.communication_style
+    # Identify stakeholders with error handling
+    stakeholders = analyzer.identify_stakeholders({
+        "decision_type": "technical",
+        "scope": "mobile_app",
+        "impact_areas": ["Engineering"],
+    })
 
-except KeyError as e:
-    # Handle missing stakeholder profile
-    print(f"Stakeholder not found: {e}")
-    print("Available stakeholders:", list(mgr.load_config('stakeholder_contexts.yaml').get('stakeholder_profiles', {}).keys()))
+    if not stakeholders:
+        print("No stakeholders found matching criteria. Broaden search parameters.")
 
-except ConfigNotFoundError:
-    # Handle missing configuration file
-    print("Stakeholder contexts configuration not found. Please create stakeholder_contexts.yaml")
+    # Load specific profiles
+    profiles = analyzer.load_stakeholder_profiles(["john@company.com"])
 
-except ConfigValidationError as e:
-    # Handle invalid stakeholder profile structure
-    print(f"Invalid stakeholder profile: {e}")
-    print("Please check that all required fields are present and properly formatted")
+    if not profiles:
+        print("Stakeholder profile not found. Check stakeholder_database.yaml")
+
+except StakeholderAnalyzerError as e:
+    # Handle analyzer-specific errors
+    print(f"StakeholderAnalyzer error: {e}")
+    print("Check configuration files: stakeholder_database.yaml, stakeholder_contexts.yaml")
+
+except Exception as e:
+    # Handle unexpected errors
+    print(f"Unexpected error during stakeholder analysis: {e}")
+    print("Verify configuration files exist and are properly formatted")
 ```
 
 **Error Scenarios:**
-- **Missing Stakeholder**: KeyError with clear message about which stakeholder was not found
-- **Missing Config File**: ConfigNotFoundError with guidance to create stakeholder_contexts.yaml
-- **Invalid Profile**: ConfigValidationError with details about which fields are missing or malformed
-- **Type Safety**: Pydantic models prevent attribute access errors at runtime
+- **No Stakeholders Found**: Empty list returned with guidance to broaden criteria
+- **Missing Configuration**: StakeholderAnalyzerError with file guidance
+- **Invalid Data**: Graceful degradation with partial results where possible
+- **Performance**: <50ms analysis with automatic retry on transient failures
 
 ### Best Practices
 
@@ -505,10 +534,60 @@ except ConfigValidationError as e:
    - Maintain relationship quality beyond individual decisions
    - Build stakeholder capacity for future decision participation
 
-5. **Type-Safe Profile Access**
-   - Always use ConfigManager's get_stakeholder() for type safety
-   - Leverage Pydantic model validation for data integrity
-   - Use cached reads for performance optimization (<10ms)
-   - Handle missing stakeholders gracefully with proper error messages
+5. **Leverage StakeholderAnalyzer Capabilities**
+   - Use identify_stakeholders() for context-aware discovery
+   - Apply map_power_interest() for systematic priority classification
+   - Utilize assess_alignment() for data-driven consensus prediction
+   - Generate communication plans with generate_communication_plan()
+   - Monitor performance with get_performance_stats() (<50ms target)
+
+### Implementation Examples
+
+**Complete Stakeholder Analysis Workflow:**
+```python
+from tools import StakeholderAnalyzer
+
+# Initialize analyzer
+analyzer = StakeholderAnalyzer()
+
+# Step 1: Identify stakeholders (context-aware)
+stakeholders = analyzer.identify_stakeholders({
+    "decision_type": "technical",
+    "scope": "mobile_app_tech_stack",
+    "impact_areas": ["Engineering", "Product", "Design"],
+})
+
+# Step 2: Map power-interest positions
+grid = analyzer.map_power_interest(stakeholders, {
+    "decision_type": "technical",
+    "scope": "mobile_app_tech_stack",
+})
+
+# Step 3: Assess alignment with decision options
+alignment = analyzer.assess_alignment(
+    stakeholders,
+    decision_options=["React Native", "Flutter", "Native"],
+)
+
+# Step 4: Generate communication strategy
+plan = analyzer.generate_communication_plan(
+    stakeholders,
+    decision={
+        "title": "Mobile App Technology Stack Selection",
+        "rationale": "Choose framework for Q1 2024 development",
+    },
+)
+
+# Step 5: Extract insights
+high_priority_stakeholders = grid.get_by_quadrant(PowerInterestQuadrant.MANAGE_CLOSELY)
+print(f"High-priority stakeholders: {len(high_priority_stakeholders)}")
+print(f"Support score: {alignment.overall_support_score:.2%}")
+print(f"Consensus likelihood: {alignment.consensus_likelihood:.2%}")
+print(f"Communication sequence: {plan.communication_sequence}")
+
+# Performance monitoring
+stats = analyzer.get_performance_stats()
+print(f"Average analysis time: {stats['average_time_ms']:.2f}ms")
+```
 
 Always ensure stakeholder engagement is inclusive, transparent, and focused on building long-term relationships that support successful decision implementation and organizational effectiveness.
