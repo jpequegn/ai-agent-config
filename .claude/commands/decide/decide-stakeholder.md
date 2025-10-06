@@ -65,6 +65,71 @@ You are an intelligent stakeholder analysis and engagement system. When this com
    - Analyze communication effectiveness and adjustment needs
    - Generate stakeholder satisfaction and engagement metrics
 
+### OutputFormatter Integration for Decision Communications
+
+**Use OutputFormatter to generate professional stakeholder communications for decisions:**
+
+```python
+from tools import StakeholderAnalyzer, OutputFormatter
+
+# 1. Analyze decision and stakeholders with StakeholderAnalyzer
+analyzer = StakeholderAnalyzer()
+stakeholders = analyzer.identify_stakeholders(decision_context)
+comm_plan = analyzer.generate_communication_plan(stakeholders, decision)
+alignment = analyzer.assess_alignment(stakeholders, decision_options)
+
+# 2. Format decision communications with OutputFormatter
+formatter = OutputFormatter()
+
+# Build stakeholder-specific decision update
+decision_update = {
+    'period': 'Decision Phase',
+    'executive_summary': f'Decision on {decision_title} requires stakeholder alignment. Current support level: {alignment.overall_support_score:.0%}',
+    'highlights': [
+        f'{len(alignment.key_supporters)} key supporters identified',
+        f'Consensus likelihood: {alignment.consensus_likelihood:.0%}',
+        'Communication plan ready for immediate execution'
+    ],
+    'progress': {
+        'overall': alignment.overall_support_score,
+        'on_track': alignment.consensus_likelihood > 0.7,
+        'target_date': decision_deadline
+    },
+    'challenges': [
+        {
+            'title': f'Stakeholder Resistance from {len(alignment.key_resistors)} groups',
+            'description': f'Key concerns: {", ".join(alignment.key_resistor_concerns[:3])}',
+            'impact': 'High - may delay decision implementation',
+            'resolution': f'Targeted engagement plan for resistors: {", ".join(alignment.mitigation_strategies[:2])}'
+        }
+    ] if alignment.key_resistors else [],
+    'upcoming_priorities': [
+        'Execute stakeholder communication plan',
+        'Address key resistor concerns',
+        'Build supporting coalition',
+        'Finalize decision with stakeholder buy-in'
+    ],
+    'next_steps': [
+        {
+            'action': message.content[:100] + '...',
+            'owner': message.stakeholder_name,
+            'deadline': message.timing
+        }
+        for message in comm_plan.messages[:5]
+    ]
+}
+
+# Generate professional stakeholder update
+output = formatter.stakeholder_update(decision_update, stakeholder="Decision Stakeholders")
+print(output.content)
+```
+
+**Benefits:**
+- Consistent decision communication format
+- Professional stakeholder-facing documents
+- Combines analytical power of StakeholderAnalyzer with formatting of OutputFormatter
+- Reduces time to create stakeholder communications from hours to minutes
+
 ### Command Actions
 
 **Stakeholder Mapping `/decide stakeholder "Decision Topic"`:**

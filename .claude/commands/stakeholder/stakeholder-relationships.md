@@ -44,6 +44,75 @@ You are an intelligent stakeholder relationship management system. When this com
    - Generate proactive relationship intervention recommendations
    - Forecast stakeholder needs and expectation evolution
 
+### OutputFormatter Integration
+
+**Generate Professional Stakeholder Updates for Relationship Management:**
+
+When communicating relationship insights or updates to stakeholders, use OutputFormatter for professional formatting:
+
+```python
+from tools import OutputFormatter
+
+formatter = OutputFormatter()
+
+# Build relationship update for stakeholder
+relationship_update = {
+    'period': 'October 2024',
+    'executive_summary': f'Relationship with {stakeholder_name} remains strong with consistent engagement and positive sentiment trends.',
+    'highlights': [
+        'Monthly sync meetings maintained consistently',
+        'Positive feedback on recent project delivery',
+        'Increased collaboration on strategic initiatives'
+    ],
+    'progress': {
+        'overall': 0.85,  # Relationship health score
+        'on_track': True,
+        'target_date': None
+    },
+    'accomplishments': [
+        'Successfully resolved API integration concerns',
+        'Aligned on Q1 2025 roadmap priorities',
+        'Established weekly technical sync cadence'
+    ],
+    'challenges': [
+        {
+            'title': 'Resource Allocation Concerns',
+            'description': 'Stakeholder expressed concern about team capacity for upcoming features',
+            'impact': 'Medium - may affect feature prioritization',
+            'resolution': 'Scheduled dedicated planning session to review resource allocation'
+        }
+    ],
+    'upcoming_priorities': [
+        'Review Q1 2025 feature roadmap',
+        'Discuss team expansion plans',
+        'Align on success metrics for mobile launch'
+    ],
+    'support_needed': [
+        {
+            'description': 'Executive sponsorship for budget increase',
+            'urgency': 'high'
+        }
+    ],
+    'next_steps': [
+        {
+            'action': 'Schedule Q1 planning meeting',
+            'owner': 'Product Manager',
+            'deadline': '2024-11-15'
+        }
+    ]
+}
+
+# Generate formatted update
+output = formatter.stakeholder_update(relationship_update, stakeholder=stakeholder_name)
+print(output.content)
+```
+
+**Benefits:**
+- Professional, consistent formatting for stakeholder communications
+- Automatic emoji indicators and visual hierarchy
+- Reusable template reduces communication prep time
+- Ensures all critical relationship aspects are covered
+
 ### Command Actions
 
 **Relationship Health Assessment `/stakeholder-relationships --health-check`:**
