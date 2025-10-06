@@ -1,0 +1,234 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 🤝 1:1 Meeting Notes
+
+{% if data.participants %}
+**Participants**: {{ data.participants | join(', ') }}
+{% endif %}
+
+{% if data.date %}
+**Date**: {{ format_date(data.date, 'LONG') if data.date is not string else data.date }}
+{% endif %}
+
+{% if data.duration %}
+**Duration**: {{ data.duration }}
+{% endif %}
+
+## 📋 Meeting Agenda
+
+{% if data.agenda %}
+{% for item in data.agenda %}
+{{ loop.index }}. {{ item }}
+{% endfor %}
+{% else %}
+_No formal agenda for this meeting_
+{% endif %}
+
+## 💬 Discussion Points
+
+{% if data.discussion_points %}
+{% for point in data.discussion_points %}
+### {{ emoji.info }} {{ point.topic }}
+
+{{ point.notes }}
+
+{% if point.priority %}
+**Priority**: {{ point.priority | title }}
+{% endif %}
+
+{% if point.follow_up %}
+**Follow-up**: {{ point.follow_up }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## ✅ Accomplishments Since Last Meeting
+
+{% if data.accomplishments %}
+{% for accomplishment in data.accomplishments %}
+- {{ emoji.success }} {{ accomplishment }}
+{% endfor %}
+{% else %}
+_No accomplishments discussed_
+{% endif %}
+
+## 🎯 Goals & Progress
+
+{% if data.goals %}
+{% for goal in data.goals %}
+### {{ status_indicator(goal.status) }} {{ goal.title }}
+
+{% if goal.progress %}
+**Progress**: {{ (goal.progress * 100) | round(0) }}%
+{% endif %}
+
+{% if goal.status == 'blocked' and goal.blockers %}
+**Blockers**: {{ goal.blockers }}
+{% endif %}
+
+{% if goal.notes %}
+{{ goal.notes }}
+{% endif %}
+
+{% if goal.next_steps %}
+**Next Steps**:
+{% for step in goal.next_steps %}
+- {{ step }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## 🚧 Challenges & Blockers
+
+{% if data.challenges %}
+{% for challenge in data.challenges %}
+### {{ emoji.warning }} {{ challenge.title }}
+
+{{ challenge.description }}
+
+{% if challenge.impact %}
+**Impact**: {{ challenge.impact }}
+{% endif %}
+
+{% if challenge.proposed_solution %}
+**Proposed Solution**: {{ challenge.proposed_solution }}
+{% endif %}
+
+{% if challenge.action_owner %}
+**Action Owner**: {{ challenge.action_owner }}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant challenges or blockers reported
+{% endif %}
+
+## 💡 Ideas & Suggestions
+
+{% if data.ideas %}
+{% for idea in data.ideas %}
+- {{ emoji.info }} **{{ idea.title }}**: {{ idea.description }}
+  {% if idea.next_action %}
+  - Next action: {{ idea.next_action }}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+## 🎓 Career Development
+
+{% if data.career_development %}
+{% if data.career_development.goals %}
+### Career Goals
+{% for goal in data.career_development.goals %}
+- {{ goal }}
+{% endfor %}
+{% endif %}
+
+{% if data.career_development.skills %}
+### Skill Development
+{% for skill in data.career_development.skills %}
+- **{{ skill.name }}**: {{ skill.plan }}
+  {% if skill.progress %}
+  - Progress: {{ (skill.progress * 100) | round(0) }}%
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{% if data.career_development.training %}
+### Training & Learning
+{% for training in data.career_development.training %}
+- {{ emoji.info }} {{ training }}
+{% endfor %}
+{% endif %}
+
+{% if data.career_development.feedback %}
+### Feedback & Coaching
+{{ data.career_development.feedback }}
+{% endif %}
+{% endif %}
+
+## 🤗 Well-being & Work-Life Balance
+
+{% if data.wellbeing %}
+{% if data.wellbeing.satisfaction %}
+**Job Satisfaction**: {{ health_score(data.wellbeing.satisfaction, 'Satisfaction') }}
+{% endif %}
+
+{% if data.wellbeing.workload %}
+**Workload**: {{ data.wellbeing.workload | title }}
+{% endif %}
+
+{% if data.wellbeing.concerns %}
+### Concerns
+{% for concern in data.wellbeing.concerns %}
+- {{ emoji.warning }} {{ concern }}
+{% endfor %}
+{% endif %}
+
+{% if data.wellbeing.notes %}
+{{ data.wellbeing.notes }}
+{% endif %}
+{% endif %}
+
+## 🎁 Recognition & Appreciation
+
+{% if data.recognition %}
+{% for item in data.recognition %}
+- {{ emoji.success }} {{ item }}
+{% endfor %}
+{% endif %}
+
+## 📝 Action Items
+
+{% if data.action_items %}
+{% for item in data.action_items %}
+### {{ status_indicator(item.status | default('pending')) }} {{ item.action }}
+
+{% if item.owner %}
+**Owner**: {{ item.owner }}
+{% endif %}
+
+{% if item.deadline %}
+**Deadline**: {{ format_date(item.deadline, 'SHORT') if item.deadline is not string else item.deadline }}
+{% endif %}
+
+{% if item.notes %}
+{{ item.notes }}
+{% endif %}
+{% endfor %}
+{% else %}
+_No action items from this meeting_
+{% endif %}
+
+## 📅 Next Meeting
+
+{% if data.next_meeting %}
+{% if data.next_meeting.date %}
+**Date**: {{ format_date(data.next_meeting.date, 'LONG') if data.next_meeting.date is not string else data.next_meeting.date }}
+{% endif %}
+
+{% if data.next_meeting.agenda_items %}
+**Proposed Agenda**:
+{% for item in data.next_meeting.agenda_items %}
+- {{ item }}
+{% endfor %}
+{% endif %}
+
+{% if data.next_meeting.preparation %}
+**Preparation Needed**:
+{% for prep in data.next_meeting.preparation %}
+- {{ prep }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## 📌 Follow-up Items from Previous Meetings
+
+{% if data.previous_follow_ups %}
+{% for item in data.previous_follow_ups %}
+- {{ status_indicator(item.status) }} {{ item.description }}{% if item.status == 'completed' %} {{ emoji.success }}{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endblock %}

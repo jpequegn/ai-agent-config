@@ -1,0 +1,171 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 📊 Team Performance Analysis
+
+{% if data.period %}
+**Period**: {{ data.period }}
+{% endif %}
+
+{% if data.team_size %}
+**Team Size**: {{ data.team_size }} members
+{% endif %}
+
+## 🎯 Executive Summary
+
+{% if data.health_score %}
+**Overall Health**: {{ health_score(data.health_score, 'Team Health') }}
+{% endif %}
+
+{% if data.summary %}
+{{ data.summary }}
+{% endif %}
+
+{% if data.key_metrics %}
+### Key Highlights
+{% for metric in data.key_metrics %}
+- {{ emoji.success if metric.status == 'on_track' else emoji.warning }} **{{ metric.name }}**: {{ metric.value }}{% if metric.trend %} ({{ metric.trend }}){% endif %}
+{% endfor %}
+{% endif %}
+
+## 📈 Performance Metrics
+
+{% if data.metrics %}
+{% if data.metrics.velocity %}
+### Velocity & Throughput
+- **Sprint Velocity**: {{ data.metrics.velocity.current }}{% if data.metrics.velocity.target %} / {{ data.metrics.velocity.target }} target{% endif %}
+- **Trend**: {% if data.metrics.velocity.trend == 'improving' %}📈 Improving{% elif data.metrics.velocity.trend == 'declining' %}📉 Declining{% else %}➡️ Stable{% endif %}
+{% if data.metrics.velocity.change_percentage %}
+- **Change**: {{ data.metrics.velocity.change_percentage }}%
+{% endif %}
+{% endif %}
+
+{% if data.metrics.quality %}
+### Quality Metrics
+- **Code Quality Score**: {{ health_score(data.metrics.quality.score) }}
+{% if data.metrics.quality.test_coverage %}
+- **Test Coverage**: {{ (data.metrics.quality.test_coverage * 100) | round(1) }}%
+{% endif %}
+{% if data.metrics.quality.bug_rate %}
+- **Bug Rate**: {{ data.metrics.quality.bug_rate }} per sprint
+{% endif %}
+{% endif %}
+
+{% if data.metrics.collaboration %}
+### Collaboration Metrics
+- **Team Collaboration Score**: {{ health_score(data.metrics.collaboration.score) }}
+{% if data.metrics.collaboration.code_reviews %}
+- **Code Review Participation**: {{ (data.metrics.collaboration.code_reviews * 100) | round(1) }}%
+{% endif %}
+{% if data.metrics.collaboration.pair_programming %}
+- **Pair Programming**: {{ (data.metrics.collaboration.pair_programming * 100) | round(1) }}%
+{% endif %}
+{% endif %}
+{% endif %}
+
+## 👥 Team Members Performance
+
+{% if data.team_members %}
+{% for member in data.team_members %}
+### {{ member.name }}{% if member.role %} - {{ member.role }}{% endif %}
+
+{% if member.performance_score %}
+**Performance**: {{ health_score(member.performance_score) }}
+{% endif %}
+
+{% if member.highlights %}
+**Highlights:**
+{% for highlight in member.highlights %}
+- {{ emoji.success }} {{ highlight }}
+{% endfor %}
+{% endif %}
+
+{% if member.areas_for_improvement %}
+**Areas for Improvement:**
+{% for area in member.areas_for_improvement %}
+- {{ emoji.info }} {{ area }}
+{% endfor %}
+{% endif %}
+
+{% if member.goals %}
+**Current Goals:**
+{% for goal in member.goals %}
+- {{ status_indicator(goal.status) }} {{ goal.description }}{% if goal.progress %} ({{ (goal.progress * 100) | round(0) }}%){% endif %}
+{% endfor %}
+{% endif %}
+
+---
+{% endfor %}
+{% endif %}
+
+## 🚧 Bottlenecks & Challenges
+
+{% if data.bottlenecks %}
+{% for bottleneck in data.bottlenecks %}
+### {{ emoji.warning }} {{ bottleneck.title }}
+
+**Category**: {{ bottleneck.category | title }}
+**Impact**: {{ bottleneck.impact | title }}
+
+{{ bottleneck.description }}
+
+{% if bottleneck.recommendations %}
+**Recommendations:**
+{% for rec in bottleneck.recommendations %}
+- {{ rec }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant bottlenecks identified
+{% endif %}
+
+## 📚 Growth & Development
+
+{% if data.growth_opportunities %}
+### Skill Development Priorities
+{% for opportunity in data.growth_opportunities %}
+- **{{ opportunity.skill }}**: {{ opportunity.priority | title }} priority
+  - Current level: {{ opportunity.current_level }}
+  - Target level: {{ opportunity.target_level }}
+  {% if opportunity.team_members %}
+  - Team members: {{ opportunity.team_members | join(', ') }}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{% if data.training_recommendations %}
+### Training Recommendations
+{% for training in data.training_recommendations %}
+- {{ emoji.info }} **{{ training.topic }}**{% if training.urgency %} ({{ training.urgency }} priority){% endif %}
+  - {{ training.description }}
+  {% if training.duration %}
+  - Estimated time: {{ training.duration }}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+## 🎯 Recommendations
+
+{% if data.recommendations %}
+{% for recommendation in data.recommendations %}
+{{ loop.index }}. **{{ recommendation.title }}**
+   - {{ recommendation.description }}
+   {% if recommendation.expected_impact %}
+   - Expected impact: {{ recommendation.expected_impact }}
+   {% endif %}
+   {% if recommendation.timeline %}
+   - Timeline: {{ recommendation.timeline }}
+   {% endif %}
+{% endfor %}
+{% endif %}
+
+## 📅 Next Steps
+
+{% if data.next_steps %}
+{% for step in data.next_steps %}
+{{ loop.index }}. {{ step.action }}{% if step.owner %} - {{ step.owner }}{% endif %}{% if step.deadline %} ({{ format_date(step.deadline, 'SHORT') if step.deadline is not string else step.deadline }}){% endif %}
+{% endfor %}
+{% endif %}
+
+{% endblock %}

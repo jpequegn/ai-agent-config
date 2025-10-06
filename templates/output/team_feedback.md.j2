@@ -1,0 +1,251 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 📋 Performance Review
+
+{% if data.employee %}
+**Employee**: {{ data.employee.name }}{% if data.employee.role %} - {{ data.employee.role }}{% endif %}
+{% if data.employee.email %}
+**Email**: {{ data.employee.email }}
+{% endif %}
+{% endif %}
+
+{% if data.review_period %}
+**Review Period**: {{ data.review_period }}
+{% endif %}
+
+{% if data.reviewer %}
+**Reviewer**: {{ data.reviewer }}
+{% endif %}
+
+## 🎯 Performance Summary
+
+{% if data.overall_rating %}
+**Overall Rating**: {{ health_score(data.overall_rating, 'Performance') }}
+{% endif %}
+
+{% if data.summary %}
+{{ data.summary }}
+{% endif %}
+
+## ✨ Key Accomplishments
+
+{% if data.accomplishments %}
+{% for accomplishment in data.accomplishments %}
+### {{ emoji.success }} {{ accomplishment.title }}
+
+{{ accomplishment.description }}
+
+{% if accomplishment.impact %}
+**Impact**: {{ accomplishment.impact }}
+{% endif %}
+
+{% if accomplishment.metrics %}
+**Metrics**:
+{% for metric in accomplishment.metrics %}
+- {{ metric }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% else %}
+_No accomplishments recorded for this period_
+{% endif %}
+
+## 📊 Goal Achievement
+
+{% if data.goals %}
+{% for goal in data.goals %}
+### {{ status_indicator(goal.status) }} {{ goal.title }}
+
+{{ goal.description }}
+
+{% if goal.progress %}
+**Progress**: {{ (goal.progress * 100) | round(0) }}%
+{% endif %}
+
+{% if goal.status == 'completed' %}
+{{ emoji.success }} **Status**: Completed
+{% if goal.completion_date %}
+- Completed: {{ format_date(goal.completion_date, 'SHORT') if goal.completion_date is not string else goal.completion_date }}
+{% endif %}
+{% elif goal.status == 'in_progress' %}
+{{ emoji.in_progress }} **Status**: In Progress
+{% if goal.target_date %}
+- Target: {{ format_date(goal.target_date, 'SHORT') if goal.target_date is not string else goal.target_date }}
+{% endif %}
+{% elif goal.status == 'at_risk' %}
+{{ emoji.warning }} **Status**: At Risk
+{% if goal.blockers %}
+- Blockers: {{ goal.blockers }}
+{% endif %}
+{% else %}
+{{ emoji.pending }} **Status**: Not Started
+{% endif %}
+
+{% if goal.outcome %}
+**Outcome**: {{ goal.outcome }}
+{% endif %}
+{% endfor %}
+{% else %}
+_No goals set for this period_
+{% endif %}
+
+## 💪 Strengths
+
+{% if data.strengths %}
+{% for strength in data.strengths %}
+- {{ emoji.success }} **{{ strength.area }}**: {{ strength.description }}
+{% endfor %}
+{% endif %}
+
+## 🎓 Areas for Development
+
+{% if data.development_areas %}
+{% for area in data.development_areas %}
+### {{ emoji.info }} {{ area.title }}
+
+{{ area.description }}
+
+{% if area.priority %}
+**Priority**: {{ area.priority | title }}
+{% endif %}
+
+{% if area.action_items %}
+**Action Items**:
+{% for action in area.action_items %}
+- {{ action }}
+{% endfor %}
+{% endif %}
+
+{% if area.resources %}
+**Resources**:
+{% for resource in area.resources %}
+- {{ resource }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## 📈 Competency Assessment
+
+{% if data.competencies %}
+| Competency | Rating | Notes |
+|-----------|--------|-------|
+{% for comp in data.competencies %}
+| {{ comp.name }} | {{ health_score(comp.rating) }} | {{ comp.notes | default('') }} |
+{% endfor %}
+{% endif %}
+
+## 💬 360° Feedback
+
+{% if data.peer_feedback %}
+### Peer Feedback
+{% for feedback in data.peer_feedback %}
+- **{{ feedback.from }}**: {{ feedback.comment }}
+{% endfor %}
+{% endif %}
+
+{% if data.manager_feedback %}
+### Manager Feedback
+{{ data.manager_feedback }}
+{% endif %}
+
+{% if data.self_assessment %}
+### Self-Assessment
+{{ data.self_assessment }}
+{% endif %}
+
+## 🚀 Growth Plan
+
+{% if data.growth_plan %}
+{% if data.growth_plan.career_goals %}
+### Career Goals
+{% for goal in data.growth_plan.career_goals %}
+- {{ goal }}
+{% endfor %}
+{% endif %}
+
+{% if data.growth_plan.skill_development %}
+### Skill Development Focus
+{% for skill in data.growth_plan.skill_development %}
+- **{{ skill.name }}**: {{ skill.plan }}
+  {% if skill.timeline %}
+  - Timeline: {{ skill.timeline }}
+  {% endif %}
+  {% if skill.resources %}
+  - Resources: {{ skill.resources | join(', ') }}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{% if data.growth_plan.training %}
+### Training & Development
+{% for training in data.growth_plan.training %}
+- {{ emoji.info }} **{{ training.title }}**
+  - {{ training.description }}
+  {% if training.provider %}
+  - Provider: {{ training.provider }}
+  {% endif %}
+  {% if training.timeline %}
+  - Timeline: {{ training.timeline }}
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{% if data.growth_plan.mentorship %}
+### Mentorship
+{{ data.growth_plan.mentorship }}
+{% endif %}
+{% endif %}
+
+## 🎯 Goals for Next Period
+
+{% if data.next_period_goals %}
+{% for goal in data.next_period_goals %}
+{{ loop.index }}. **{{ goal.title }}**
+   - {{ goal.description }}
+   {% if goal.success_criteria %}
+   - Success criteria: {{ goal.success_criteria }}
+   {% endif %}
+   {% if goal.target_date %}
+   - Target date: {{ format_date(goal.target_date, 'SHORT') if goal.target_date is not string else goal.target_date }}
+   {% endif %}
+{% endfor %}
+{% endif %}
+
+## 📝 Action Items
+
+{% if data.action_items %}
+{% for item in data.action_items %}
+- {{ status_indicator(item.status | default('pending')) }} {{ item.action }}{% if item.owner %} ({{ item.owner }}){% endif %}{% if item.deadline %} - Due: {{ format_date(item.deadline, 'SHORT') if item.deadline is not string else item.deadline }}{% endif %}
+{% endfor %}
+{% endif %}
+
+## 💰 Compensation & Recognition
+
+{% if data.compensation %}
+{% if data.compensation.salary_adjustment %}
+- **Salary Adjustment**: {{ data.compensation.salary_adjustment }}
+{% endif %}
+{% if data.compensation.bonus %}
+- **Bonus**: {{ data.compensation.bonus }}
+{% endif %}
+{% if data.compensation.promotion %}
+- {{ emoji.success }} **Promotion**: {{ data.compensation.promotion }}
+{% endif %}
+{% if data.compensation.equity %}
+- **Equity Grant**: {{ data.compensation.equity }}
+{% endif %}
+{% endif %}
+
+## 📅 Next Review
+
+{% if data.next_review_date %}
+**Scheduled**: {{ format_date(data.next_review_date, 'LONG') if data.next_review_date is not string else data.next_review_date }}
+{% endif %}
+
+{% if data.review_frequency %}
+**Frequency**: {{ data.review_frequency }}
+{% endif %}
+
+{% endblock %}

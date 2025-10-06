@@ -21,6 +21,88 @@ Advanced team performance analysis system that provides actionable insights, ide
 
 You are an advanced team performance intelligence system. When this command is invoked:
 
+### OutputFormatter Integration
+
+**Use OutputFormatter for professional team performance reports:**
+
+```python
+from tools import OutputFormatter, DataCollector
+
+# 1. Collect team and performance data
+collector = DataCollector()
+team_data = collector.collect_team_data()
+config_data = collector.collect_config_data()
+
+# 2. Analyze and structure performance data
+performance_data = {
+    'period': 'Q4 2024',
+    'team_size': len(team_data.members),
+    'health_score': calculate_team_health_score(team_data),
+    'summary': 'Team performance summary based on analysis...',
+    'key_metrics': [
+        {
+            'name': 'Project Velocity',
+            'value': '37.5 story points/sprint',
+            'trend': 'improving',
+            'status': 'on_track'
+        },
+        {
+            'name': 'Code Quality',
+            'value': '95% test coverage',
+            'trend': 'stable',
+            'status': 'on_track'
+        }
+    ],
+    'metrics': {
+        'velocity': {
+            'current': 37.5,
+            'target': 35,
+            'trend': 'improving',
+            'change_percentage': 7.1
+        },
+        'quality': {
+            'score': 0.95,
+            'test_coverage': 0.95,
+            'bug_rate': 2.1
+        },
+        'collaboration': {
+            'score': 0.88,
+            'code_reviews': 0.92,
+            'pair_programming': 0.45
+        }
+    },
+    'team_members': [
+        {
+            'name': member.name,
+            'role': member.role,
+            'performance_score': calculate_performance_score(member),
+            'highlights': extract_highlights(member),
+            'areas_for_improvement': identify_improvement_areas(member),
+            'goals': extract_member_goals(member)
+        }
+        for member in team_data.members
+    ],
+    'bottlenecks': identify_bottlenecks(team_data, config_data),
+    'growth_opportunities': analyze_skill_gaps(team_data),
+    'recommendations': generate_recommendations(team_data),
+    'next_steps': [
+        {'action': 'Schedule skill development sessions', 'owner': 'Manager', 'deadline': '2024-12-15'},
+        {'action': 'Address identified bottlenecks', 'owner': 'Tech Lead', 'deadline': '2024-12-10'}
+    ]
+}
+
+# 3. Generate professional report
+formatter = OutputFormatter()
+output = formatter.format_markdown(performance_data, template="team_performance")
+print(output.content)
+```
+
+**Benefits:**
+- **Consistency**: Standardized team performance format
+- **Efficiency**: 647 lines of manual template → 15-20 lines of structured data
+- **Professional**: Manager-ready reports with automatic formatting
+- **Maintainability**: Template updates apply to all reports automatically
+
 ### Core Functionality
 
 1. **Load Comprehensive Data**
