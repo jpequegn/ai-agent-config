@@ -86,6 +86,11 @@ from tools.nlp_models import (
     Priority,
     SubjectType,
 )
+from tools.project_status_generator import (
+    ProjectStatusGenerator,
+    ProjectStatusGeneratorError,
+    ProjectStatus,
+)
 
 __all__ = [
     "ConfigManager",
@@ -173,4 +178,7 @@ __all__ = [
     "FuzzyMatch",
     "Priority",
     "SubjectType",
+    "ProjectStatusGenerator",
+    "ProjectStatusGeneratorError",
+    "ProjectStatus",
 ]
