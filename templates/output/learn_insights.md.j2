@@ -1,0 +1,294 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 💡 Learning Insights & Synthesis
+
+{% if data.timeframe %}
+**Analysis Period**: {{ data.timeframe }}
+{% endif %}
+
+{% if data.total_captures %}
+**Learning Captures Analyzed**: {{ data.total_captures }}
+{% endif %}
+
+{% if data.confidence_threshold is defined %}
+**Minimum Confidence**: {{ (data.confidence_threshold * 100) | round(0) }}%
+{% endif %}
+
+## 🎯 Key Themes
+
+{% if data.themes %}
+{% for theme_name, theme_data in data.themes.items() %}
+### {{ emoji.info }} {{ theme_name | replace('_', ' ') | title }}
+
+**Confidence**: {{ health_score(theme_data.confidence) if theme_data.confidence is defined else 'N/A' }}
+{% if theme_data.score %}**Score**: {{ theme_data.score }}{% endif %}
+
+{% if theme_data.concepts %}
+**Related Concepts**:
+{% for concept in theme_data.concepts[:10] %}
+- {{ concept }}
+{% endfor %}
+{% if theme_data.concepts | length > 10 %}_...and {{ theme_data.concepts | length - 10 }} more_{% endif %}
+{% endif %}
+
+{% if theme_data.insights %}
+**Key Insights**:
+{% for insight in theme_data.insights %}
+- {{ insight }}
+{% endfor %}
+{% endif %}
+
+---
+{% endfor %}
+{% else %}
+_No significant themes identified_
+{% endif %}
+
+## 🔗 Cross-Domain Connections
+
+{% if data.cross_domain_connections %}
+{% for connection in data.cross_domain_connections %}
+### {{ connection.domains | join(' ↔️ ') }}
+
+**Connection Strength**: {{ health_score(connection.strength) if connection.strength is defined else 'N/A' }}
+{% if connection.confidence is defined %}**Confidence**: {{ (connection.confidence * 100) | round(0) }}%{% endif %}
+
+{% if connection.shared_concepts %}
+**Shared Concepts**: {{ connection.shared_concepts | join(', ') }}
+{% endif %}
+
+{% if connection.synthesis %}
+**Synthesis**: {{ connection.synthesis }}
+{% endif %}
+
+{% if connection.potential_applications %}
+**Potential Applications**:
+{% for application in connection.potential_applications %}
+- {{ application }}
+{% endfor %}
+{% endif %}
+
+---
+{% endfor %}
+{% else %}
+_No cross-domain connections identified yet. Continue learning to discover unexpected links!_
+{% endif %}
+
+## 📊 Emerging Trends
+
+{% if data.emerging_trends %}
+{% for trend in data.emerging_trends %}
+### {{ emoji.trend_up }} {{ trend.name }}
+
+{% if trend.frequency %}
+**Frequency**: Mentioned {{ trend.frequency }} times
+{% endif %}
+
+{% if trend.growth_rate is defined %}
+**Growth Rate**: {{ (trend.growth_rate * 100) | round(1) }}%
+{% endif %}
+
+{% if trend.description %}
+{{ trend.description }}
+{% endif %}
+
+{% if trend.related_concepts %}
+**Related**: {{ trend.related_concepts | join(', ') }}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+## 🎓 Knowledge Gaps
+
+{% if data.knowledge_gaps %}
+{% for gap in data.knowledge_gaps %}
+### {{ emoji.warning }} {{ gap.area }}
+
+{% if gap.severity %}
+**Severity**: {{ gap.severity | title }}
+{% endif %}
+
+{% if gap.description %}
+{{ gap.description }}
+{% endif %}
+
+{% if gap.suggested_resources %}
+**Suggested Resources**:
+{% for resource in gap.suggested_resources %}
+- {{ resource }}
+{% endfor %}
+{% endif %}
+
+{% if gap.related_goals %}
+**Related Goals**: {{ gap.related_goals | join(', ') }}
+{% endif %}
+
+---
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant knowledge gaps identified
+{% endif %}
+
+## 🚀 Synthesis Opportunities
+
+{% if data.synthesis_opportunities %}
+{% for opportunity in data.synthesis_opportunities %}
+### {{ opportunity.title }}
+
+{% if opportunity.confidence is defined %}
+**Confidence**: {{ (opportunity.confidence * 100) | round(0) }}%
+{% endif %}
+
+{{ opportunity.description }}
+
+{% if opportunity.concepts_to_combine %}
+**Concepts to Combine**:
+{% for concept in opportunity.concepts_to_combine %}
+- {{ concept }}
+{% endfor %}
+{% endif %}
+
+{% if opportunity.expected_benefits %}
+**Expected Benefits**:
+{% for benefit in opportunity.expected_benefits %}
+- {{ benefit }}
+{% endfor %}
+{% endif %}
+
+{% if opportunity.next_steps %}
+**Next Steps**:
+{% for step in opportunity.next_steps %}
+{{ loop.index }}. {{ step }}
+{% endfor %}
+{% endif %}
+
+---
+{% endfor %}
+{% endif %}
+
+## 🔮 Predictive Insights
+
+{% if data.predictions %}
+{% for prediction in data.predictions %}
+### {{ prediction.category }}
+
+{% if prediction.confidence is defined %}
+**Confidence**: {{ (prediction.confidence * 100) | round(0) }}%
+{% endif %}
+
+{{ prediction.prediction }}
+
+{% if prediction.basis %}
+**Based On**: {{ prediction.basis }}
+{% endif %}
+
+{% if prediction.timeline %}
+**Timeline**: {{ prediction.timeline }}
+{% endif %}
+
+{% if prediction.recommended_actions %}
+**Recommended Actions**:
+{% for action in prediction.recommended_actions %}
+- {{ action }}
+{% endfor %}
+{% endif %}
+
+---
+{% endfor %}
+{% endif %}
+
+## 📈 Learning Pattern Analysis
+
+{% if data.pattern_analysis %}
+{% if data.pattern_analysis.preferred_sources %}
+### Preferred Learning Sources
+{% for source, count in data.pattern_analysis.preferred_sources.items() %}
+- **{{ source | title }}**: {{ count }} captures
+{% endfor %}
+{% endif %}
+
+{% if data.pattern_analysis.peak_learning_times %}
+### Peak Learning Times
+{% for period, intensity in data.pattern_analysis.peak_learning_times.items() %}
+- **{{ period }}**: {{ health_score(intensity) if intensity is defined else 'N/A' }}
+{% endfor %}
+{% endif %}
+
+{% if data.pattern_analysis.retention_patterns %}
+### Retention Patterns
+{% for pattern in data.pattern_analysis.retention_patterns %}
+- {{ emoji.info }} {{ pattern.description }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## 💪 Strengths Identified
+
+{% if data.strengths %}
+{% for strength in data.strengths %}
+- {{ emoji.success }} **{{ strength.area }}**: {{ strength.description }}
+{% if strength.evidence %}  - Evidence: {{ strength.evidence }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## 🎯 Actionable Recommendations
+
+{% if data.recommendations %}
+{% for recommendation in data.recommendations %}
+{{ loop.index }}. **{{ recommendation.title }}** ({{ recommendation.priority | title }} priority)
+   - {{ recommendation.description }}
+{% if recommendation.expected_impact %}   - Expected impact: {{ recommendation.expected_impact }}
+{% endif %}
+{% if recommendation.estimated_effort %}   - Effort: {{ recommendation.estimated_effort }}
+{% endif %}
+{% if recommendation.resources %}   - Resources: {{ recommendation.resources | join(', ') }}
+{% endif %}
+{% endfor %}
+{% else %}
+_Continue learning to generate personalized recommendations_
+{% endif %}
+
+## 📚 Suggested Focus Areas
+
+{% if data.focus_areas %}
+{% for area in data.focus_areas %}
+### {{ area.name }}
+
+{% if area.priority %}
+**Priority**: {{ area.priority | title }}
+{% endif %}
+
+{% if area.rationale %}
+{{ area.rationale }}
+{% endif %}
+
+{% if area.next_steps %}
+**Next Steps**:
+{% for step in area.next_steps %}
+- {{ step }}
+{% endfor %}
+{% endif %}
+
+{% if area.resources %}
+**Resources**:
+{% for resource in area.resources %}
+- {{ resource }}
+{% endfor %}
+{% endif %}
+
+---
+{% endfor %}
+{% endif %}
+
+{% if data.meta_insights %}
+## 🧠 Meta-Learning Insights
+
+{% for insight in data.meta_insights %}
+- {{ emoji.info }} {{ insight }}
+{% endfor %}
+{% endif %}
+
+{% endblock %}
