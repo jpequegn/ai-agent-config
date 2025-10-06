@@ -1,0 +1,195 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+## 📊 Learning Progress Dashboard
+
+{% if data.period %}
+**Period**: {{ data.period }}
+{% endif %}
+
+{% if data.overall_progress is defined %}
+**Overall Progress**: {{ (data.overall_progress * 100) | round(1) }}%
+{% endif %}
+
+{% if data.active_goals %}
+**Active Goals**: {{ data.active_goals | length }}
+{% endif %}
+
+{% if data.mastery_level %}
+**Mastery Level**: {{ data.mastery_level }}
+{% endif %}
+
+## 🎯 Learning Goals
+
+{% if data.goals %}
+{% for goal in data.goals %}
+### {{ status_indicator(goal.status) }} {{ goal.name }}
+
+{% if goal.category %}
+**Category**: {{ goal.category | title }}
+{% endif %}
+
+{% if goal.priority %}
+**Priority**: {{ goal.priority | title }}
+{% endif %}
+
+{% if goal.progress is defined %}
+**Progress**: {{ (goal.progress * 100) | round(1) }}%
+{% endif %}
+
+{% if goal.description %}
+{{ goal.description }}
+{% endif %}
+
+{% if goal.skills %}
+**Target Skills**:
+{% for skill in goal.skills %}
+- {{ skill }}
+{% endfor %}
+{% endif %}
+
+{% if goal.milestones %}
+**Milestones**:
+{% for milestone in goal.milestones %}
+- {{ status_indicator(milestone.status) }} {{ milestone.name }}{% if milestone.due_date %} (Due: {{ format_date(milestone.due_date, 'SHORT') if milestone.due_date is not string else milestone.due_date }}){% endif %}
+{% endfor %}
+{% endif %}
+
+{% if goal.metrics %}
+**Performance Metrics**:
+- **Concepts Mastered**: {{ goal.metrics.concepts_mastered }}/{{ goal.metrics.target_concepts }}
+- **Application Success**: {{ (goal.metrics.application_success_rate * 100) | round(1) if goal.metrics.application_success_rate is defined else 'N/A' }}%
+- **Engagement Level**: {{ health_score(goal.metrics.engagement_level) if goal.metrics.engagement_level is defined else 'N/A' }}
+{% endif %}
+
+{% if goal.completion_forecast %}
+**Completion Forecast**:
+- **Estimated Date**: {{ format_date(goal.completion_forecast.estimated_date, 'LONG') if goal.completion_forecast.estimated_date is not string else goal.completion_forecast.estimated_date }}
+- **Confidence**: {{ (goal.completion_forecast.confidence * 100) | round(0) }}%
+- **Days Remaining**: {{ goal.completion_forecast.days_remaining }}
+{% endif %}
+
+---
+{% endfor %}
+{% else %}
+_No learning goals tracked yet_
+{% endif %}
+
+## 📚 Knowledge Retention
+
+{% if data.retention_metrics %}
+{% if data.retention_metrics.overall_retention is defined %}
+**Overall Retention**: {{ health_score(data.retention_metrics.overall_retention, 'Retention') }}
+{% endif %}
+
+{% if data.retention_metrics.by_category %}
+### Retention by Category
+| Category | Retention Rate | Trend |
+|----------|---------------|-------|
+{% for category, metrics in data.retention_metrics.by_category.items() %}
+| {{ category | title }} | {{ health_score(metrics.rate) }} | {{ emoji.trend_up if metrics.trend == 'improving' else emoji.trend_down if metrics.trend == 'declining' else emoji.stable }} |
+{% endfor %}
+{% endif %}
+
+{% if data.retention_metrics.recent_quizzes %}
+### Recent Quiz Performance
+{% for quiz in data.retention_metrics.recent_quizzes %}
+- **{{ quiz.topic }}** ({{ format_date(quiz.date, 'SHORT') if quiz.date is not string else quiz.date }}): {{ (quiz.score * 100) | round(0) }}%
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## ⚡ Learning Velocity
+
+{% if data.velocity_metrics %}
+{% if data.velocity_metrics.concepts_per_week is defined %}
+**Concepts/Week**: {{ data.velocity_metrics.concepts_per_week | round(1) }}
+{% endif %}
+
+{% if data.velocity_metrics.trend %}
+**Trend**: {% if data.velocity_metrics.trend == 'accelerating' %}📈 Accelerating{% elif data.velocity_metrics.trend == 'decelerating' %}📉 Slowing{% else %}➡️ Steady{% endif %}
+{% endif %}
+
+{% if data.velocity_metrics.recent_activity %}
+### Recent Learning Activity
+{% for activity in data.velocity_metrics.recent_activity %}
+- {{ emoji.info }} {{ format_date(activity.date, 'SHORT') if activity.date is not string else activity.date }}: {{ activity.concepts_learned }} concepts ({{ activity.source_type }})
+{% endfor %}
+{% endif %}
+
+{% if data.velocity_metrics.bottlenecks %}
+### Learning Bottlenecks
+{% for bottleneck in data.velocity_metrics.bottlenecks %}
+- {{ emoji.warning }} **{{ bottleneck.area }}**: {{ bottleneck.description }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## 🎓 Skills Development
+
+{% if data.skills_progress %}
+{% for skill_category, skills in data.skills_progress.items() %}
+### {{ skill_category | title }}
+{% for skill in skills %}
+- {{ health_score(skill.proficiency) if skill.proficiency is defined else emoji.pending }} **{{ skill.name }}**{% if skill.progress is defined %} - {{ (skill.progress * 100) | round(0) }}%{% endif %}
+{% if skill.notes %}  - {{ skill.notes }}
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+## 📈 Progress Trends
+
+{% if data.trends %}
+{% if data.trends.monthly_progress %}
+### Monthly Progress
+{% for month, progress in data.trends.monthly_progress.items() %}
+- **{{ month }}**: {{ (progress * 100) | round(1) }}%
+{% endfor %}
+{% endif %}
+
+{% if data.trends.velocity_chart %}
+### Velocity Over Time
+{% for period, velocity in data.trends.velocity_chart.items() %}
+- **{{ period }}**: {{ velocity | round(1) }} concepts/week
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## 💡 Insights & Recommendations
+
+{% if data.insights %}
+{% for insight in data.insights %}
+- {{ emoji.info }} **{{ insight.title }}**: {{ insight.description }}
+{% if insight.action_items %}
+  - Recommended actions:
+  {% for action in insight.action_items %}
+    - {{ action }}
+  {% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+## 🚀 Next Steps
+
+{% if data.next_steps %}
+{% for step in data.next_steps %}
+{{ loop.index }}. {{ step.action }}{% if step.priority %} ({{ step.priority | title }} priority){% endif %}
+{% if step.estimated_effort %}   - Estimated effort: {{ step.estimated_effort }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if data.recommended_focus %}
+## 🎯 Recommended Focus Areas
+
+{% for area in data.recommended_focus %}
+- **{{ area.area }}**: {{ area.reason }}
+{% if area.resources %}
+  - Resources: {{ area.resources | join(', ') }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endblock %}
