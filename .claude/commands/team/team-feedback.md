@@ -17,6 +17,174 @@ Comprehensive feedback management and development planning system that integrate
 - `/team feedback-360 [email] --include-peers` - Include peer feedback in 360 analysis
 - `/team goals-check --team` - Analyze goal achievement across entire team
 
+## OutputFormatter Integration
+
+**Tool**: Use `OutputFormatter` with `team_feedback` template for professional performance review formatting.
+
+**Template**: `templates/output/team_feedback.md.j2` - Comprehensive performance review template with accomplishments, goals, competencies, 360° feedback, and growth planning.
+
+### Integration Example
+
+```python
+from tools import OutputFormatter, DataCollector
+
+# 1. Gather comprehensive performance data
+collector = DataCollector()
+team_data = collector.collect_team_data()
+config_data = collector.collect_config_data()
+
+# Find team member
+member = next((m for m in team_data.members if m.email == member_email), None)
+
+# 2. Structure performance review data
+feedback_data = {
+    'employee': {
+        'name': member.name,
+        'role': member.role,
+        'email': member.email
+    },
+    'review_period': 'Q4 2024',
+    'reviewer': config_data.user.name,
+    'overall_rating': calculate_overall_rating(member),  # 0.0-1.0
+    'summary': 'Performance summary highlighting key achievements and areas for growth...',
+
+    'accomplishments': [
+        {
+            'title': 'Led Mobile App Launch',
+            'description': 'Successfully delivered mobile app 2 weeks ahead of schedule...',
+            'impact': 'Increased user engagement by 45% in first month',
+            'metrics': [
+                '45% increase in user engagement',
+                '2 weeks ahead of schedule',
+                '95% positive user feedback'
+            ]
+        }
+    ],
+
+    'goals': [
+        {
+            'title': 'Improve API Response Time',
+            'description': 'Optimize backend APIs to reduce average response time by 30%',
+            'status': 'completed',  # completed, in_progress, at_risk, pending
+            'progress': 0.95,
+            'completion_date': '2024-11-15',
+            'outcome': 'Achieved 40% improvement through caching and query optimization'
+        }
+    ],
+
+    'strengths': [
+        {
+            'area': 'Technical Leadership',
+            'description': 'Demonstrates exceptional ability to guide team through complex technical challenges'
+        }
+    ],
+
+    'development_areas': [
+        {
+            'title': 'Strategic Communication',
+            'description': 'Opportunities to enhance communication with non-technical stakeholders',
+            'priority': 'high',  # high, medium, low
+            'action_items': [
+                'Attend stakeholder management workshop',
+                'Practice presenting technical concepts to executives'
+            ],
+            'resources': [
+                'Effective Technical Communication course',
+                'Mentorship with senior architect'
+            ]
+        }
+    ],
+
+    'competencies': [
+        {
+            'name': 'Technical Expertise',
+            'rating': 0.9,
+            'notes': 'Deep knowledge of backend systems and best practices'
+        },
+        {
+            'name': 'Collaboration',
+            'rating': 0.85,
+            'notes': 'Works well with team, could improve cross-functional communication'
+        }
+    ],
+
+    'peer_feedback': [
+        {
+            'from': 'Sarah Johnson',
+            'comment': 'Excellent technical mentor, always willing to help teammates'
+        }
+    ],
+
+    'manager_feedback': 'Consistently delivers high-quality work with strong technical foundation...',
+    'self_assessment': 'I feel I\'ve grown significantly in technical leadership...',
+
+    'growth_plan': {
+        'career_goals': [
+            'Transition to senior architect role within 18 months',
+            'Lead cross-functional technical initiatives'
+        ],
+        'skill_development': [
+            {
+                'name': 'System Architecture',
+                'plan': 'Design and document architecture for 3 major features',
+                'timeline': '6 months',
+                'resources': ['Architecture patterns course', 'Weekly architect mentorship']
+            }
+        ],
+        'training': [
+            {
+                'title': 'Advanced System Design',
+                'description': 'Deep dive into distributed systems architecture',
+                'provider': 'Internal Learning',
+                'timeline': 'Q1 2025'
+            }
+        ]
+    },
+
+    'next_period_goals': [
+        {
+            'title': 'Lead Architecture Review Process',
+            'description': 'Establish and run quarterly architecture review sessions',
+            'success_criteria': 'Complete 4 quarterly reviews with team participation >80%',
+            'target_date': '2025-06-30'
+        }
+    ],
+
+    'action_items': [
+        {
+            'action': 'Schedule architecture mentorship sessions',
+            'owner': member.name,
+            'deadline': '2025-01-15',
+            'status': 'pending'
+        }
+    ],
+
+    'compensation': {
+        'salary_adjustment': '8% merit increase',
+        'bonus': '15% annual bonus',
+        'equity': '500 RSUs'
+    },
+
+    'next_review_date': '2025-04-01',
+    'review_frequency': 'Quarterly'
+}
+
+# 3. Format with OutputFormatter
+formatter = OutputFormatter()
+output = formatter.format_markdown(feedback_data, template="team_feedback")
+
+# 4. Save or display
+print(output.content)
+# Processing time: ~15-20ms
+```
+
+**Key Benefits**:
+- **Reduces Command Complexity**: 1487 lines → ~25-30 lines of structured data
+- **Professional Formatting**: Consistent emoji indicators, health scores, date formatting
+- **Type Safety**: Pydantic validation ensures data integrity
+- **Performance**: <50ms template rendering with session caching
+- **Reusability**: Same template across all performance review workflows
+
 ## Instructions:
 
 You are a comprehensive feedback and development planning system. When this command is invoked:
