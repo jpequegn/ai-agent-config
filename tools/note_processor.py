@@ -269,6 +269,161 @@ class NoteProcessor:
         filters = ActionItemFilters(status=status)
         return self.extract_action_items(scope=scope, filters=filters)
 
+    def group_action_items_by_project(
+        self, items: List[Dict[str, Any]]
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Group action items by project for organized follow-up.
+
+        Args:
+            items: List of action items
+
+        Returns:
+            Dict mapping project names to action items
+
+        Example:
+            >>> items = processor.extract_action_items()
+            >>> grouped = processor.group_action_items_by_project(items)
+            >>> for project, project_items in grouped.items():
+            ...     print(f"{project}: {len(project_items)} items")
+        """
+        grouped: Dict[str, List[Dict[str, Any]]] = {}
+
+        for item in items:
+            # Extract project from note path if available
+            note_path = item.get("note", "")
+            project = "Unassigned"
+
+            if "/1-projects/" in note_path:
+                # Extract project folder name from path
+                parts = note_path.split("/1-projects/")
+                if len(parts) > 1:
+                    project_parts = parts[1].split("/")
+                    if project_parts:
+                        project = project_parts[0]
+            elif "/2-areas/" in note_path:
+                project = "Areas"
+            elif "/inbox/" in note_path:
+                project = "Inbox"
+            elif "/3-resources/" in note_path:
+                project = "Resources"
+
+            if project not in grouped:
+                grouped[project] = []
+            grouped[project].append(item)
+
+        return grouped
+
+    def prioritize_action_items(
+        self, items: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Prioritize action items based on urgency, importance, and age.
+
+        Scoring algorithm:
+        - Overdue items: +50 points per day overdue
+        - High priority: +100 points
+        - Medium priority: +50 points
+        - Low priority: +25 points
+        - Age: +1 point per day since creation
+
+        Args:
+            items: List of action items
+
+        Returns:
+            Sorted list of action items (highest priority first)
+
+        Example:
+            >>> items = processor.extract_action_items()
+            >>> prioritized = processor.prioritize_action_items(items)
+            >>> for item in prioritized[:5]:
+            ...     print(f"{item['text']} - Priority: {item.get('priority', 'none')}")
+        """
+        from datetime import datetime
+
+        def calculate_priority_score(item: Dict[str, Any]) -> int:
+            score = 0
+            today = datetime.now().date()
+
+            # Check if overdue
+            due_date_str = item.get("due_date")
+            if due_date_str and not item.get("completed", False):
+                try:
+                    due_date = datetime.fromisoformat(due_date_str).date()
+                    if due_date < today:
+                        days_overdue = (today - due_date).days
+                        score += days_overdue * 50  # Heavy weight for overdue
+                except (ValueError, TypeError):
+                    pass
+
+            # Priority level
+            priority = item.get("priority")
+            if priority:
+                priority_lower = priority.lower()
+                if priority_lower == "high":
+                    score += 100
+                elif priority_lower == "medium":
+                    score += 50
+                elif priority_lower == "low":
+                    score += 25
+
+            # Age of item (from created date if available)
+            created_date_str = item.get("created")
+            if created_date_str:
+                try:
+                    created_date = datetime.fromisoformat(created_date_str).date()
+                    days_old = (today - created_date).days
+                    score += days_old  # 1 point per day
+                except (ValueError, TypeError):
+                    pass
+
+            return score
+
+        # Create list with scores and sort
+        items_with_scores = [
+            (calculate_priority_score(item), item) for item in items
+        ]
+        items_with_scores.sort(key=lambda x: x[0], reverse=True)
+
+        return [item for _, item in items_with_scores]
+
+    def get_stale_action_items(
+        self, days: int = 30
+    ) -> List[Dict[str, Any]]:
+        """
+        Get action items that are stale (old without updates).
+
+        Args:
+            days: Number of days to consider an item stale (default: 30)
+
+        Returns:
+            List of stale action items
+
+        Example:
+            >>> stale = processor.get_stale_action_items(days=30)
+            >>> print(f"Found {len(stale)} items older than 30 days")
+        """
+        from datetime import datetime, timedelta
+
+        all_items = self.extract_action_items(
+            filters=ActionItemFilters(status="pending")
+        )
+
+        cutoff_date = datetime.now().date() - timedelta(days=days)
+        stale_items = []
+
+        for item in all_items:
+            created_date_str = item.get("created")
+            if created_date_str:
+                try:
+                    created_date = datetime.fromisoformat(created_date_str).date()
+                    if created_date < cutoff_date:
+                        stale_items.append(item)
+                except (ValueError, TypeError):
+                    pass
+
+        return stale_items
+
     # Project Integration
 
     def get_project_notes(self, project_id: str) -> List[ParsedNote]:
