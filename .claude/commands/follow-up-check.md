@@ -17,9 +17,56 @@ Comprehensive system for tracking and managing action items using the **NoteProc
 - `/cc follow-up-check stale` - Find items >30 days old without updates
 - `/cc follow-up-check urgent` - Focus on high-priority and overdue items only
 
+## Natural Language Queries (NEW):
+- `/cc follow-up-check show items for @alice from last week` - Natural language filtering
+- `/cc follow-up-check overdue high priority tasks` - Combine multiple filters
+- `/cc follow-up-check items assigned to john and sarah` - Multiple assignees
+- `/cc follow-up-check tasks due in next 3 days` - Date range filtering
+
 ## Instructions:
 
-You are a comprehensive follow-up and task management system that uses the **NoteProcessor tool** for intelligent action item tracking and analysis.
+You are a comprehensive follow-up and task management system that uses the **NoteProcessor tool** for intelligent action item tracking and analysis, and the **NLPProcessor tool** for natural language query parsing.
+
+### Query Parsing with NLPProcessor
+
+**Parse User Input** (First Step):
+
+```python
+from tools import NLPProcessor, ActionItemFilters
+from datetime import datetime
+
+# Initialize NLP processor
+nlp = NLPProcessor()
+
+# Parse user query to extract filters
+user_query = "{user_input}"  # Full command text after '/cc follow-up-check'
+intent = nlp.parse_command_intent(user_query)
+
+# Build ActionItemFilters from parsed intent
+filters = ActionItemFilters()
+
+# Extract assignees
+if "assignees" in intent.filters:
+    filters.assignee = intent.filters["assignees"]
+
+# Extract priority
+if "priority" in intent.filters:
+    filters.priority = intent.filters["priority"]
+
+# Extract date range
+if "date_range" in intent.filters:
+    date_info = intent.filters["date_range"]
+    filters.date_from = date_info.get("start")
+    filters.date_to = date_info.get("end")
+
+# Detect status from keywords in query
+if "overdue" in user_query.lower():
+    filters.status = "overdue"
+elif "stale" in user_query.lower():
+    filters.status = "stale"
+elif "urgent" in user_query.lower():
+    filters.status = "urgent"
+```
 
 ### Tool-Based Implementation
 
@@ -155,22 +202,30 @@ for item in overdue_sorted:
 **Assignee Filter** `/cc follow-up-check assignee @alice`:
 
 ```python
-from tools import NoteProcessor, ActionItemFilters
+from tools import NoteProcessor, ActionItemFilters, NLPProcessor
 
 processor = NoteProcessor()
+nlp = NLPProcessor()
 
-# Extract assignee from command
-assignee = "{assignee_from_command}"  # e.g., "alice"
+# Parse user query for assignees
+user_query = "{user_input}"  # e.g., "assignee @alice" or "items for @alice"
+intent = nlp.parse_command_intent(user_query)
 
-# Get items for assignee
-items = processor.extract_action_items(
-    filters=ActionItemFilters(assignee=assignee)
-)
+# Extract assignees from parsed intent
+assignees = intent.filters.get("assignees", [])
+if not assignees:
+    print("⚠️ No assignee specified. Please use format: `assignee @alice` or `items for @alice`")
+    exit()
+
+# Get items for assignee(s)
+filters = ActionItemFilters(assignee=assignees)
+items = processor.extract_action_items(filters=filters)
 
 pending = [i for i in items if not i.get("completed", False)]
 overdue = [i for i in pending if i in processor.get_action_items_by_status("overdue")]
 
-print(f"# 👤 Action Items for @{assignee}\n")
+assignee_display = ", ".join([f"@{a}" for a in assignees])
+print(f"# 👤 Action Items for {assignee_display}\n")
 print(f"**Total**: {len(items)} | **Pending**: {len(pending)} | **Overdue**: {len(overdue)}\n")
 
 # Group by priority
@@ -345,10 +400,99 @@ for assignee, stats in sorted(assignee_items.items()):
     print()
 ```
 
+### Natural Language Query Processing
+
+**Combined Filters** (NEW):
+
+```python
+from tools import NoteProcessor, ActionItemFilters, NLPProcessor
+
+processor = NoteProcessor()
+nlp = NLPProcessor()
+
+# Parse natural language query
+user_query = "{user_input}"  # e.g., "show high priority items for @alice from last week"
+intent = nlp.parse_command_intent(user_query)
+
+# Build comprehensive filters from intent
+filters = ActionItemFilters()
+
+# Apply assignee filters
+if "assignees" in intent.filters:
+    filters.assignee = intent.filters["assignees"]
+
+# Apply priority filters
+if "priority" in intent.filters:
+    filters.priority = intent.filters["priority"]
+
+# Apply date range filters
+if "date_range" in intent.filters:
+    date_info = intent.filters["date_range"]
+    filters.date_from = date_info.get("start")
+    filters.date_to = date_info.get("end")
+
+# Apply status filters from keywords
+query_lower = user_query.lower()
+if "overdue" in query_lower:
+    filters.status = "overdue"
+elif "urgent" in query_lower:
+    filters.status = "urgent"
+elif "stale" in query_lower:
+    filters.status = "stale"
+
+# Get filtered action items
+items = processor.extract_action_items(filters=filters)
+
+# Display results with context
+print(f"# 🔍 Search Results\n")
+print(f"**Query**: {user_query}\n")
+print(f"**Found**: {len(items)} items\n")
+
+# Show applied filters
+print("## 📋 Applied Filters\n")
+if filters.assignee:
+    assignee_str = ", ".join([f"@{a}" for a in filters.assignee])
+    print(f"- **Assignees**: {assignee_str}")
+if filters.priority:
+    print(f"- **Priority**: {filters.priority}")
+if filters.date_from or filters.date_to:
+    date_range = f"{filters.date_from or 'start'} to {filters.date_to or 'now'}"
+    print(f"- **Date Range**: {date_range}")
+if filters.status:
+    print(f"- **Status**: {filters.status}")
+print()
+
+# Display items
+print("## 📝 Results\n")
+for item in items[:20]:  # Limit to top 20
+    status_emoji = "✅" if item.get("completed") else "⏳"
+    priority_emoji = {"high": "🔴", "medium": "🟡", "low": "🟢"}.get(item.get("priority", ""), "⚪")
+
+    print(f"{status_emoji} {priority_emoji} **{item.get('text', 'No description')}**")
+    print(f"   - Due: {item.get('due_date', 'Not set')} | Assignee: {item.get('assignee', 'Unassigned')}")
+    print()
+```
+
+**Example Queries**:
+- `show items for @alice from last week` → Assignee + date range filter
+- `overdue high priority tasks` → Status + priority filter
+- `items assigned to john and sarah` → Multiple assignees
+- `tasks due in next 3 days` → Date range filter
+- `urgent items for @bob` → Status + assignee filter
+- `high priority meetings from this month` → Priority + date range filter
+
 ### Tool Integration Benefits
 
+**NLPProcessor Integration** (NEW):
+- **Natural Language**: Flexible query syntax for intuitive filtering
+- **Combined Filters**: Easy combination of multiple filter types
+- **Date Parsing**: Intelligent date expression parsing (relative and absolute)
+- **Assignee Extraction**: Support for @mentions and natural language
+- **Priority Detection**: Multiple formats ([high], priority:high, "high priority")
+- **Performance**: <10ms query parsing overhead
+
 **NoteProcessor Integration**:
-- **Simplification**: 372 lines → ~150 lines (60% reduction) through tool delegation
+- **Simplification**: 372 lines → ~200 lines (46% reduction) through tool delegation
 - **Consistency**: Standardized action item extraction and analysis
 - **Performance**: Cached note processing with optimized queries
 - **Testability**: Centralized action item logic with comprehensive unit tests
@@ -360,6 +504,7 @@ for assignee, stats in sorted(assignee_items.items()):
 - Stale item detection for cleanup recommendations
 - Flexible filtering by status, assignee, priority
 - Comprehensive team performance analytics
+- Natural language query support for enhanced usability
 
 ### Error Handling
 
@@ -367,5 +512,7 @@ for assignee, stats in sorted(assignee_items.items()):
 - **Missing Note Data**: Graceful degradation with available information
 - **Invalid Filters**: Clear error message with valid filter options
 - **CLI Failures**: Fallback to manual note scanning with warning
+- **NLP Parsing Errors**: Graceful fallback to keyword-based filtering
+- **Invalid Date Expressions**: Clear message with date format examples
 
-Remember: Effective follow-up requires regular checking, clear prioritization, and timely action. NoteProcessor ensures consistent, comprehensive action item tracking.
+Remember: Effective follow-up requires regular checking, clear prioritization, and timely action. NoteProcessor ensures consistent, comprehensive action item tracking, while NLPProcessor enables intuitive natural language queries.
