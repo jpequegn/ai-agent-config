@@ -91,6 +91,11 @@ from tools.project_status_generator import (
     ProjectStatusGeneratorError,
     ProjectStatus,
 )
+from tools.project_review_generator import (
+    ProjectReviewGenerator,
+    ProjectReviewGeneratorError,
+    ProjectReview,
+)
 
 __all__ = [
     "ConfigManager",
@@ -181,4 +186,7 @@ __all__ = [
     "ProjectStatusGenerator",
     "ProjectStatusGeneratorError",
     "ProjectStatus",
+    "ProjectReviewGenerator",
+    "ProjectReviewGeneratorError",
+    "ProjectReview",
 ]
