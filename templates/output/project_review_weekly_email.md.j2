@@ -1,0 +1,83 @@
+{% extends "base.md.j2" %}
+
+{% block header %}
+**Subject:** Weekly Project Review - {{ data.start_date.strftime('%b %d') }} | {% if data.critical_decisions %}{{ data.critical_decisions | length }} Decision(s) Needed{% else %}All Projects On Track{% endif %}
+
+---
+{% endblock %}
+
+{% block content %}
+Hi Team,
+
+Here's this week's project review with key highlights and action items:
+
+## 🎯 Key Wins
+
+{% set wins = [] %}
+{% for project_id, status in data.project_statuses.items() %}
+  {%- if status.health_score and status.health_score.score > 0.8 -%}
+    {% set _ = wins.append({'project': project_id, 'health': status.health_score.score, 'trend': status.trends}) %}
+  {%- endif -%}
+{% endfor %}
+
+{% if wins %}
+{% for win in wins[:3] %}
+- **{{ win.project }}**: {{ health_score(win.health, '') }} {{ '(improving)' if win.trend and win.trend.direction.value == 'improving' else '' }}
+{% endfor %}
+{% else %}
+- Projects are progressing steadily
+{% endif %}
+
+{% if data.critical_decisions %}
+## ⚠️ Decisions Needed
+
+{% for decision in data.critical_decisions[:3] %}
+**{{ loop.index }}. {{ decision.project }}** (By: {{ 'End of week' if decision.priority in ['critical', 'high'] else 'Next 2 weeks' }})
+- **Issue:** {{ decision.issue }}
+- **Recommendation:** {{ decision.recommendation if decision.recommendation else 'Assess options and decide' }}
+{% if decision.priority == 'critical' %}
+{{ emoji.failure }} **CRITICAL** - Requires immediate attention
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+## 📊 Portfolio Status
+
+**Overall Health:** {{ health_score(data.portfolio_health, '') }} | **Projects On Track:** {{ (data.project_statuses.values() | selectattr('health_score') | selectattr('health_score.score', '>', 0.7) | list | length) }}/{{ data.active_count }}
+
+{% if data.trends %}
+**Portfolio Trend:** {{ data.trends.direction.value.title() }} {{ '↗️' if data.trends.direction.value == 'improving' else '↘️' if data.trends.direction.value == 'declining' else '→' }} ({{ (data.trends.slope * 100) | round(1) }}% per week)
+{% endif %}
+
+{% if data.recommendations %}
+## 💡 This Week's Focus
+
+{% for rec in data.recommendations[:3] %}
+{{ loop.index }}. {{ rec }}
+{% endfor %}
+{% endif %}
+
+## 🎯 Next Steps
+
+{% if data.critical_decisions %}
+- Review and decide on {{ data.critical_decisions | length }} critical decision(s)
+{% endif %}
+- Continue momentum on high-performing projects
+{% if data.project_statuses.values() | selectattr('health_score') | selectattr('health_score.score', '<', 0.6) | list | length > 0 %}
+- Address struggling projects requiring support
+{% endif %}
+
+---
+
+Full detailed review available in project documentation. Let me know if you need any additional context or have questions about the recommendations.
+
+Best regards,
+Project Management
+
+**Next Review:** {{ (data.end_date + timedelta(days=7)).strftime('%B %d, %Y') }}
+
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends "base.md.j2" %}
+
+{% block header %}
+# 📊 Monthly Project Portfolio Review
+**Review Period:** {{ data.start_date.strftime('%B %Y') }}
+**Portfolio Health Score:** {{ health_score(data.portfolio_health, '') }}
+**Active Projects:** {{ data.active_count }} | **Milestones Completed:** {{ data.milestone_count }}
+{% endblock %}
+
+{% block content %}
+## 🎯 Strategic Executive Summary
+
+{% if data.critical_decisions %}
+**Strategic Decision Points:**
+{% for decision in data.critical_decisions[:5] %}
+{{ loop.index }}. **{{ decision.project }}** ({{ decision.priority.upper() }})
+   - {{ decision.issue }}
+   {% if decision.recommendation %}
+   - **Recommendation:** {{ decision.recommendation }}
+   {% endif %}
+{% endfor %}
+{% endif %}
+
+{% if data.recommendations %}
+## 💡 Strategic Recommendations
+
+{% for rec in data.recommendations %}
+{{ list_item(rec) }}
+{% endfor %}
+{% endif %}
+
+## 📈 Historical Trend Analysis (90-day view)
+
+{% if data.trends %}
+**Portfolio Health Trends:**
+- **Direction:** {{ data.trends.direction.value.title() }} {{ '↗️' if data.trends.direction.value == 'improving' else '↘️' if data.trends.direction.value == 'declining' else '→' }}
+- **Average Health Score:** {{ health_score(data.portfolio_health, '') }}
+- **Slope:** {{ (data.trends.slope * 100) | round(2) }}% per week
+- **Confidence:** {{ (data.trends.confidence * 100) | round(0) }}%
+{% if data.trends.predicted_value %}
+- **3-Month Forecast:** {{ health_score(data.trends.predicted_value, '') }}
+{% endif %}
+{% endif %}
+
+## 📊 Portfolio Performance Matrix
+
+| Project | Health | Trend | Velocity | Risk Level | Completion ETA |
+|---------|---------|-------|----------|------------|----------------|
+{% for project_id in data.projects %}
+{%- set status = data.project_statuses.get(project_id, {}) -%}
+{%- if status.health_score -%}
+{%- set health = status.health_score -%}
+{%- set trend_symbol = '↗️' if status.trends and status.trends.direction.value == 'improving' else '↘️' if status.trends and status.trends.direction.value == 'declining' else '→' -%}
+{%- set velocity_pct = ((status.team_metrics.velocity_score if status.team_metrics else 1.0) * 100) | round(0) -%}
+{%- set risk = status.prediction.risk_level.value if status.prediction else 'unknown' -%}
+{%- set eta = status.prediction.eta.strftime('%b %d') if status.prediction and status.prediction.eta else 'TBD' -%}
+| {{ project_id }} | {{ health_score(health.score, '') }} | {{ trend_symbol }} | {{ velocity_pct }}% | {{ risk.title() }} | {{ eta }} |
+{%- endif -%}
+{% endfor %}
+
+## 🎯 Success Patterns & Insights
+
+{% set high_performers = [] %}
+{% set struggling = [] %}
+{% for project_id, status in data.project_statuses.items() %}
+  {%- if status.team_metrics and status.team_metrics.velocity_score > 1.2 -%}
+    {% set _ = high_performers.append(project_id) %}
+  {%- elif status.team_metrics and status.team_metrics.velocity_score < 0.7 -%}
+    {% set _ = struggling.append(project_id) %}
+  {%- endif -%}
+{% endfor %}
+
+{% if high_performers %}
+**High-Performing Projects:**
+{% for project in high_performers %}
+- **{{ project }}**: {{ data.project_statuses[project].team_metrics.velocity_score | round(2) }}x velocity
+{% endfor %}
+{% endif %}
+
+{% if struggling %}
+**Projects Needing Support:**
+{% for project in struggling %}
+- **{{ project }}**: {{ data.project_statuses[project].team_metrics.velocity_score | round(2) }}x velocity
+{% endfor %}
+{% endif %}
+
+## 🔮 Predictive Analytics
+
+{% for project_id, status in data.project_statuses.items() %}
+{%- if status.prediction -%}
+### {{ project_id }}
+
+**Completion Prediction:**
+- **ETA:** {{ status.prediction.eta.strftime('%B %d, %Y') if status.prediction.eta else 'Unable to predict' }}
+- **Confidence:** {{ (status.prediction.confidence * 100) | round(0) }}%
+- **Risk Level:** {{ status.prediction.risk_level.value.title() }}
+
+{% if status.health_score %}
+**Success Probability:** {{ (status.health_score.score * 100) | round(0) }}%
+- Health score > 0.80: High success probability
+- Health score 0.60-0.80: Moderate success probability
+- Health score < 0.60: Low success probability
+{% endif %}
+
+{% if status.prediction.risk_level.value in ['high', 'critical'] %}
+{{ emoji.warning }} **Recommendation:** {% if status.prediction.risk_level.value == 'critical' %}Immediate resource reallocation or timeline adjustment required{% else %}Consider additional support or timeline adjustment{% endif %}
+{% endif %}
+{% endif -%}
+{% endfor %}
+
+## 💰 Business Impact & ROI
+
+{% for project_id, status in data.project_statuses.items() %}
+{%- if status.project_data and hasattr(status.project_data, 'business_value') -%}
+### {{ project_id }}
+- **Projected Value:** ${{ status.project_data.business_value | default('TBD') }}
+- **Investment:** ${{ status.project_data.investment | default('TBD') }}
+- **ROI:** {{ ((status.project_data.business_value / status.project_data.investment - 1) * 100) | round(1) if status.project_data.investment else 'TBD' }}%
+{% endif -%}
+{% endfor %}
+
+## 📋 Risk Assessment Summary
+
+{% set all_risks = [] %}
+{% for project_id, status in data.project_statuses.items() %}
+  {%- if status.risks -%}
+    {% for risk in status.risks %}
+      {% set _ = all_risks.append({'project': project_id, 'risk': risk}) %}
+    {% endfor %}
+  {%- endif -%}
+{% endfor %}
+
+{% if all_risks %}
+{% set critical = all_risks | selectattr('risk.severity.value', 'eq', 'critical') | list %}
+{% set high = all_risks | selectattr('risk.severity.value', 'eq', 'high') | list %}
+
+**Risk Summary:**
+- **Critical Risks:** {{ critical | length }}
+- **High Risks:** {{ high | length }}
+- **Total Risks:** {{ all_risks | length }}
+
+{% if critical %}
+### Critical Risks Requiring Immediate Action
+
+{% for item in critical[:5] %}
+{{ loop.index }}. **{{ item.project }}** - {{ item.risk.title }}
+   - {{ item.risk.description }}
+   - **Mitigation:** {{ item.risk.mitigation_suggestions[0] if item.risk.mitigation_suggestions else 'Assess mitigation options' }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## 🎯 Next Month Strategic Initiatives
+
+{% if data.recommendations %}
+**Priority Actions:**
+{% for rec in data.recommendations %}
+{{ loop.index }}. {{ rec }}
+{% endfor %}
+{% endif %}
+
+**Portfolio Optimization:**
+1. Focus on high-impact projects with >$100K value
+2. Address resource constraints for struggling teams
+3. Replicate success patterns from high performers
+
+**Strategic Planning:**
+- Review Q{{ ((data.end_date.month - 1) // 3 + 2) % 4 + 1 }} roadmap alignment
+- Assess resource allocation for next quarter
+- Plan capacity for new initiatives
+
+## 📤 Executive Communication
+
+**For Leadership Team:**
+"{{ data.start_date.strftime('%B') }} delivered {{ 'strong' if data.portfolio_health > 0.75 else 'solid' if data.portfolio_health > 0.6 else 'mixed' }} portfolio performance with {{ (data.portfolio_health * 100) | round(0) }}% overall health. {% if data.critical_decisions | length > 0 %}{{ data.critical_decisions | length }} strategic decision(s) require attention. {% endif %}Portfolio trending {{ data.trends.direction.value if data.trends else 'stable' }}. Key focus areas: {{ data.recommendations[0] if data.recommendations else 'Maintain current trajectory' }}."
+
+**Next Strategic Review:** {{ (data.end_date + timedelta(days=30)).strftime('%B %Y') }}
+**Quarterly Planning Session:** {{ 'Q' + str((data.end_date.month - 1) // 3 + 1) + ' ' + str(data.end_date.year) }} Review
+
+{% endblock %}

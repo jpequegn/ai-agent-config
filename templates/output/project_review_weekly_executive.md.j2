@@ -1,0 +1,126 @@
+{% extends "base.md.j2" %}
+
+{% block header %}
+# 📊 Weekly Project Review
+**Review Period:** Week of {{ data.start_date.strftime('%Y-%m-%d') }} - {{ data.end_date.strftime('%Y-%m-%d') }}
+**Active Projects:** {{ data.active_count }} | **Completed Milestones:** {{ data.milestone_count }}
+**Portfolio Health:** {{ health_score(data.portfolio_health, '') }}
+{% endblock %}
+
+{% block content %}
+## 🎯 Executive Highlights
+
+{% if data.critical_decisions %}
+**Critical Decisions Needed:**
+{% for decision in data.critical_decisions[:3] %}
+{{ loop.index }}. **{{ decision.project }}** {{ emoji.warning if decision.priority in ['critical', 'high'] else emoji.info }} {{ decision.priority.upper() }}
+   - **Issue**: {{ decision.issue }}
+   {% if decision.recommendation %}
+   - **Recommendation**: {{ decision.recommendation }}
+   {% endif %}
+{% endfor %}
+{% else %}
+{{ emoji.success }} No critical decisions required this week
+{% endif %}
+
+{% if data.recommendations %}
+## 💡 Strategic Recommendations
+
+{% for rec in data.recommendations %}
+{{ list_item(rec) }}
+{% endfor %}
+{% endif %}
+
+## 📈 Portfolio Performance Metrics
+
+| Project | Status | Health Score | Trend | Next Milestone |
+|---------|---------|--------------|-------|----------------|
+{% for project_id in data.projects %}
+{%- set status = data.project_statuses.get(project_id, {}) -%}
+{%- if status.health_score -%}
+{%- set health = status.health_score -%}
+{%- set trend_symbol = '↗️' if status.trends and status.trends.direction.value == 'improving' else '↘️' if status.trends and status.trends.direction.value == 'declining' else '→' -%}
+| {{ project_id }} | {{ status_indicator(health.category.value) }} {{ health.category.value.title() }} | {{ health_score(health.score, '') }} | {{ trend_symbol }} | {{ status.prediction.eta.strftime('%b %d') if status.prediction and status.prediction.eta else 'TBD' }} |
+{%- endif -%}
+{% endfor %}
+
+{% if data.trends %}
+## 📊 Portfolio Trend Analysis (30-day view)
+
+**Portfolio Health Trends:**
+- **Direction:** {{ data.trends.direction.value.title() }} {{ '↗️' if data.trends.direction.value == 'improving' else '↘️' if data.trends.direction.value == 'declining' else '→' }}
+- **Confidence:** {{ (data.trends.confidence * 100) | round(0) }}%
+{% if data.trends.predicted_value %}
+- **Predicted Next Week:** {{ health_score(data.trends.predicted_value, '') }}
+{% endif %}
+{% endif %}
+
+## 🔮 Completion Predictions
+
+{% for project_id in data.projects %}
+{%- set status = data.project_statuses.get(project_id, {}) -%}
+{%- if status.prediction -%}
+### {{ project_id }}
+- **ETA:** {{ status.prediction.eta.strftime('%B %d, %Y') if status.prediction.eta else 'Unable to predict' }}
+- **Confidence:** {{ (status.prediction.confidence * 100) | round(0) }}%
+- **Risk Level:** {{ status.prediction.risk_level.value.title() }}
+{% if status.prediction.risk_level.value in ['high', 'critical'] %}
+  {{ emoji.warning }} **Action Required:** {{ 'Timeline adjustment recommended' if status.prediction.risk_level.value == 'high' else 'Immediate intervention needed' }}
+{% endif %}
+{% endif -%}
+{% endfor %}
+
+{% if data.project_statuses %}
+## ⚠️ Risks & Blockers
+
+{% for project_id, status in data.project_statuses.items() %}
+{%- if status.risks -%}
+{%- set critical_risks = status.risks | selectattr('severity.value', 'eq', 'critical') | list -%}
+{%- set high_risks = status.risks | selectattr('severity.value', 'eq', 'high') | list -%}
+{%- if critical_risks or high_risks -%}
+### {{ project_id }}
+{%- for risk in critical_risks[:2] %}
+- {{ emoji.failure }} **CRITICAL:** {{ risk.title }}
+  - {{ risk.description }}
+  {%- if risk.mitigation_suggestions %}
+  - **Mitigation:** {{ risk.mitigation_suggestions[0] }}
+  {%- endif %}
+{%- endfor %}
+{%- for risk in high_risks[:2] %}
+- {{ emoji.warning }} **HIGH:** {{ risk.title }}
+  - {{ risk.description }}
+{%- endfor %}
+{%- endif -%}
+{%- endif -%}
+{% endfor %}
+{% endif %}
+
+## 👥 Team Performance
+
+{% for project_id, status in data.project_statuses.items() %}
+{%- if status.team_metrics -%}
+{%- set metrics = status.team_metrics -%}
+### {{ project_id }}
+- **Velocity Score:** {{ (metrics.velocity_score * 100) | round(0) }}% {{ '↑' if metrics.velocity_score > 1.0 else '↓' if metrics.velocity_score < 1.0 else '→' }}
+- **Quality Score:** {{ (metrics.quality_score * 100) | round(0) }}%
+- **Collaboration Score:** {{ (metrics.collaboration_score * 100) | round(0) }}%
+{%- if metrics.throughput %}
+- **Throughput:** {{ metrics.throughput }} tasks/week
+{%- endif %}
+{%- if metrics.cycle_time %}
+- **Cycle Time:** {{ metrics.cycle_time | round(1) }} days
+{%- endif %}
+{%- endif -%}
+{% endfor %}
+
+## 📤 Stakeholder Communications
+
+**For Executive Team:**
+"This week delivered {% if data.critical_decisions %}strong progress with {{ data.critical_decisions | length }} decision(s) requiring attention{% else %}solid progress across all active projects{% endif %}. Portfolio health is {{ 'excellent' if data.portfolio_health > 0.8 else 'good' if data.portfolio_health > 0.6 else 'needs attention' }} at {{ (data.portfolio_health * 100) | round(0) }}%. {% if data.recommendations %}Key recommendations: {{ data.recommendations[0] if data.recommendations else 'Continue current trajectory' }}.{% endif %}"
+
+**For Project Owners:**
+"Weekly review complete - {% if data.critical_decisions %}{{ data.critical_decisions | length }} decision(s) need your attention{% else %}all projects tracking well{% endif %}. Detailed metrics and recommendations provided above. Next review: {{ (data.end_date + timedelta(days=7)).strftime('%Y-%m-%d') }}."
+
+**Next Review:** {{ (data.end_date + timedelta(days=7)).strftime('%Y-%m-%d') }}
+
+{% endblock %}

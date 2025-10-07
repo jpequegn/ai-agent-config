@@ -1,0 +1,85 @@
+{% extends "project_review_weekly_executive.md.j2" %}
+
+{% block content %}
+{{ super() }}
+
+## 📝 Detailed Project Breakdown
+
+{% for project_id in data.projects %}
+{%- set status = data.project_statuses.get(project_id, {}) -%}
+{%- if status.health_score -%}
+---
+
+### {{ project_id }}
+
+**Overall Health:** {{ health_score(status.health_score.score, '') }} ({{ status.health_score.category.value.title() }})
+
+#### Component Health Breakdown
+{% if status.health_score.components %}
+{% for component_name, component_score in status.health_score.components.items() %}
+- **{{ component_name.title() }}:** {{ health_score(component_score, '') }}
+{% endfor %}
+{% endif %}
+
+#### Activity & Progress
+{%- if status.project_data -%}
+{%- if hasattr(status.project_data, 'github_data') and status.project_data.github_data -%}
+- **Commits This Week:** {{ status.project_data.github_data.commits | default(0) }}
+- **Pull Requests:** {{ status.project_data.github_data.pull_requests | default(0) }}
+- **Issues Closed:** {{ status.project_data.github_data.issues_closed | default(0) }}
+{%- endif -%}
+{%- endif -%}
+
+#### Timeline & Milestones
+{%- if status.project_data and hasattr(status.project_data, 'milestones') -%}
+{% for milestone in status.project_data.milestones[:5] %}
+- {{ status_indicator(milestone.status) }} **{{ milestone.name }}** - Due: {{ milestone.due_date.strftime('%Y-%m-%d') if milestone.due_date else 'TBD' }} ({{ (milestone.progress * 100) | round(0) }}%)
+{% endfor %}
+{%- endif -%}
+
+#### Blockers & Dependencies
+{%- if status.risks -%}
+{%- set blockers = status.risks | selectattr('title', 'match', '.*blocked.*|.*blocker.*') | list -%}
+{%- if blockers -%}
+**Active Blockers:**
+{% for blocker in blockers %}
+- {{ emoji.blocked }} {{ blocker.title }} ({{ blocker.severity.value }})
+{% endfor %}
+{%- endif -%}
+{%- endif -%}
+
+{%- if status.project_data and hasattr(status.project_data, 'dependencies') -%}
+**Dependencies:**
+{% for dep in status.project_data.dependencies %}
+- {{ dep.name }}: {{ status_indicator(dep.status) }} {{ dep.status }}
+{% endfor %}
+{%- endif -%}
+
+#### Team Metrics
+{%- if status.team_metrics -%}
+- **Velocity:** {{ (status.team_metrics.velocity_score * 100) | round(0) }}%
+- **Quality:** {{ (status.team_metrics.quality_score * 100) | round(0) }}%
+- **Collaboration:** {{ (status.team_metrics.collaboration_score * 100) | round(0) }}%
+{%- if status.team_metrics.throughput -%}
+- **Throughput:** {{ status.team_metrics.throughput }} tasks/week
+{%- endif -%}
+{%- if status.team_metrics.cycle_time -%}
+- **Average Cycle Time:** {{ status.team_metrics.cycle_time | round(1) }} days
+{%- endif -%}
+{%- endif -%}
+
+#### Next Steps
+{%- if status.project_data and hasattr(status.project_data, 'next_steps') -%}
+{% for step in status.project_data.next_steps %}
+- {{ step }}
+{% endfor %}
+{%- else -%}
+- Continue current work and monitor progress
+- Address any identified risks
+- Maintain team velocity and quality
+{%- endif -%}
+
+{%- endif -%}
+{% endfor %}
+
+{% endblock %}
