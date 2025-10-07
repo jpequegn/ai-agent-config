@@ -107,6 +107,14 @@ from tools.decision_analyzer import (
     UrgencyLevel,
     SentimentType,
 )
+from tools.team_manager import (
+    TeamManager,
+    TeamManagerError,
+    TeamMember,
+    OneOnOneMeeting,
+    PerformanceAnalysis,
+    FeedbackReport,
+)
 
 __all__ = [
     "ConfigManager",
@@ -209,4 +217,10 @@ __all__ = [
     "DecisionRisk",
     "UrgencyLevel",
     "SentimentType",
+    "TeamManager",
+    "TeamManagerError",
+    "TeamMember",
+    "OneOnOneMeeting",
+    "PerformanceAnalysis",
+    "FeedbackReport",
 ]
