@@ -1,0 +1,174 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+# 🎯 Decision Framework Analysis: {{ data.decision.title }}
+
+**Framework Applied:** {{ data.framework_applied }} | **Analysis Date:** {{ format_date('now', 'FULL') }}
+
+{% if data.decision.urgency %}
+**Urgency**: {% if data.decision.urgency == 'critical' %}🔴{% elif data.decision.urgency == 'high' %}🟠{% elif data.decision.urgency == 'medium' %}🟡{% else %}🟢{% endif %} {{ data.decision.urgency.title() }}
+{% endif %}
+
+{% if data.decision.deadline %}
+**Decision Deadline**: {{ data.decision.deadline if data.decision.deadline is string else format_date(data.decision.deadline, 'SHORT') }}
+{% endif %}
+
+{% if data.decision.decision_type %}
+**Decision Type**: {{ data.decision.decision_type.title() }}
+{% endif %}
+
+---
+
+## 📋 Decision Context
+
+{% if data.decision.description %}
+{{ data.decision.description }}
+{% endif %}
+
+{% if data.decision.success_criteria %}
+### Success Criteria
+{% for criterion in data.decision.success_criteria %}
+- {{ criterion }}
+{% endfor %}
+{% endif %}
+
+{% if data.decision.constraints %}
+### Constraints
+{% for constraint_name, constraint_desc in data.decision.constraints.items() %}
+- **{{ constraint_name.replace('_', ' ').title() }}**: {{ constraint_desc }}
+{% endfor %}
+{% endif %}
+
+---
+
+## ⚖️ Framework-Based Scoring Matrix
+
+{% if data.options %}
+### Criterion Weights
+{% set criteria = data.options[0].criteria_scores.keys() | list %}
+{% for criterion_name in criteria %}
+- **{{ criterion_name.replace('_', ' ').title() }}**: Applied across all options
+{% endfor %}
+
+### Option Comparison
+
+| Option | Overall Score | {% for criterion_name in criteria %}{{ criterion_name.replace('_', ' ').title() }} | {% endfor %}
+|--------|---------------|{% for _ in criteria %}---------|{% endfor %}
+{% for option in data.options %}
+| {{ option.name }} | {{ health_score(option.score | default(0.5), '') }} | {% for criterion_name in criteria %}{{ health_score(option.criteria_scores.get(criterion_name, 0.5), '') }} | {% endfor %}
+{% endfor %}
+
+---
+
+## 📊 Detailed Option Analysis
+
+{% for option in data.options %}
+### {% if loop.index == 1 %}⭐ {% endif %}Option {{ loop.index }}: {{ option.name }}
+
+{% if option.description %}
+{{ option.description }}
+{% endif %}
+
+**Overall Framework Score**: {{ health_score(option.score | default(0.5), '') }} ({{ "%.1f"|format((option.score | default(0.5)) * 100) }}%)
+
+#### Framework Criteria Scores
+{% for criterion, score in option.criteria_scores.items() %}
+- {{ health_score(score, criterion.replace('_', ' ').title()) }}: {{ "%.1f"|format(score * 100) }}%
+{% endfor %}
+
+#### Strengths
+{% if option.pros %}
+{% for pro in option.pros %}
+- {{ emoji.success }} {{ pro }}
+{% endfor %}
+{% else %}
+- {{ emoji.info }} No specific strengths identified
+{% endif %}
+
+#### Weaknesses
+{% if option.cons %}
+{% for con in option.cons %}
+- {{ emoji.warning }} {{ con }}
+{% endfor %}
+{% else %}
+- {{ emoji.success }} No significant weaknesses identified
+{% endif %}
+
+{% if option.estimated_cost or option.estimated_time %}
+#### Resource Estimates
+{% if option.estimated_cost %}
+- **Estimated Cost**: {{ option.estimated_cost }}
+{% endif %}
+{% if option.estimated_time %}
+- **Estimated Timeline**: {{ option.estimated_time }}
+{% endif %}
+{% endif %}
+
+---
+{% endfor %}
+{% endif %}
+
+## 🎓 Framework-Based Recommendation
+
+{% if data.recommendation %}
+### Recommended Option: {{ data.recommendation.option }}
+
+**Confidence Level**: {{ health_score(data.recommendation.confidence, 'Recommendation Confidence') }} ({{ "%.1f"|format(data.recommendation.confidence * 100) }}%)
+
+#### Rationale
+{{ data.recommendation.reasoning }}
+
+{% if data.recommendation.implementation_notes %}
+#### Implementation Notes
+{{ data.recommendation.implementation_notes }}
+{% endif %}
+{% endif %}
+
+---
+
+## ⚠️ Risk Assessment
+
+{% if data.risks %}
+{% for risk in data.risks %}
+### {{ emoji.warning }} {{ risk.title }}
+
+**Severity**: {% if risk.severity == 'critical' %}🔴{% elif risk.severity == 'high' %}🟠{% elif risk.severity == 'medium' %}🟡{% else %}🟢{% endif %} {{ risk.severity.title() }} | **Likelihood**: {% if risk.likelihood == 'high' %}🔴{% elif risk.likelihood == 'medium' %}🟡{% else %}🟢{% endif %} {{ risk.likelihood.title() }}
+
+{{ risk.description }}
+
+{% if risk.mitigation %}
+**Mitigation Strategy**:
+{{ risk.mitigation }}
+{% endif %}
+
+---
+{% endfor %}
+{% else %}
+{{ emoji.success }} No significant risks identified in framework analysis
+{% endif %}
+
+## 📅 Recommended Next Steps
+
+{% if data.next_steps %}
+{% for step in data.next_steps %}
+{{ loop.index }}. **{{ step.action }}**
+   - Owner: {{ step.owner | default('TBD') }}
+   - Deadline: {{ step.deadline | default('TBD') }}
+{% endfor %}
+{% else %}
+1. **Approve Recommendation**: Review and approve framework-based recommendation
+2. **Develop Implementation Plan**: Create detailed implementation roadmap
+3. **Communicate Decision**: Inform stakeholders of decision and rationale
+{% endif %}
+
+---
+
+## 📊 Analysis Metadata
+
+{% if data.analysis_metadata %}
+- **Framework Applied**: {{ data.framework_applied }}
+- **Options Analyzed**: {{ data.analysis_metadata.options_analyzed | default(data.options | length) }}
+- **Analysis Date**: {{ data.analysis_metadata.analysis_date if data.analysis_metadata.analysis_date is string else format_date(data.analysis_metadata.analysis_date, 'FULL') }}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.md.j2" %}
+
+{% block content %}
+# 👥 Stakeholder Impact Analysis: {{ data.decision.title }}
+
+**Analysis Date:** {{ format_date('now', 'FULL') }}
+
+{% if data.decision.urgency %}
+**Decision Urgency**: {% if data.decision.urgency == 'critical' %}🔴{% elif data.decision.urgency == 'high' %}🟠{% elif data.decision.urgency == 'medium' %}🟡{% else %}🟢{% endif %} {{ data.decision.urgency.title() }}
+{% endif %}
+
+---
+
+## 📋 Decision Overview
+
+{% if data.decision.description %}
+{{ data.decision.description }}
+{% endif %}
+
+{% if data.options %}
+### Options Under Consideration
+{% for option in data.options %}
+{{ loop.index }}. **{{ option.name }}** - {{ option.description if option.description else 'Option ' ~ loop.index }}
+{% endfor %}
+{% endif %}
+
+---
+
+## 👥 Stakeholder Impact Assessment
+
+{% if data.stakeholder_impact %}
+{% for stakeholder, impact in data.stakeholder_impact.items() %}
+### {{ stakeholder.replace('_', ' ').title() }}
+
+**Impact Level**: {% if impact.sentiment == 'positive' %}{{ emoji.success }} Positive{% elif impact.sentiment == 'negative' %}{{ emoji.warning }} Negative{% else %}{{ emoji.info }} Neutral{% endif %}
+
+{% if impact.description %}
+**Impact Description**:
+{{ impact.description }}
+{% endif %}
+
+{% if impact.concerns %}
+**Key Concerns**:
+{% for concern in impact.concerns %}
+- {{ concern }}
+{% endfor %}
+{% endif %}
+
+{% if impact.communication_priority %}
+**Communication Priority**: {% if impact.communication_priority == 'high' %}🔴 High{% elif impact.communication_priority == 'medium' %}🟡 Medium{% else %}🟢 Low{% endif %}
+{% endif %}
+
+{% if impact.recommended_approach %}
+**Recommended Engagement Approach**:
+{{ impact.recommended_approach }}
+{% endif %}
+
+---
+{% endfor %}
+{% else %}
+{{ emoji.info }} No specific stakeholder impacts identified. General stakeholder communication recommended.
+{% endif %}
+
+---
+
+## 📊 Stakeholder Sentiment Summary
+
+{% if data.stakeholder_impact %}
+{% set positive_count = data.stakeholder_impact.values() | selectattr('sentiment', 'equalto', 'positive') | list | length %}
+{% set neutral_count = data.stakeholder_impact.values() | selectattr('sentiment', 'equalto', 'neutral') | list | length %}
+{% set negative_count = data.stakeholder_impact.values() | selectattr('sentiment', 'equalto', 'negative') | list | length %}
+{% set total_count = data.stakeholder_impact | length %}
+
+| Sentiment | Count | Percentage |
+|-----------|-------|------------|
+| {{ emoji.success }} Positive | {{ positive_count }} | {{ "%.0f"|format((positive_count / total_count * 100) if total_count > 0 else 0) }}% |
+| {{ emoji.info }} Neutral | {{ neutral_count }} | {{ "%.0f"|format((neutral_count / total_count * 100) if total_count > 0 else 0) }}% |
+| {{ emoji.warning }} Negative | {{ negative_count }} | {{ "%.0f"|format((negative_count / total_count * 100) if total_count > 0 else 0) }}% |
+
+{% if positive_count >= (total_count * 0.7) %}
+{{ emoji.success }} **Strong stakeholder support** - Proceed with confidence
+{% elif negative_count >= (total_count * 0.3) %}
+{{ emoji.warning }} **Significant stakeholder concerns** - Additional engagement recommended
+{% else %}
+{{ emoji.info }} **Mixed stakeholder sentiment** - Targeted communication strategy advised
+{% endif %}
+{% endif %}
+
+---
+
+## 💬 Recommended Communication Strategy
+
+{% if data.communication_plan %}
+### Communication Priorities
+{% for message in data.communication_plan %}
+{{ loop.index }}. **{{ message.stakeholder | default('Stakeholder') }}**: {{ message.priority | default('Medium') }} priority
+   - **Message**: {{ message.content | default('Decision update and impact assessment') }}
+   - **Channel**: {{ message.channel | default('Email') }}
+   - **Timing**: {{ message.timing | default('Immediate') }}
+{% endfor %}
+{% else %}
+### General Communication Approach
+
+1. **Executive Stakeholders**: High-level decision summary with strategic rationale
+   - **Channel**: Executive brief or meeting
+   - **Timing**: Immediate
+
+2. **Directly Impacted Teams**: Detailed impact analysis and support plan
+   - **Channel**: Team meetings and written documentation
+   - **Timing**: Within 3 days
+
+3. **Broader Organization**: General awareness communication
+   - **Channel**: Company-wide announcement
+   - **Timing**: Post-decision implementation
+
+4. **External Stakeholders**: Relevant updates as needed
+   - **Channel**: Official communications
+   - **Timing**: As determined by impact assessment
+{% endif %}
+
+---
+
+## 🎯 Consensus Building Strategy
+
+{% if data.stakeholder_impact %}
+{% set negative_stakeholders = [] %}
+{% for stakeholder, impact in data.stakeholder_impact.items() %}
+  {% if impact.sentiment == 'negative' %}
+    {% set _ = negative_stakeholders.append(stakeholder) %}
+  {% endif %}
+{% endfor %}
+
+{% if negative_stakeholders %}
+### Address Resistance
+Key stakeholders with concerns: {{ negative_stakeholders | join(', ') }}
+
+**Recommended Actions**:
+1. Schedule one-on-one meetings to understand specific concerns
+2. Develop targeted mitigation strategies for identified issues
+3. Involve concerned stakeholders in implementation planning
+4. Provide regular progress updates and feedback opportunities
+{% else %}
+### Build on Support
+{{ emoji.success }} Strong stakeholder alignment detected
+
+**Recommended Actions**:
+1. Leverage supportive stakeholders as champions
+2. Maintain momentum with regular progress updates
+3. Celebrate quick wins to reinforce positive sentiment
+4. Continue transparent communication throughout implementation
+{% endif %}
+{% endif %}
+
+---
+
+## 📅 Next Steps for Stakeholder Engagement
+
+{% if data.next_steps %}
+{% for step in data.next_steps %}
+{{ loop.index }}. **{{ step.action }}**
+   - Owner: {{ step.owner | default('Communication Lead') }}
+   - Deadline: {{ step.deadline | default('TBD') }}
+{% endfor %}
+{% else %}
+1. **Stakeholder Communication**: Send decision update to all impacted stakeholders
+   - Owner: Communication Lead
+   - Deadline: Within 24 hours
+
+2. **Feedback Collection**: Gather stakeholder feedback and concerns
+   - Owner: Project Manager
+   - Deadline: Within 3 days
+
+3. **Mitigation Planning**: Address concerns identified in feedback
+   - Owner: Decision Owner
+   - Deadline: Within 1 week
+
+4. **Implementation Kickoff**: Launch implementation with stakeholder support
+   - Owner: Implementation Team
+   - Deadline: Within 2 weeks
+{% endif %}
+
+{% endblock %}

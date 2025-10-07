@@ -14,7 +14,11 @@
       "Bash(p3 status:*)",
       "Bash(sqlite3:*)",
       "Bash(python3:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(python3 -m pytest test_decision_analyzer.py -v)",
+      "Bash(python3 -m pytest test_decision_analyzer.py -v --tb=short)"
     ],
     "deny": [],
     "ask": []
