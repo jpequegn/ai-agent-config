@@ -96,6 +96,17 @@ from tools.project_review_generator import (
     ProjectReviewGeneratorError,
     ProjectReview,
 )
+from tools.decision_analyzer import (
+    DecisionAnalyzer,
+    DecisionAnalyzerError,
+    DecisionAnalysis,
+    DecisionContext,
+    DecisionOption,
+    DecisionRecommendation,
+    DecisionRisk,
+    UrgencyLevel,
+    SentimentType,
+)
 
 __all__ = [
     "ConfigManager",
@@ -189,4 +200,13 @@ __all__ = [
     "ProjectReviewGenerator",
     "ProjectReviewGeneratorError",
     "ProjectReview",
+    "DecisionAnalyzer",
+    "DecisionAnalyzerError",
+    "DecisionAnalysis",
+    "DecisionContext",
+    "DecisionOption",
+    "DecisionRecommendation",
+    "DecisionRisk",
+    "UrgencyLevel",
+    "SentimentType",
 ]
