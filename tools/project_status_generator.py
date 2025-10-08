@@ -12,6 +12,7 @@ Simplifies command implementation from 400+ lines to 15-20 lines:
 """
 
 import time
+from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -155,17 +156,20 @@ class ProjectStatusGenerator:
             # Step 2: Enhanced note analysis
             notes_analysis = self._analyze_notes(project_id)
 
-            # Step 3: Calculate health score
-            health_score = self.health_calculator.calculate_project_health(project_data)
+            # Step 3: Convert ProjectData to dict for HealthCalculator
+            project_data_dict = asdict(project_data)
 
-            # Step 4: Analyze trends
+            # Step 4: Calculate health score
+            health_score = self.health_calculator.calculate_project_health(project_data_dict)
+
+            # Step 5: Analyze trends
             trends = self.health_calculator.analyze_trends(
-                historical_data=project_data.history if hasattr(project_data, 'history') else [],
+                historical_data=project_data_dict.get('history', []),
                 time_window=30
             )
 
-            # Step 5: Assess risks
-            risks = self.health_calculator.assess_risks(project_data)
+            # Step 6: Assess risks
+            risks = self.health_calculator.assess_risks(project_data_dict)
 
             # Step 6: Format output
             formatted_output = self._format_output(

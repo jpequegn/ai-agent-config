@@ -1,0 +1,47 @@
+{
+  "name": "Q4 Marketing Campaign",
+  "status": "in_progress",
+  "priority": "high",
+  "owner": "sarah@company.com",
+  "start_date": "2024-09-01",
+  "target_date": "2024-12-31",
+  "github_repos": [
+    "marketing-site",
+    "analytics-dashboard"
+  ],
+  "dependencies": [
+    "budget-approval"
+  ],
+  "tags": [
+    "marketing",
+    "revenue"
+  ],
+  "milestones": [
+    {
+      "name": "Campaign Strategy Approval",
+      "date": "2024-09-15",
+      "status": "completed",
+      "description": null
+    },
+    {
+      "name": "Content Creation",
+      "date": "2024-10-31",
+      "status": "in_progress",
+      "description": null
+    },
+    {
+      "name": "Launch Campaign",
+      "date": "2024-11-15",
+      "status": "planned",
+      "description": null
+    },
+    {
+      "name": "Q4 Results Analysis",
+      "date": "2024-12-31",
+      "status": "planned",
+      "description": null
+    }
+  ],
+  "template_used": null,
+  "description": null
+}
