@@ -3,7 +3,7 @@
 {% block content %}
 ## 📊 Overall Health
 
-{{ health_score(data.health.overall_score, 'Project Health') }}
+{{ health_score(data.health.score, 'Project Health') }}
 
 ### Component Breakdown
 {% for component_name, component in data.health.components.items() %}

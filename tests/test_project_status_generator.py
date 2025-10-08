@@ -116,6 +116,12 @@ class TestProjectStatusGenerator(unittest.TestCase):
             content="# Project Status\n\nHealth: Good",
         )
 
+        # Manually set mocked instances on generator
+        self.generator.data_collector = mock_collector_instance
+        self.generator.health_calculator = mock_calc_instance
+        self.generator.note_processor = mock_processor_instance
+        self.generator.output_formatter = mock_formatter_instance
+
         # Generate status
         status = self.generator.generate_status(project_id="mobile-app")
 
@@ -152,6 +158,12 @@ class TestProjectStatusGenerator(unittest.TestCase):
             content="# Risk Analysis\n\nRisks: 1",
         )
 
+        # Manually set mocked instances on generator
+        self.generator.data_collector = mock_collector_instance
+        self.generator.health_calculator = mock_calc_instance
+        self.generator.note_processor = mock_processor_instance
+        self.generator.output_formatter = mock_formatter_instance
+
         # Generate with focus
         status = self.generator.generate_status(
             project_id="mobile-app",
@@ -187,6 +199,12 @@ class TestProjectStatusGenerator(unittest.TestCase):
             content='{"health": {"score": 0.75}}',
         )
 
+        # Manually set mocked instances on generator
+        self.generator.data_collector = mock_collector_instance
+        self.generator.health_calculator = mock_calc_instance
+        self.generator.note_processor = mock_processor_instance
+        self.generator.output_formatter = mock_formatter_instance
+
         # Generate JSON output
         status = self.generator.generate_status(
             project_id="mobile-app",
@@ -208,11 +226,11 @@ class TestProjectStatusGenerator(unittest.TestCase):
     @patch("tools.project_status_generator.HealthCalculator")
     @patch("tools.project_status_generator.NoteProcessor")
     @patch("tools.project_status_generator.OutputFormatter")
-    def test_generate_overview(self, mock_formatter, mock_note_processor, mock_health_calc, mock_data_collector, mock_config_mgr):
+    def test_generate_overview(self, mock_formatter, mock_note_processor, mock_health_calc, mock_config_mgr, mock_data_collector):
         """Test overview generation for multiple projects."""
         # Mock config manager
         mock_config_instance = mock_config_mgr.return_value
-        mock_config_instance.get_all_projects.return_value = ["mobile-app", "web-app"]
+        mock_config_instance.get_all_projects.return_value = {"mobile-app": {}, "web-app": {}}
 
         # Mock data collector
         mock_collector_instance = mock_data_collector.return_value
@@ -235,8 +253,12 @@ class TestProjectStatusGenerator(unittest.TestCase):
             content="# Project Status",
         )
 
-        # Manually set the mocked manager to generator
+        # Manually set all mocked instances on generator
         self.generator.config_manager = mock_config_instance
+        self.generator.data_collector = mock_collector_instance
+        self.generator.health_calculator = mock_calc_instance
+        self.generator.note_processor = mock_processor_instance
+        self.generator.output_formatter = mock_formatter_instance
 
         # Generate overview
         overview = self.generator.generate_overview()
