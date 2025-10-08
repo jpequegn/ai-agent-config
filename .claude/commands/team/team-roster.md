@@ -209,7 +209,59 @@ from tools import DataCollector
 collector = DataCollector()
 ```
 
-**2. Collect Team Data:**
+**2. Fuzzy Match Team Member (if specified):**
+```python
+from tools import fuzzy_lookup, NoMatchFoundError, AmbiguousMatchError
+
+if member_email_query:
+    # Get all team members for fuzzy matching
+    all_team_data = collector.collect_team_data()
+    all_members = all_team_data.members
+
+    # Create list of identifiers: emails and names
+    member_identifiers = []
+    email_to_member = {}
+    name_to_member = {}
+
+    for member in all_members:
+        email = member.get('email')
+        name = member.get('name')
+
+        if email:
+            member_identifiers.append(email)
+            email_to_member[email] = member
+        if name:
+            member_identifiers.append(name)
+            name_to_member[name] = member
+
+    # Try fuzzy lookup with typo tolerance
+    try:
+        matched_identifier = fuzzy_lookup(
+            query=member_email_query,
+            candidates=member_identifiers,
+            threshold=0.6,  # Lower threshold for flexibility
+            auto_select_threshold=0.95,
+            high_confidence_threshold=0.75,
+            show_suggestions=True
+        )
+
+        # Get the actual member object
+        if matched_identifier in email_to_member:
+            selected_member = email_to_member[matched_identifier]
+            member_email = selected_member.get('email')
+        elif matched_identifier in name_to_member:
+            selected_member = name_to_member[matched_identifier]
+            member_email = selected_member.get('email')
+
+    except NoMatchFoundError:
+        # No match found - fuzzy_lookup already printed suggestions
+        return
+    except AmbiguousMatchError as e:
+        # Multiple matches - fuzzy_lookup already printed "did you mean"
+        return
+```
+
+**3. Collect Team Data:**
 ```python
 # Get team data for specific project
 team_data = collector.collect_team_data(
@@ -222,7 +274,7 @@ members = team_data.members
 roles = team_data.roles
 ```
 
-**3. Display Team Roster:**
+**4. Display Team Roster:**
 ```python
 # Iterate through team members
 for member in members:
@@ -236,7 +288,7 @@ for member in members:
     print(f"{member_name} ({member_email}) - {member_role}")
 ```
 
-**4. Filter Members:**
+**5. Filter Members:**
 ```python
 # Filter by role
 senior_devs = [m for m in members if m.get('role') == 'Senior Developer']
@@ -248,7 +300,7 @@ active_members = [m for m in members if m.get('status') == 'active']
 team_leads_team = [m for m in members if m.get('manager') == 'jane.smith']
 ```
 
-**5. Cross-Reference with Projects:**
+**6. Cross-Reference with Projects:**
 ```python
 # Get comprehensive project data
 data = collector.aggregate_project_data(

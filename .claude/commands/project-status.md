@@ -233,7 +233,36 @@ When executing this command:
    formatter = OutputFormatter()  # Template-based output generation
    ```
 
-2. **Collect Project Data with Enhanced Note Operations**
+2. **Fuzzy Match Project Name (if specified)**
+   ```python
+   from tools import fuzzy_lookup, NoMatchFoundError, AmbiguousMatchError
+
+   if project_name:
+       # Get all available project IDs for fuzzy matching
+       config = ConfigManager()
+       all_projects = config.get_all_projects()
+       project_ids = list(all_projects.keys())
+
+       # Try fuzzy lookup with typo tolerance
+       try:
+           matched_project = fuzzy_lookup(
+               query=project_name,
+               candidates=project_ids,
+               threshold=0.6,  # Lower threshold for more flexibility
+               auto_select_threshold=0.95,
+               high_confidence_threshold=0.8,
+               show_suggestions=True
+           )
+           project_name = matched_project
+       except NoMatchFoundError:
+           # No match found - fuzzy_lookup already printed suggestions
+           return
+       except AmbiguousMatchError as e:
+           # Multiple matches - fuzzy_lookup already printed "did you mean"
+           return
+   ```
+
+3. **Collect Project Data with Enhanced Note Operations**
    ```python
    if project_name:
        # Collect data for specific project from all sources
