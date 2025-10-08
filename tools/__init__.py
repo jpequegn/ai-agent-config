@@ -115,6 +115,14 @@ from tools.team_manager import (
     PerformanceAnalysis,
     FeedbackReport,
 )
+from tools.fuzzy_lookup import (
+    fuzzy_lookup,
+    fuzzy_lookup_silent,
+    get_best_match,
+    FuzzyLookupError,
+    NoMatchFoundError,
+    AmbiguousMatchError,
+)
 
 __all__ = [
     "ConfigManager",
@@ -223,4 +231,10 @@ __all__ = [
     "OneOnOneMeeting",
     "PerformanceAnalysis",
     "FeedbackReport",
+    "fuzzy_lookup",
+    "fuzzy_lookup_silent",
+    "get_best_match",
+    "FuzzyLookupError",
+    "NoMatchFoundError",
+    "AmbiguousMatchError",
 ]

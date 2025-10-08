@@ -227,6 +227,53 @@ for message in comm_plan.messages:
 
 **Implementation using StakeholderAnalyzer:**
 ```python
+from tools import fuzzy_lookup, NoMatchFoundError, AmbiguousMatchError
+
+# Fuzzy match stakeholder ID (if user query contains typos or partial names)
+if stakeholder_query:
+    # Load all stakeholders for fuzzy matching
+    all_stakeholders = analyzer._load_stakeholder_database()
+
+    # Create list of identifiers: IDs, names, and emails
+    stakeholder_identifiers = []
+    id_to_stakeholder = {}
+
+    for sh in all_stakeholders:
+        # Add stakeholder ID
+        if sh.id:
+            stakeholder_identifiers.append(sh.id)
+            id_to_stakeholder[sh.id] = sh
+        # Add stakeholder name
+        if sh.name:
+            stakeholder_identifiers.append(sh.name)
+            id_to_stakeholder[sh.name] = sh
+        # Add stakeholder email
+        if sh.email:
+            stakeholder_identifiers.append(sh.email)
+            id_to_stakeholder[sh.email] = sh
+
+    # Try fuzzy lookup with typo tolerance
+    try:
+        matched_identifier = fuzzy_lookup(
+            query=stakeholder_query,
+            candidates=stakeholder_identifiers,
+            threshold=0.6,  # Lower threshold for flexibility
+            auto_select_threshold=0.95,
+            high_confidence_threshold=0.75,
+            show_suggestions=True
+        )
+
+        # Get the stakeholder ID from matched identifier
+        matched_stakeholder = id_to_stakeholder[matched_identifier]
+        stakeholder_id = matched_stakeholder.id
+
+    except NoMatchFoundError:
+        # No match found - fuzzy_lookup already printed suggestions
+        return
+    except AmbiguousMatchError as e:
+        # Multiple matches - fuzzy_lookup already printed "did you mean"
+        return
+
 # Load stakeholder profile
 stakeholders = analyzer.load_stakeholder_profiles([stakeholder_id])
 stakeholder = stakeholders[0]
