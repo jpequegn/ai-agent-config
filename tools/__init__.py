@@ -123,6 +123,7 @@ from tools.fuzzy_lookup import (
     NoMatchFoundError,
     AmbiguousMatchError,
 )
+from tools.smart_query_parser import SmartQueryParser, SmartQueryParserError
 
 __all__ = [
     "ConfigManager",
@@ -237,4 +238,6 @@ __all__ = [
     "FuzzyLookupError",
     "NoMatchFoundError",
     "AmbiguousMatchError",
+    "SmartQueryParser",
+    "SmartQueryParserError",
 ]
