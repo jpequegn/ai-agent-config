@@ -54,10 +54,35 @@ P3_DB = P3_PATH / "data" / "p3.duckdb"
 - `created_at` (TIMESTAMP) - When podcast was added
 
 **transcripts table**:
-- Stores episode transcriptions
+- `id` (INTEGER) - Primary key
+- `episode_id` (INTEGER) - Foreign key to episodes table
+- `text` (VARCHAR) - Transcript segment text
+- `created_at` (TIMESTAMP) - When transcript was created
+
+**IMPORTANT**: Transcripts are stored as **multiple segments per episode**, not as a single record. To get a complete transcript:
+```python
+# Get all segments for an episode and concatenate
+result = conn.execute('''
+    SELECT text
+    FROM transcripts
+    WHERE episode_id = ?
+    ORDER BY id ASC
+''', [episode_id]).fetchall()
+
+full_transcript = ' '.join([row[0] for row in result])
+```
 
 **summaries table**:
-- Stores episode summaries/digests
+- `id` (INTEGER) - Primary key
+- `episode_id` (INTEGER) - Foreign key to episodes table
+- `key_topics` (JSON) - Array of key topics
+- `themes` (JSON) - Array of themes
+- `quotes` (JSON) - Array of notable quotes
+- `startups` (JSON) - Array of mentioned startups/companies
+- `digest_date` (DATE) - Date of digest generation
+- `full_summary` (VARCHAR) - Complete episode summary text
+- `created_at` (TIMESTAMP) - When summary was created
+- `key_takeaways` (JSON) - Array of key takeaways
 
 **Important Notes**:
 - Use `created_at` field to filter by download date (NOT `downloaded_at`)
@@ -136,6 +161,38 @@ conn.close()
 - Use LIKE or full-text search on title field
 - Join with podcasts for complete context
 
+**"Search transcript for specific content"**
+```python
+# Search transcripts (remember: multiple segments per episode)
+cd ~/Code/parakeet-podcast-processor && source venv/bin/activate && python3 -c "
+import duckdb
+
+conn = duckdb.connect('data/p3.duckdb')
+
+# Find episodes with keyword in transcript
+result = conn.execute('''
+    SELECT DISTINCT
+        e.id,
+        e.title,
+        p.title as podcast_name,
+        e.date
+    FROM episodes e
+    JOIN podcasts p ON e.podcast_id = p.id
+    JOIN transcripts t ON t.episode_id = e.id
+    WHERE LOWER(t.text) LIKE ?
+    ORDER BY e.date DESC
+''', ['%keyword%']).fetchall()
+
+# To get full context around a match:
+# 1. Get all transcript segments for the episode
+# 2. Concatenate them: full_transcript = ' '.join([row[0] for row in segments])
+# 3. Search for keyword position: pos = full_transcript.lower().find('keyword')
+# 4. Extract context: section = full_transcript[pos-500:pos+2000]
+
+conn.close()
+"
+```
+
 #### 3. Podcast-Specific Queries
 **"Latest episodes from [podcast name]"**
 ```python
@@ -155,6 +212,18 @@ conn.close()
 - Use `e.date` for episode publication date
 - Format timestamps with `.strftime()` for readability
 - Handle empty results gracefully with fallback queries
+
+**Working with Segmented Transcripts**:
+- Transcripts are stored as multiple rows per episode (typically 100-1000+ segments)
+- Always use `ORDER BY id ASC` when concatenating segments to preserve order
+- For search queries, use `DISTINCT` on episode info when joining transcripts
+- For content extraction:
+  1. Find episode ID with keyword match
+  2. Retrieve ALL segments for that episode
+  3. Concatenate segments: `' '.join([row[0] for row in segments])`
+  4. Search and extract context from full transcript
+- A single transcript segment is typically 80-100 characters
+- Full episode transcripts range from 50,000-100,000+ characters
 
 **Analysis Output Format**:
 - 📻 Use emoji indicators for visual clarity
