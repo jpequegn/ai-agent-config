@@ -114,11 +114,6 @@ Recent Activity:
 • [Episode title] - [Podcast name] ([status])
 • [Episode title] - [Podcast name] ([status])
 ...
-
-💡 Use subcommands:
-   /podcast fetch - Download new episodes
-   /podcast transcribe - Transcribe audio
-   /podcast digest - Generate summaries
 ```
 
 ### Secondary Task: Interactive Analysis & Queries
@@ -266,8 +261,10 @@ Try manually activating:
 ```
 📭 No episodes in database.
 
-Get started with:
-  /podcast fetch --max-episodes 10
+Get started by directly interacting with the P³ system:
+  cd ~/Code/parakeet-podcast-processor
+  source venv/bin/activate
+  p3 fetch --max-episodes 10
 ```
 
 ### Performance Notes
@@ -290,11 +287,6 @@ Get started with:
 ❌ Use non-existent columns like `podcasts.name` or `episodes.downloaded_at`
 ❌ Try shell commands when direct database access is better
 ❌ Skip error handling for empty results
-
-### Related Commands
-- `/podcast fetch` - Download new podcast episodes
-- `/podcast transcribe` - Transcribe downloaded audio
-- `/podcast digest` - Generate episode summaries
 
 ### Technical Details
 
@@ -335,4 +327,3 @@ Always provide clear, formatted output with:
 - Status indicators (✅ ❌ ⚠️ 📻 💡)
 - Structured information with headers
 - Actionable suggestions
-- Links to related commands
