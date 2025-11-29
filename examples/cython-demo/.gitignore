@@ -1,0 +1,6 @@
+# Cython build artifacts
+build/
+*.c
+*.so
+*.pyc
+__pycache__/
